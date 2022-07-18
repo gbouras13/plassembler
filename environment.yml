@@ -1,0 +1,13 @@
+name: plassembler
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - flye=2.9
+  - unicycler=0.4.8
+  - bwa=0.7.17
+  - samtools=1.15.1
+  - biopython==1.78
+
+

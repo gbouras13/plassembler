@@ -1,0 +1,19 @@
+site_name: plassembler
+site_url: "https://github.com/gbouras13/plassembler"
+theme:
+    name: readthedocs
+    highlightjs: true
+    hljs_languages:
+        - yaml
+        - bash
+        - shell
+        - python
+nav:
+    - ABOUT:
+      - Overview: index.md
+      - Why Use pharokka?: reasons.md
+    - RUNNING:
+      - Install: install.md
+      - Usage: run.md
+    - OUTPUT:
+      - Output: output.md

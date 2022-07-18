@@ -42,7 +42,6 @@ def extract_chromosome(out_dir, chromosome_len):
     if chrom_circ != 'Y' or max_length < chromosome_len*0.8:
         correct_chromosome = False
     else:
-        print('Extracting Chromosome Fasta.')
         extract_chromosome_fasta(out_dir, chrom_contig)
     return correct_chromosome
 
@@ -85,8 +84,25 @@ def bwa_map_chromosome(out_dir,threads, logger):
     except:
         sys.exit("Error with bwa mem\n")  
 
+def minimap_chromosome(input_long_reads, out_dir, threads, logger):
+    chrom_fasta = os.path.join(out_dir, "chromosome.fasta")
+    sam = os.path.join(out_dir, "long_read.sam")
+    f = open(sam, "w")
+    try:
+        minimap = sp.Popen(["minimap2", "-ax", "map-ont", "-t", threads, chrom_fasta, input_long_reads ], stdout=f, stderr=sp.PIPE) 
+        write_to_log(minimap.stderr, logger)
+    except:
+        sys.exit("Error with minimap2\n")  
 
-#bwa mem chromosome.fasta trimmed_R1.fastq trimmed_R2.fastq  > short_read.sam
+def sam_to_bam_long(out_dir, threads, logger):
+    sam = os.path.join(out_dir, "long_read.sam")
+    bam = os.path.join(out_dir, "long_read.bam")
+    f = open(bam, "w")
+    try:
+        sam_to_bam = sp.Popen(["samtools", "view", "-h", "-@", threads, "-b", sam], stdout=f, stderr=sp.PIPE) 
+        write_to_log(sam_to_bam.stderr, logger)
+    except:
+        sys.exit("Error with samtools sam_to_bam.\n")  
 
 def sam_to_bam(out_dir, threads, logger):
     sam = os.path.join(out_dir, "short_read.sam")
@@ -108,6 +124,18 @@ def bam_to_unmap(out_dir, threads, logger):
     except:
         sys.exit("Error with samtools bam_to_unmap. \n")  
 
+
+def bam_to_unmap_long(out_dir, threads, logger):
+    bam = os.path.join(out_dir, "long_read.bam")
+    unmap_bam = os.path.join(out_dir, "long_unmap.bam")
+    f = open(unmap_bam, "w")
+    try:
+        bam_to_unmap = sp.Popen(["samtools", "view", "-h", "-@", threads, "-f", "4", bam], stdout=f, stderr=sp.PIPE) 
+        write_to_log(bam_to_unmap.stderr, logger)
+    except:
+        sys.exit("Error with samtools bam_to_unmap. \n")  
+
+
 def extract_unmap_fastq(out_dir, threads, logger):
     unmap_bam = os.path.join(out_dir, "unmap.bam")
     unmap_one = os.path.join(out_dir, "unmapped_R1.fastq.gz")
@@ -118,11 +146,22 @@ def extract_unmap_fastq(out_dir, threads, logger):
     except:
         sys.exit("Error with samtools extract_unmap_fastq\n")  
 
+def extract_unmap_fastq_long(out_dir, logger):
+    unmap_bam = os.path.join(out_dir, "long_unmap.bam")
+    unmap_long = os.path.join(out_dir, "unmapped_long.fastq")
+    f = open(unmap_long, "w")
+    try:
+        extract_unmap_fastq_long= sp.Popen(["samtools", "bam2fq", unmap_bam], stdout=f, stderr=sp.PIPE) 
+        write_to_log(extract_unmap_fastq_long.stderr, logger)
+    except:
+        sys.exit("Error with samtools extract_unmap_fastq_long\n")  
+
 def unicycler(out_dir, threads, logger):
     unmap_one = os.path.join(out_dir, "unmapped_R1.fastq.gz")
     unmap_two = os.path.join(out_dir, "unmapped_R2.fastq.gz")
+    unmap_long = os.path.join(out_dir, "unmapped_long.fastq")
     try:
-        unicycler= sp.Popen(["unicycler", "-1", unmap_one, "-2", unmap_two, "-t", threads, "-o", os.path.join(out_dir, "unicycler") ], stdout=sp.PIPE, stderr=sp.PIPE) 
+        unicycler= sp.Popen(["unicycler", "-1", unmap_one, "-2", unmap_two, "-l", unmap_long, "-t", threads, "-o", os.path.join(out_dir, "unicycler") ], stdout=sp.PIPE, stderr=sp.PIPE) 
         write_to_log(unicycler.stdout, logger)
     except:
         sys.exit("Error with Unicycler\n")  

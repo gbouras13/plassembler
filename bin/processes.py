@@ -43,6 +43,7 @@ def extract_chromosome(out_dir, chromosome_len):
         correct_chromosome = False
     else:
         extract_chromosome_fasta(out_dir, chrom_contig)
+        extract_plasmid_fastas(out_dir, chrom_contig)
     return correct_chromosome
 
 def extract_chromosome_fasta(out_dir, contig_name):
@@ -187,7 +188,75 @@ def remove_intermediate_files(out_dir):
     sp.run(["rm", "-rf", os.path.join(out_dir,"40-polishing") ])
     sp.run(["rm", "-rf", os.path.join(out_dir,"params.json") ])
 
+#### 
 
+def extract_plasmid_fastas(out_dir, contig_name):
+    with open(os.path.join(out_dir, "non_chromosome.fasta"), 'w') as non_chrom_fa:
+        for dna_record in SeqIO.parse(os.path.join(out_dir, "assembly.fasta"), 'fasta'): 
+            # has to be contig of the chromosome
+            if dna_record.id != contig_name:
+                dna_header = dna_record.id
+                dna_description = ""
+                dna_record = SeqRecord(dna_record.seq, id=dna_header, description = dna_description)
+                SeqIO.write(dna_record, non_chrom_fa, 'fasta')
 
+def index_non_chrom(out_dir,  logger):
+    chrom_fasta = os.path.join(out_dir, "non_chromosome.fasta")
+    try:
+        bwa_index = sp.Popen(["bwa", "index", chrom_fasta ], stdout=sp.PIPE, stderr=sp.PIPE) 
+        write_to_log(bwa_index.stdout, logger)
+    except:
+        sys.exit("Error with bwa index\n")  
+
+def bwa_map_non_chrom(out_dir,threads, logger):
+    trim_one = os.path.join(out_dir, "trimmed_R1.fastq")
+    trim_two = os.path.join(out_dir, "trimmed_R2.fastq")
+    chrom_fasta = os.path.join(out_dir, "non_chromosome.fasta")
+    sam = os.path.join(out_dir, "short_read_non_chrom.sam")
+    f = open(sam, "w")
+    try:
+        bwa_map = sp.Popen(["bwa", "mem", "-t", threads, chrom_fasta, trim_one, trim_two ], stdout=f, stderr=sp.PIPE) 
+        write_to_log(bwa_map.stderr, logger)
+    except:
+        sys.exit("Error with bwa mem\n")  
+
+def sam_to_bam_non_chrom(out_dir, threads, logger):
+    sam = os.path.join(out_dir, "short_read_non_chrom.sam")
+    bam = os.path.join(out_dir, "short_read_non_chrom.bam")
+    f = open(bam, "w")
+    try:
+        sam_to_bam = sp.Popen(["samtools", "view", "-h", "-@", threads, "-b", sam], stdout=f, stderr=sp.PIPE) 
+        write_to_log(sam_to_bam.stderr, logger)
+    except:
+        sys.exit("Error with samtools sam_to_bam.\n")  
+
+def bam_to_map_non_chrom(out_dir, threads, logger):
+    bam = os.path.join(out_dir, "short_read_non_chrom.bam")
+    map_bam = os.path.join(out_dir, "map_non_chrom.bam")
+    f = open(map_bam, "w")
+    try:
+        bam_to_map = sp.Popen(["samtools", "view", "-h", "-@", threads, "-F", "4", bam], stdout=f, stderr=sp.PIPE) 
+        write_to_log(bam_to_map.stderr, logger)
+    except:
+        sys.exit("Error with samtools bam_to_unmap. \n")  
+
+def extract_map_non_chrom_fastq(out_dir, threads, logger):
+    map_bam = os.path.join(out_dir, "map_non_chrom.bam")
+    map_one = os.path.join(out_dir, "mapped_non_chrom_R1.fastq.gz")
+    map_two = os.path.join(out_dir, "mapped_non_chrom_R2.fastq.gz")
+    try:
+        extract_map_fastq= sp.Popen(["samtools", "fastq", "-@", threads, "-f", "4", map_bam, "-1", map_one, "-2", map_two, "-0", "/dev/null", "-s", "/dev/null", "-n"], stdout=sp.PIPE, stderr=sp.PIPE) 
+        write_to_log(extract_map_fastq.stdout, logger)
+    except:
+        sys.exit("Error with samtools extract_map_fastq\n")  
+
+def unicycler_map(out_dir, threads, logger):
+    map_one = os.path.join(out_dir, "unmapped_R1.fastq.gz")
+    map_two = os.path.join(out_dir, "unmapped_R2.fastq.gz")
+    try:
+        unicycler= sp.Popen(["unicycler", "-1", map_one, "-2", map_two, "-t", threads, "-o", os.path.join(out_dir, "unicycler_map") ], stdout=sp.PIPE, stderr=sp.PIPE) 
+        write_to_log(unicycler.stdout, logger)
+    except:
+        sys.exit("Error with Unicycler\n")  
 
 

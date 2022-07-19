@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     print("Running Flye.")
     logger.info("Running Flye")
-    #processes.run_flye(args.longreads, out_dir, args.threads, logger)
+    processes.run_flye(args.longreads, out_dir, args.threads, logger)
 
     print("Counting Contigs.")
     logger.info("Counting Contigs")
@@ -60,95 +60,12 @@ if __name__ == "__main__":
         else:
             print('Trimming short reads.')
             logger.info("Trimming short reads.")
-            #processes.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
-            print('Indexing Chromosome.')
-            logger.info("Indexing Chromosome.")
-            #processes.index_chromosome( out_dir,  logger)
-            #processes.index_non_chrom( out_dir,  logger)
-            print('Mapping Short Reads to Chromosome and Plasmids.')
-            logger.info('Mapping Short Reads to Chromosome and Plasmids.')
-            #processes.bwa_map_chromosome( out_dir,args.threads,  logger)
-            #processes.bwa_map_non_chrom( out_dir,args.threads,  logger)
-            #print('Mapping Long Reads to Chromosome.')
-            #logger.info('Mapping Long Reads to Chromosome.')
-            #processes.minimap_chromosome(args.longreads, out_dir,args.threads,  logger)
-            print('Converting Sam to Bam.')
-            logger.info('Converting Sam to Bam.')
-            #processes.sam_to_bam( out_dir, args.threads,  logger)
-            #processes.sam_to_bam_non_chrom( out_dir, args.threads,  logger)
-            #processes.sam_to_bam_long( out_dir, args.threads,  logger)
-            print('Extracting Unmapped Reads.')
-            logger.info('Extracting Unmapped Reads.')
-            #processes.bam_to_map_non_chrom( out_dir, args.threads,  logger)
-            processes.extract_map_non_chrom_fastq( out_dir, args.threads,  logger)
-            #processes.bam_to_unmap( out_dir, args.threads,  logger)
-            #processes.extract_unmap_fastq( out_dir, args.threads,  logger)
-            #processes.bam_to_unmap_long( out_dir, args.threads,  logger)
-            #processes.extract_unmap_fastq_long( out_dir,  logger)
-            print('Running Unicycler.')
-            logger.info('Running Unicycler.')
-            #processes.unicycler( out_dir, args.threads,  logger)
-            processes.unicycler_map(out_dir, args.threads,  logger)
-
-            
-
-            
-
-
-
-
-
-    # # gene predictor
-    # if args.gene_predictor == "phanotate":
-    #     logger.info("Starting Phanotate")
-    #     processes.run_phanotate(args.infile, out_dir, logger)
-    # if gene_predictor == "prodigal":
-    #     logger.info("Starting Prodigal")
-    #     processes.run_prodigal(args.infile, out_dir, logger)
-
-    # logger.info("Translating gene predicted fastas.")
-    # processes.translate_fastas(out_dir,gene_predictor)
-    # logger.info("Starting tRNA-scanSE")
-    # processes.run_trna_scan(args.infile, out_dir, logger)
-
-    # # set the db dir
-    # if args.database == "Default":
-    #     DBDIR = os.path.join(os.path.dirname(__file__),'../',"databases/")  
-    # else:
-    #     DBDIR = args.database
-
-    # processes.remove_delim_fastas(out_dir,gene_predictor)
-
-    # # runnin mmseqs2
-    # logger.info("Starting mmseqs2")
-    # processes.run_mmseqs(DBDIR, out_dir, args.threads, logger, gene_predictor)
-    # logger.info("Starting hhsuite")
-    # processes.run_hmmsuite(DBDIR, out_dir, args.threads, logger, args.gene_predictor)
-
-    # # post processing
-    # phan_mmseq_merge_df = post_processing.process_results(DBDIR, out_dir, prefix, gene_predictor)
-    # logger.info("Post Processing Data")
-    # length_df = post_processing.get_contig_name_lengths(args.infile, out_dir, prefix)
-    # post_processing.create_gff(phan_mmseq_merge_df, length_df, args.infile, out_dir, prefix, locustag)
-    # post_processing.create_tbl(phan_mmseq_merge_df, length_df, out_dir, prefix)
-    # post_processing.create_txt(phan_mmseq_merge_df, length_df,out_dir, prefix)
-    # logger.info("Converting gff to genbank using seqret")
-    # processes.convert_gff_to_gbk(args.infile, out_dir, prefix, logger)
-    
-    # # delete tmp files
-    # sp.run(["rm", "-rf", os.path.join(out_dir, "target_dir") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, "tmp_dir/") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, "mmseqs/") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, "cleaned_" + gene_predictor + ".tsv") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, "input_fasta_delim.fasta") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, "mmseqs_results.tsv") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, "top_hits_hhsuite.tsv") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, "top_hits_mmseqs.tsv") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, "hhsuite_target_dir") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, "phanotate_out.txt") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, "trnascan_out.gff") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, gene_predictor + "_aas_tmp.fasta") ])
-    # sp.run(["rm", "-rf", os.path.join(out_dir, gene_predictor + "_out_tmp.fasta") ])
+            processes.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+            ##### modules
+            processes.unmapped_short_read_assembly(out_dir,args.threads,  logger)
+            processes.mapped_short_read_plasmid_assembly(out_dir,args.threads,  logger)
+            processes.mapped_hybrid_plasmid_assembly(out_dir, args.threads, args.longreads, logger)
+            processes.remove_intermediate_files(out_dir)
 
     # Determine elapsed time
     elapsed_time = time.time() - start_time

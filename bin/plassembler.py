@@ -41,7 +41,8 @@ if __name__ == "__main__":
 
     print("Running Flye.")
     logger.info("Running Flye")
-    processes.run_flye(args.longreads, out_dir, args.threads, logger)
+    processes.trim_long_read(args.longreads, out_dir, args.min_length,  logger)
+    processes.run_flye( out_dir, args.threads, logger)
 
     print("Counting Contigs.")
     logger.info("Counting Contigs")
@@ -62,8 +63,6 @@ if __name__ == "__main__":
             logger.info("Trimming short reads.")
             processes.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
             ##### modules
-            processes.unmapped_short_read_assembly(out_dir,args.threads,  logger)
-            processes.mapped_short_read_plasmid_assembly(out_dir,args.threads,  logger)
             processes.mapped_hybrid_plasmid_assembly(out_dir, args.threads, args.longreads, logger)
             processes.remove_intermediate_files(out_dir)
 

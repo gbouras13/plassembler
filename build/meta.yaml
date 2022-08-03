@@ -11,11 +11,11 @@ source:
 
 requirements:
  run:
-  - flye=2.9
-  - unicycler=0.4.8
-  - bwa=0.7.17
-  - samtools=1.15.1
-  - biopython==1.78
+  - flye>=2.9
+  - unicycler>=0.4.8
+  - bwa>=0.7.17
+  - samtools>=1.15.1
+  - biopython>=1.78
 
 about:
   home: https://github.com/gbouras13/plassembler

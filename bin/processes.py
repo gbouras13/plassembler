@@ -39,7 +39,7 @@ def extract_chromosome(out_dir, chromosome_len):
     chrom_circ = info_df[info_df['length'] == max_length].iloc[0]['circ']
     # chromosome isn't circular or at least 80% of inputted chromosome length
     correct_chromosome = True
-    if chrom_circ != 'Y' or max_length < chromosome_len*0.8:
+    if chrom_circ != 'Y' or max_length < int(chromosome_len)*0.8:
         correct_chromosome = False
     else:
         extract_chromosome_fasta(out_dir, chrom_contig)
@@ -68,11 +68,11 @@ def extract_plasmid_fastas(out_dir, contig_name):
                 SeqIO.write(dna_record, non_chrom_fa, 'fasta')
 
 
-def trim_long_read(input_long_reads, out_dir,min_length,  logger):
+def trim_long_read(input_long_reads, out_dir,min_length, min_quality,  logger):
     out_trim_long = os.path.join(out_dir, "trimmed.fastq")
     f = open(out_trim_long, "w")
     try:
-        filtlong = sp.Popen(["filtlong", "--min_length", min_length, "--min_mean_q", "9",  input_long_reads, ], stdout=f, stderr=sp.PIPE) 
+        filtlong = sp.Popen(["filtlong", "--min_length", min_length, "--min_mean_q", min_quality,  input_long_reads, ], stdout=f, stderr=sp.PIPE) 
         write_to_log(filtlong.stderr, logger)
     except:
         sys.exit("Error with filtlong\n")  
@@ -96,17 +96,25 @@ def mapped_hybrid_plasmid_assembly(out_dir, threads, input_long_reads, logger):
     print('Mapping Long Reads to Plasmid Contigs.')
     logger.info('Mapping Long Reads to Plasmid Contigs.')
     minimap_non_chromosome(input_long_reads, out_dir, threads, logger)
-    print('Converting Sam to Bam.')
-    logger.info('Converting Sam to Bam.')
     sam_to_bam_long( out_dir, threads,  logger)
     print('Extracting Mapped Long Reads.')
     logger.info('Extracting Mapped Long Reads.')
     bam_to_map_long( out_dir, threads,  logger)
     extract_map_fastq_long( out_dir,   logger)
+    print('Indexing Plasmid Contigs.')
+    logger.info("Indexing Plasmid Contigs.")
+    index_non_chrom( out_dir,  logger)
+    print('Mapping Short Reads to Plasmid Contigs')
+    logger.info('Mapping Short Reads to Plasmid Contigs')
+    bwa_map_non_chrom( out_dir,threads,  logger)
+    sam_to_bam_non_chrom( out_dir, threads,  logger)
+    print('Extracting Mapped Short Reads.')
+    logger.info('Extracting Mapped Short Reads.')
+    bam_to_map_non_chrom( out_dir, threads,  logger)
+    extract_map_non_chrom_fastq( out_dir, threads,  logger)
     print('Running Unicycler Hybrid.')
     logger.info('Running Unicycler Hybrid.')
     unicycler_map_hybrid(out_dir, threads,  logger)
-
 
 
 def minimap_non_chromosome(input_long_reads, out_dir, threads, logger):
@@ -150,17 +158,117 @@ def extract_map_fastq_long(out_dir, logger):
     except:
         sys.exit("Error with samtools extract_unmap_fastq_long\n")  
 
+def index_non_chrom(out_dir,  logger):
+    chrom_fasta = os.path.join(out_dir, "non_chromosome.fasta")
+    try:
+        bwa_index = sp.Popen(["bwa", "index", chrom_fasta ], stdout=sp.PIPE, stderr=sp.PIPE) 
+        write_to_log(bwa_index.stdout, logger)
+    except:
+        sys.exit("Error with bwa index\n")  
+
+def bwa_map_non_chrom(out_dir,threads, logger):
+    trim_one = os.path.join(out_dir, "trimmed_R1.fastq")
+    trim_two = os.path.join(out_dir, "trimmed_R2.fastq")
+    chrom_fasta = os.path.join(out_dir, "non_chromosome.fasta")
+    sam = os.path.join(out_dir, "short_read_non_chrom.sam")
+    f = open(sam, "w")
+    try:
+        bwa_map = sp.Popen(["bwa", "mem", "-t", threads, chrom_fasta, trim_one, trim_two ], stdout=f, stderr=sp.PIPE) 
+        write_to_log(bwa_map.stderr, logger)
+    except:
+        sys.exit("Error with bwa mem\n")  
+
+def sam_to_bam_non_chrom(out_dir, threads, logger):
+    sam = os.path.join(out_dir, "short_read_non_chrom.sam")
+    bam = os.path.join(out_dir, "short_read_non_chrom.bam")
+    f = open(bam, "w")
+    try:
+        sam_to_bam = sp.Popen(["samtools", "view", "-h", "-@", threads, "-b", sam], stdout=f, stderr=sp.PIPE) 
+        write_to_log(sam_to_bam.stderr, logger)
+    except:
+        sys.exit("Error with samtools sam_to_bam.\n")  
+
+def bam_to_map_non_chrom(out_dir, threads, logger):
+    bam = os.path.join(out_dir, "short_read_non_chrom.bam")
+    map_bam = os.path.join(out_dir, "map_non_chrom.bam")
+    f = open(map_bam, "w")
+    try:
+        bam_to_map = sp.Popen(["samtools", "view", "-h", "-@", threads, "-F", "4", bam], stdout=f, stderr=sp.PIPE) 
+        write_to_log(bam_to_map.stderr, logger)
+    except:
+        sys.exit("Error with samtools bam_to_unmap. \n")  
+
+def extract_map_non_chrom_fastq(out_dir, threads, logger):
+    map_bam = os.path.join(out_dir, "map_non_chrom.bam")
+    map_one = os.path.join(out_dir, "mapped_non_chrom_R1.fastq.gz")
+    map_two = os.path.join(out_dir, "mapped_non_chrom_R2.fastq.gz")
+    try:
+        extract_map_fastq= sp.Popen(["samtools", "fastq", "-@", threads, "-F", "4", map_bam, "-1", map_one, "-2", map_two, "-0", "/dev/null", "-s", "/dev/null", "-n"], stdout=sp.PIPE, stderr=sp.PIPE) 
+        write_to_log(extract_map_fastq.stdout, logger)
+    except:
+        sys.exit("Error with samtools extract_map_fastq\n")  
+
 def unicycler_map_hybrid(out_dir, threads, logger):
-    map_one = os.path.join(out_dir, "unmapped_R1.fastq.gz")
-    map_two = os.path.join(out_dir, "unmapped_R2.fastq.gz")
+    map_one = os.path.join(out_dir, "mapped_non_chrom_R1.fastq.gz")
+    map_two = os.path.join(out_dir, "mapped_non_chrom_R2.fastq.gz")
     map_long = os.path.join(out_dir, "mapped_long.fastq")
     try:
-        unicycler= sp.Popen(["unicycler", "-1", map_one, "-2", map_two, "-l", map_long, "-t", threads, "-o", os.path.join(out_dir, "unicycler_map_hybrid") ], stdout=sp.PIPE, stderr=sp.PIPE) 
+        unicycler= sp.Popen(["unicycler", "-1", map_one, "-2", map_two, "-l", map_long, "-t", threads, "-o", os.path.join(out_dir, "unicycler_map_hybrid_output") ], stdout=sp.PIPE, stderr=sp.PIPE) 
         write_to_log(unicycler.stdout, logger)
     except:
         sys.exit("Error with Unicycler\n")  
 
 
+
+
+def remove_intermediate_files(out_dir):
+    sp.run(["rm", "-rf", os.path.join(out_dir,"trimmed_R1.fastq") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"trimmed_R2.fastq") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"unmapped.bam") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"short_read.bam") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"short_read.sam") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"short_read_non_chrom.sam") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"short_read_non_chrom.bam") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"map_non_chrom.bam") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"long_read.sam") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"long_read.bam") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"long_map.bam") ])   
+    sp.run(["rm", "-rf", os.path.join(out_dir,"unmap.bam") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"unmap.bam") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta.sa") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta.amb") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta.ann") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta.pac") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta.bwt") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta.sa") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta.amb") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta.ann") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta.pac") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta.bwt") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"00-assembly") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"10-consensus") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"20-repeat") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"30-contigger") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"40-polishing") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"params.json") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"trimmed.fastq") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"mapped_non_chrom_R1.fastq.gz") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"mapped_non_chrom_R2.fastq.gz") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"mapped_long.fastq") ])
+
+def move_and_copy_files(out_dir, prefix):
+    # move flye output into dir
+    sp.run(["mkdir", "-p", os.path.join(out_dir,"flye_output") ])
+    sp.run(["mv",  os.path.join(out_dir,"assembly.fasta"), os.path.join(out_dir,"flye_output") ])
+    sp.run(["mv",  os.path.join(out_dir,"assembly_info.txt"), os.path.join(out_dir,"flye_output") ])
+    sp.run(["mv",  os.path.join(out_dir,"flye.log"), os.path.join(out_dir,"flye_output") ])
+    sp.run(["mv", os.path.join(out_dir,"assembly_graph.gfa"), os.path.join(out_dir,"flye_output") ])
+    sp.run(["mv", os.path.join(out_dir,"assembly_graph.gv"), os.path.join(out_dir,"flye_output") ])
+    # move unicycler output to main directory
+    sp.run(["cp", os.path.join(out_dir,"unicycler_map_hybrid_output", "assembly.fasta"), os.path.join(out_dir, prefix + "_plasmids.fasta") ])
+    sp.run(["cp", os.path.join(out_dir,"unicycler_map_hybrid_output", "assembly.gfa"), os.path.join(out_dir, prefix + "_plasmids.gfa") ])
 
 
 
@@ -333,40 +441,6 @@ def unicycler_map_hybrid(out_dir, threads, logger):
 #         sys.exit("Error with Unicycler\n")  
 
 
-
-
-def remove_intermediate_files(out_dir):
-    sp.run(["rm", "-rf", os.path.join(out_dir,"trimmed_R1.fastq") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"trimmed_R2.fastq") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"unmapped.bam") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"short_read.bam") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"short_read.sam") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"short_read_non_chrom.sam") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"short_read_non_chrom.bam") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"map_non_chrom.bam") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"long_read.sam") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"long_read.bam") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"long_map.bam") ])   
-    sp.run(["rm", "-rf", os.path.join(out_dir,"unmap.bam") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"unmap.bam") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta.sa") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta.amb") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta.ann") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta.pac") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta.bwt") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta.sa") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta.amb") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta.ann") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta.pac") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta.bwt") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"00-assembly") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"10-consensus") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"20-repeat") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"30-contigger") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"40-polishing") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"params.json") ])
 
 #### 
 

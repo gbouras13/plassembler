@@ -6,6 +6,7 @@ import subprocess as sp
 import logging
 import time
 import datetime
+import sys
 
 if __name__ == "__main__":
 
@@ -39,9 +40,11 @@ if __name__ == "__main__":
     input_commands.validate_fastq(args.short_one)
     input_commands.validate_fastq(args.short_two)
 
+    print("Trimming and filtering long reads.")
+    logger.info("Trimming and filtering long reads.")
+    processes.trim_long_read(args.longreads, out_dir, args.min_length, args.min_quality,  logger)
     print("Running Flye.")
     logger.info("Running Flye")
-    processes.trim_long_read(args.longreads, out_dir, args.min_length,  logger)
     processes.run_flye( out_dir, args.threads, logger)
 
     print("Counting Contigs.")
@@ -51,6 +54,7 @@ if __name__ == "__main__":
     if contig_count == 1:
         logger.info("Only one contig was assembled. There are no plasmids.")
         print("Only one contig was assembled. There are no plasmids.")
+        sys.exit(0)
     else:
         print("Extracting Chromosome.")
         logger.info("Extracting Chromosome.")
@@ -58,6 +62,7 @@ if __name__ == "__main__":
         if chromosome_cirularised_flag == False:
             print('Insufficient long read depth for chromosome to circularise. Increasing sequencing depth is recommended.')
             logger.info("Insufficient long read depth for chromosome to circularise. Increasing sequencing depth is recommended.")
+            sys.exit(0)
         else:
             print('Trimming short reads.')
             logger.info("Trimming short reads.")
@@ -65,9 +70,11 @@ if __name__ == "__main__":
             ##### modules
             processes.mapped_hybrid_plasmid_assembly(out_dir, args.threads, args.longreads, logger)
             processes.remove_intermediate_files(out_dir)
+            processes.move_and_copy_files(out_dir, prefix)
 
     # Determine elapsed time
     elapsed_time = time.time() - start_time
+    elapsed_time = round(elapsed_time, 2)
 
     # Show elapsed time for the process
     logger.info("plassembler has finished")

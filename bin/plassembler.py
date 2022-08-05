@@ -2,11 +2,10 @@
 import input_commands
 import processes
 import os
-import subprocess as sp
 import logging
 import time
 import datetime
-import sys
+
 
 if __name__ == "__main__":
 
@@ -51,10 +50,14 @@ if __name__ == "__main__":
     logger.info("Counting Contigs")
     contig_count = processes.contig_count(args.outdir)
 
+    # flag for creating output if the program fails 
+    fail = False
+
     if contig_count == 1:
         logger.info("Only one contig was assembled. There are no plasmids.")
         print("Only one contig was assembled. There are no plasmids.")
-        sys.exit(0)
+        fail = True 
+        processes.move_and_copy_files(out_dir, prefix, fail)
     else:
         print("Extracting Chromosome.")
         logger.info("Extracting Chromosome.")
@@ -62,7 +65,8 @@ if __name__ == "__main__":
         if chromosome_cirularised_flag == False:
             print('Insufficient long read depth for chromosome to circularise. Increasing sequencing depth is recommended.')
             logger.info("Insufficient long read depth for chromosome to circularise. Increasing sequencing depth is recommended.")
-            sys.exit(0)
+            fail = True 
+            processes.move_and_copy_files(out_dir, prefix, fail)
         else:
             print('Trimming short reads.')
             logger.info("Trimming short reads.")
@@ -70,7 +74,7 @@ if __name__ == "__main__":
             ##### modules
             processes.mapped_hybrid_plasmid_assembly(out_dir, args.threads, args.longreads, logger)
             processes.remove_intermediate_files(out_dir)
-            processes.move_and_copy_files(out_dir, prefix)
+            processes.move_and_copy_files(out_dir, prefix, fail)
 
     # Determine elapsed time
     elapsed_time = time.time() - start_time

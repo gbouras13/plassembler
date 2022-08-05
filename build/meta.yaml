@@ -14,7 +14,6 @@ requirements:
   - flye>=2.9
   - unicycler>=0.4.8
   - bwa
-  - samtools
   - biopython
   - minimap2
   - pandas

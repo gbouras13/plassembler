@@ -258,7 +258,7 @@ def remove_intermediate_files(out_dir):
     sp.run(["rm", "-rf", os.path.join(out_dir,"mapped_non_chrom_R2.fastq.gz") ])
     sp.run(["rm", "-rf", os.path.join(out_dir,"mapped_long.fastq") ])
 
-def move_and_copy_files(out_dir, prefix):
+def move_and_copy_files(out_dir, prefix, fail):
     # move flye output into dir
     sp.run(["mkdir", "-p", os.path.join(out_dir,"flye_output") ])
     sp.run(["mv",  os.path.join(out_dir,"assembly.fasta"), os.path.join(out_dir,"flye_output") ])
@@ -266,14 +266,25 @@ def move_and_copy_files(out_dir, prefix):
     sp.run(["mv",  os.path.join(out_dir,"flye.log"), os.path.join(out_dir,"flye_output") ])
     sp.run(["mv", os.path.join(out_dir,"assembly_graph.gfa"), os.path.join(out_dir,"flye_output") ])
     sp.run(["mv", os.path.join(out_dir,"assembly_graph.gv"), os.path.join(out_dir,"flye_output") ])
-    # move unicycler output to main directory
-    sp.run(["cp", os.path.join(out_dir,"unicycler_map_hybrid_output", "assembly.fasta"), os.path.join(out_dir, prefix + "_plasmids.fasta") ])
-    sp.run(["cp", os.path.join(out_dir,"unicycler_map_hybrid_output", "assembly.gfa"), os.path.join(out_dir, prefix + "_plasmids.gfa") ])
+    if fail == False:
+         # move unicycler output to main directory
+        sp.run(["cp", os.path.join(out_dir,"unicycler_map_hybrid_output", "assembly.fasta"), os.path.join(out_dir, prefix + "_plasmids.fasta") ])
+        sp.run(["cp", os.path.join(out_dir,"unicycler_map_hybrid_output", "assembly.gfa"), os.path.join(out_dir, prefix + "_plasmids.gfa") ])
+    else:
+        # to touch empty versions of the output files 
+        touch_output_fail_files(out_dir, prefix)
 
 
+# function to touch create a file 
+# https://stackoverflow.com/questions/12654772/create-empty-file-using-python
+def touch_file(path):
+    with open(path, 'a'):
+        os.utime(path, None)
 
-
-
+# to create empty plasmids fasta and gfa files
+def touch_output_fail_files(out_dir, prefix):
+    touch_file(os.path.join(out_dir, prefix + "_plasmids.fasta"))
+    touch_file(os.path.join(out_dir, prefix + "_plasmids.gfa"))
 
 
 

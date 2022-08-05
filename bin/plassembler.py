@@ -73,7 +73,7 @@ if __name__ == "__main__":
         else:
             print('Trimming short reads.')
             logger.info("Trimming short reads.")
-            #processes.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+            processes.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
             ##### modules
             processes.plasmid_assembly(out_dir, args.threads,logger)
             processes.double_mapping_analysis(out_dir, args.threads,logger)

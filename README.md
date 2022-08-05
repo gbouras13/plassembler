@@ -23,8 +23,9 @@ Method
 3. If the resulting assembly has more than 1 contig, the largest contig is checked. If it is over 90% of the length of the provided chromosome size, or is circular, then it is identified as the chromosome and extracted. All other contigs are also extracted as putative plasmid extra-chromosomal contigs.
 4. Short reads are filtered using fastp (https://github.com/OpenGene/fastp).
 5. Long reads are mapped to the extra-chromosomal contigs using minimap2 (https://github.com/lh3/minimap2#uguide), and short reads are mapped using bwa (https://github.com/lh3/bwa).
-6. Long reads are mapped to the chromosome, and all 
-6. All mapped reads are kept assembled using the hybrid assembler Unicycler to generate final plasmid contigs.
+6. Long reads are mapped to the chromosome using minimap2 and short reads are mapped using bwa.
+7. All reads that map to the extra-chromosomal contigs and all reads that do not map the chromosome are extracted, combined and de-deplicated.
+8. These are assembled using the hybrid assembler Unicycler to generate final plasmid contigs.
 
 
 Installation

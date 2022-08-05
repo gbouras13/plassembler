@@ -5,8 +5,7 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 import pandas as pd
 import logging
-import glob
-import gzip
+
 
 def write_to_log(s, logger):
            while True:
@@ -377,10 +376,6 @@ def unicycler(short_only, threads, logger, short_one, short_two, long, unicycler
         write_to_log(unicycler.stdout, logger)
     except:
         sys.exit("Error with Unicycler\n")  
-
-
-
-
 
 
 ##########################################################

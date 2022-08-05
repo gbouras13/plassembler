@@ -13,3 +13,5 @@ dependencies:
   - fastp
   - porechop
   - filtlong
+  - seqkit
+  - bbmap

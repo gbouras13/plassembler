@@ -20,6 +20,8 @@ requirements:
   - fastp
   - porechop
   - filtlong
+  - seqkit
+  - bbmap
 
 about:
   home: https://github.com/gbouras13/plassembler

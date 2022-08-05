@@ -11,7 +11,7 @@ If you are assembling a small number of bacterial genomes manually, I would reco
 Why Does plassembler exist?
 ----
 
-In long read assembled bacterial genomes, small extra-chromosomal plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated (see https://github.com/rrwick/Trycycler/wiki/Clustering-contigs).
+In long read assembled bacterial genomes, small extra-chromosomal plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated (see https://f1000research.com/articles/8-2138 https://github.com/rrwick/Trycycler/wiki/Clustering-contigs).
 
 plassembler was created as an automated way to ensure plasmids assemble correctly without duplicated regions.
 
@@ -23,6 +23,7 @@ Method
 3. If the resulting assembly has more than 1 contig, the largest contig is checked. If it is over 90% of the length of the provided chromosome size, or is circular, then it is identified as the chromosome and extracted. All other contigs are also extracted as putative plasmid extra-chromosomal contigs.
 4. Short reads are filtered using fastp (https://github.com/OpenGene/fastp).
 5. Long reads are mapped to the extra-chromosomal contigs using minimap2 (https://github.com/lh3/minimap2#uguide), and short reads are mapped using bwa (https://github.com/lh3/bwa).
+6. Long reads are mapped to the chromosome, and all 
 6. All mapped reads are kept assembled using the hybrid assembler Unicycler to generate final plasmid contigs.
 
 
@@ -119,6 +120,10 @@ Bugs and Suggestions
 --------
 If you come across bugs with plassembler, or would like to make any suggestions to improve the program, please open an issue or email george.bouras@adelaide.edu.au.
 
-Other Possible Directions
+To be Added
+-----
+The other functionality that is TBA with plassembler is the ability to estimate the copy number of the plasmid vs the chromosomes (see https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
+
+Other Future Directions
 ------
 At the moment, plassembler is designed for users with hybrid ONT long read (R9.4.1 and earlier) and matching short read data. However, with the new Kit 14 chemistry, ONT long reads may be accurate enough that short read sequencing is not required to polish bacterial assemblies. Other approaches may be more appropriate for Kit 14 long read only assemblies - see https://twitter.com/rrwick/status/1548926644085108738?cxt=HHwWhMClvfCk8v4qAAAA - this is a work in progress.

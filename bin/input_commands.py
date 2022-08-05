@@ -17,12 +17,12 @@ def get_input():
 	parser.add_argument('-o', '--outdir', action="store", help='Directory to write the output to.', default=os.path.join(os.getcwd(), "output/") )
 	parser.add_argument('-s1', '--short_one', action="store", help='R1 short read fastq file.',  required=True)
 	parser.add_argument('-s2', '--short_two', action="store", help='R2 short read fastq file.',  required=True)
-	parser.add_argument('-m', '--min_length', action="store", help='minimum length for long reads for filtlong',  default='1000')
+	parser.add_argument('-m', '--min_length', action="store", help='minimum length for long reads for filtlong. Defaults to 1000.',  default='1000')
 	parser.add_argument('-t', '--threads', help="Number of threads for flye and unicycler. Defaults to 8.", action="store", default = str(8))
 	parser.add_argument('-f', '--force', help="Overwrites the output directory.", action="store_true" )
 	parser.add_argument('-p', '--prefix', action="store", help='Prefix for output files. This is not required',  default='Default')
 	parser.add_argument('-c', '--chromosome', action="store", help='Approximate chromosome length of bacteria',  default=2500000)
-	parser.add_argument('-q', '--min_quality', action="store", help='minimum quality of long reads for filtlong',  default=str(9))
+	parser.add_argument('-q', '--min_quality', action="store", help='minimum quality of long reads for filtlong. Defaults to 9.',  default=str(9))
 	parser.add_argument('-V', '--version', action='version', version=v)
 	args = parser.parse_args()
 
@@ -32,7 +32,8 @@ def instantiate_dirs(output_dir, force):
 	# remove outdir on force
 	if force == True:
 		if os.path.isdir(output_dir) == True:
-			shutil.rmtree(output_dir)
+			#shutil.rmtree(output_dir)
+			print("placeholder")
 		else:
 			print("\n--force was specified even though the outdir does not already exist. Continuing \n")
 	else:

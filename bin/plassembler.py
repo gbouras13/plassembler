@@ -41,7 +41,9 @@ if __name__ == "__main__":
 
     print("Trimming and filtering long reads.")
     logger.info("Trimming and filtering long reads.")
-    processes.trim_long_read(args.longreads, out_dir, args.min_length, args.min_quality,  logger)
+    processes.filtlong(args.longreads, out_dir, args.min_length, args.min_quality,  logger)
+    processes.porechop( out_dir, args.threads, logger)
+
     print("Running Flye.")
     logger.info("Running Flye")
     processes.run_flye( out_dir, args.threads, logger)
@@ -49,7 +51,6 @@ if __name__ == "__main__":
     print("Counting Contigs.")
     logger.info("Counting Contigs")
     contig_count = processes.contig_count(args.outdir)
-
     # flag for creating output if the program fails 
     fail = False
 
@@ -58,6 +59,7 @@ if __name__ == "__main__":
         print("Only one contig was assembled. There are no plasmids.")
         fail = True 
         processes.move_and_copy_files(out_dir, prefix, fail)
+        processes.remove_intermediate_files(out_dir)
     else:
         print("Extracting Chromosome.")
         logger.info("Extracting Chromosome.")
@@ -67,14 +69,17 @@ if __name__ == "__main__":
             logger.info("Insufficient long read depth for chromosome to circularise. Increasing sequencing depth is recommended.")
             fail = True 
             processes.move_and_copy_files(out_dir, prefix, fail)
+            processes.remove_intermediate_files(out_dir)
         else:
             print('Trimming short reads.')
             logger.info("Trimming short reads.")
-            processes.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+            #processes.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
             ##### modules
-            processes.mapped_hybrid_plasmid_assembly(out_dir, args.threads, args.longreads, logger)
-            processes.remove_intermediate_files(out_dir)
+            processes.plasmid_assembly(out_dir, args.threads,logger)
+            processes.double_mapping_analysis(out_dir, args.threads,logger)
             processes.move_and_copy_files(out_dir, prefix, fail)
+            processes.remove_intermediate_files(out_dir)
+
 
     # Determine elapsed time
     elapsed_time = time.time() - start_time

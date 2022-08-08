@@ -18,7 +18,7 @@ plassembler was created as an automated way to ensure plasmids assemble correctl
 Method
 -------
 
-1. Long reads are filtered using filtlong (https://github.com/rrwick/Filtlong) and porechop (https://github.com/rrwick/Filtlong).
+1. Long reads are filtered using nanofilt (https://github.com/wdecoster/nanofilt) .
 2. Long-read assembly is conducted with Flye (https://github.com/fenderglass/Flye).
 3. If the resulting assembly has more than 1 contig, the largest contig is checked. If it is over 90% of the length of the provided chromosome size, or is circular, then it is identified as the chromosome and extracted. All other contigs are also extracted as putative plasmid extra-chromosomal contigs.
 4. Short reads are filtered using fastp (https://github.com/OpenGene/fastp).
@@ -26,7 +26,14 @@ Method
 6. Long reads are mapped to the chromosome using minimap2 and short reads are mapped using bwa.
 7. All reads that map to the extra-chromosomal contigs and all reads that do not map the chromosome are extracted, combined and de-deplicated.
 8. These are assembled using the hybrid assembler Unicycler to generate final plasmid contigs.
+9. Average read coverage depth for each plasmid is calculating using a modified version of code found in the linked repository (https://github.com/rrwick/Small-plasmid-Nanopore).
+10. Plasmid copy number is calculated by dividing the plasmid depth by the chromosome depth.
+* For now, depth is short read only (https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
 
+
+Other Features (Work in Progress)
+
+1. All reads that map to both the chromosome and plasmid are extracted and assembled (short read only for now as likely transposons).
 
 Installation
 ------
@@ -111,7 +118,7 @@ plassembler will output a `_plasmids.fasta` file, which will contain the assembl
 Acknowledgements
 -------
 
-Infinite thanks are owed to Ryan Wick (https://github.com/rrwick), who not only wrote most of the programs used in plassembler, but also gave me numerous ideas about how to approach the plasmid assembly issue.
+Infinite thanks are owed to Ryan Wick (https://github.com/rrwick), who not only wrote Unicycler and some other code used in plassembler, but also gave me numerous ideas about how to approach the plasmid assembly issue.
 
 Version Log
 --------
@@ -127,4 +134,4 @@ The other functionality that is TBA with plassembler is the ability to estimate 
 
 Other Future Directions
 ------
-At the moment, plassembler is designed for users with hybrid ONT long read (R9.4.1 and earlier) and matching short read data. However, with the new Kit 14 chemistry, ONT long reads may be accurate enough that short read sequencing is not required to polish bacterial assemblies. Other approaches may be more appropriate for Kit 14 long read only assemblies - see https://twitter.com/rrwick/status/1548926644085108738?cxt=HHwWhMClvfCk8v4qAAAA - this is a work in progress.
+At the moment, plassembler is designed for users with hybrid ONT long read (R9.4.1 and earlier) and matching short read data. However, with the new Kit 14 chemistry, ONT long reads may be accurate enough that short read sequencing is not required to polish bacterial assemblies. Other approaches may be more appropriate for Kit 14 long read only assemblies - see https://twitter.com/rrwick/status/1548926644085108738?cxt=HHwWhMClvfCk8v4qAAAA - this is not supported at the moment but may be in the future.

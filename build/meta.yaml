@@ -18,8 +18,7 @@ requirements:
   - minimap2
   - pandas
   - fastp
-  - porechop
-  - filtlong
+  - nanofilt
   - seqkit
   - bbmap
 

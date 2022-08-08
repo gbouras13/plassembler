@@ -5,6 +5,7 @@ import os
 import logging
 import time
 import datetime
+import depth
 
 
 if __name__ == "__main__":
@@ -41,12 +42,12 @@ if __name__ == "__main__":
 
     print("Trimming and filtering long reads.")
     logger.info("Trimming and filtering long reads.")
-    processes.filtlong(args.longreads, out_dir, args.min_length, args.min_quality,  logger)
-    processes.porechop( out_dir, args.threads, logger)
+    #processes.filtlong(args.longreads, out_dir, args.min_length, args.min_quality,  logger)
+    #processes.porechop( out_dir, args.threads, logger)
 
     print("Running Flye.")
     logger.info("Running Flye")
-    processes.run_flye( out_dir, args.threads, logger)
+    #processes.run_flye( out_dir, args.threads, logger)
 
     print("Counting Contigs.")
     logger.info("Counting Contigs")
@@ -73,12 +74,16 @@ if __name__ == "__main__":
         else:
             print('Trimming short reads.')
             logger.info("Trimming short reads.")
-            processes.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+            #processes.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
             ##### modules
-            processes.plasmid_assembly(out_dir, args.threads,logger)
-            processes.double_mapping_analysis(out_dir, args.threads,logger)
-            processes.move_and_copy_files(out_dir, prefix, fail)
-            processes.remove_intermediate_files(out_dir)
+            # assembly plasmids
+            #processes.plasmid_assembly(out_dir, args.threads,logger)
+            # get double mapped regions
+            #processes.double_mapping_analysis(out_dir, args.threads,logger)
+            # get copy number 
+            depth.get_depth(out_dir, logger, args.chromosome, args.threads)
+            #processes.move_and_copy_files(out_dir, prefix, fail)
+            #processes.remove_intermediate_files(out_dir)
 
 
     # Determine elapsed time

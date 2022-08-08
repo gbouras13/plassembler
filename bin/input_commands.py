@@ -32,7 +32,8 @@ def instantiate_dirs(output_dir, force):
 	# remove outdir on force
 	if force == True:
 		if os.path.isdir(output_dir) == True:
-			shutil.rmtree(output_dir)
+			#shutil.rmtree(output_dir)
+			print('d')
 		else:
 			print("\n--force was specified even though the outdir does not already exist. Continuing \n")
 	else:
@@ -43,12 +44,23 @@ def instantiate_dirs(output_dir, force):
 		os.mkdir(output_dir)
 	return output_dir
 
-def validate_fastq(filename):
-	with gzip.open(filename, "rt") as handle:
-		fastq = SeqIO.parse(handle, "fastq")
-		if any(fastq):
-			print("FASTQ " +filename + " checked")
-		else:
-			sys.exit("Error: Input file is not in the FASTQ format.\n")  
+def validate_fastq(file):
+	# to get extension
+	filename, file_extension = os.path.splitext(file)
+	if file_extension == ".gz":
+	# if gzipped 
+		with gzip.open(file, "rt") as handle:
+			fastq = SeqIO.parse(handle, "fastq")
+			if any(fastq):
+				print("FASTQ " +file + " checked")
+			else:
+				sys.exit("Error: Input file is not in the FASTQ format.\n")  
+	else:
+		with open(file, "r") as handle:
+			fastq = SeqIO.parse(handle, "fastq")
+			if any(fastq):
+				print("FASTQ " +file + " checked")
+			else:
+				sys.exit("Error: Input file is not in the FASTQ format.\n") 
 
 

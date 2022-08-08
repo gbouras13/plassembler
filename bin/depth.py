@@ -14,13 +14,17 @@ import pandas as pd
 
 # concatenate plasmids and chromosome 
 
-def get_depth(out_dir, logger, chromosome_len, threads):
-    #concatenate_chrom_plasmids(out_dir, logger)
-    #processes.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
-    #bwa_map_depth_sort(out_dir, threads, logger)
-    contig_lengths = get_contig_lengths(out_dir, chromosome_len)
-    depths = get_depths_from_bam(out_dir, contig_lengths)
-    collate_depths(depths, out_dir, chromosome_len)
+def get_depth(out_dir, logger,  threads):
+    concatenate_chrom_plasmids(out_dir, logger)
+    processes.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
+    bwa_map_depth_sort(out_dir, threads)
+    minimap_depth_sort(out_dir, threads)
+    contig_lengths = get_contig_lengths(out_dir)
+    depths = get_depths_from_bam(out_dir, "short", contig_lengths)
+    depths_long = get_depths_from_bam(out_dir, "long", contig_lengths)
+    summary_df_short = collate_depths(depths,"short", out_dir)
+    summary_df_long = collate_depths(depths_long,"long", out_dir)
+    combine_outputs(out_dir, summary_df_short, summary_df_long)
 
 def concatenate_chrom_plasmids(out_dir, logger):
     chrom_fasta =os.path.join(out_dir,"chromosome.fasta")
@@ -32,7 +36,7 @@ def concatenate_chrom_plasmids(out_dir, logger):
         sys.exit("Error with concatenate_fastas\n")  
 
 # get lengths of contigs
-def get_contig_lengths(out_dir, chromosome_len):
+def get_contig_lengths(out_dir):
     contig_lengths = {}
     for dna_record in SeqIO.parse(os.path.join(out_dir, "combined.fasta"), 'fasta'):
         plas_len = len(dna_record.seq)
@@ -40,7 +44,7 @@ def get_contig_lengths(out_dir, chromosome_len):
         contig_lengths[dna_header] = plas_len
     return contig_lengths
 
-def bwa_map_depth_sort(out_dir, threads, logger):
+def bwa_map_depth_sort(out_dir, threads):
     trim_one = os.path.join(out_dir, "trimmed_R1.fastq")
     trim_two = os.path.join(out_dir, "trimmed_R2.fastq")
     fasta = os.path.join(out_dir, "combined.fasta")
@@ -52,10 +56,24 @@ def bwa_map_depth_sort(out_dir, threads, logger):
     except:
         sys.exit("Error with mapping and sorting\n")  
 
+def minimap_depth_sort(out_dir, threads):
+    input_long_reads = os.path.join(out_dir, "filtered_long_reads.fastq.gz")
+    fasta = os.path.join(out_dir, "combined.fasta")
+    bam = os.path.join(out_dir, "combined_sorted_long.bam")
+    try:
+        minimap = sp.Popen(["minimap2", "-ax", "map-ont", "-t", threads, fasta, input_long_reads ], stdout=sp.PIPE) 
+        samtools_sort = sp.Popen(["samtools", "sort", "-@", threads, "-o", bam, "-" ], stdin=minimap.stdout ) 
+        samtools_sort.communicate()[0]
+    except:
+        sys.exit("Error with mapping and sorting\n")  
 
-def get_depths_from_bam(out_dir, contig_lengths):
+
+def get_depths_from_bam(out_dir, flag, contig_lengths):
     depths = {}
-    filename = os.path.join(out_dir, "combined_sorted.bam")
+    if flag == "short":
+        filename = os.path.join(out_dir, "combined_sorted.bam")
+    else:
+        filename = os.path.join(out_dir, "combined_sorted_long.bam")
     for rep_name, rep_length in contig_lengths.items():
         depths[rep_name] = [0] * rep_length
     depth_command = ['samtools', 'depth', filename]
@@ -68,8 +86,8 @@ def get_depths_from_bam(out_dir, contig_lengths):
     return depths
 
 
-def collate_depths(depths, out_dir, chromosome_len):
-    replicon_lengths = get_contig_lengths(out_dir, chromosome_len)
+def collate_depths(depths, flag, out_dir):
+    replicon_lengths = get_contig_lengths(out_dir)
     # define the columns of dataframe
     contig_names = []
     contig_length = []    
@@ -102,16 +120,33 @@ def collate_depths(depths, out_dir, chromosome_len):
         q25_depth.append(q25)
         q75_depth.append(q75)
     # make summary df    
-    summary_df = pd.DataFrame(
-    {'contig': contig_names,
-     'length': contig_length,
-     'mean_depth': mean_depth_col,
-     'sd_depth': sd_depth_col, 
-     'q25_depth': q25_depth,
-     'q75_depth': q75_depth
-    })
-    # write output
-    summary_df['plasmid_copy_number'] = round(summary_df['mean_depth'] / chromosome_depth,2)
+    if flag == "short":
+        summary_df = pd.DataFrame(
+        {'contig': contig_names,
+        'length': contig_length,
+        'mean_depth_short': mean_depth_col,
+        'sd_depth_short': sd_depth_col, 
+        'q25_depth_short': q25_depth,
+        'q75_depth_short': q75_depth
+        })
+        summary_df['plasmid_copy_number_short'] = round(summary_df['mean_depth_short'] / chromosome_depth,2)
+    else:
+        summary_df = pd.DataFrame(
+        {'contig': contig_names,
+        'mean_depth_long': mean_depth_col,
+        'sd_depth_long': sd_depth_col, 
+        'q25_depth_long': q25_depth,
+        'q75_depth_long': q75_depth
+        })
+        summary_df['plasmid_copy_number_long'] = round(summary_df['mean_depth_long'] / chromosome_depth,2)
+    # return df
+        
     print(summary_df)
-    with open(os.path.join(out_dir, "copy_number_summary.tsv"), 'w') as f:
-        summary_df.to_csv(f, sep="\t", index=False, header=True)
+    return(summary_df)
+
+def combine_outputs(out_dir, df_short, df_long):
+    combined_df = pd.merge(df_short, df_long, on='contig', how='outer')
+    out_file = os.path.join(out_dir, "copy_number_summary.tsv")
+    with open(out_file, 'w') as f:
+        combined_df.to_csv(f, sep="\t", index=False, header=True)
+

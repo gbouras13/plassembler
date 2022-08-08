@@ -15,9 +15,9 @@ import numpy as np
 # concatenate plasmids and chromosome 
 
 def get_depth(out_dir, logger, chromosome_len, threads):
-    #concatenate_chrom_plasmids(out_dir, logger)
-    #processes.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
-    #bwa_map_depth_sort(out_dir, threads, logger)
+    concatenate_chrom_plasmids(out_dir, logger)
+    processes.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
+    bwa_map_depth_sort(out_dir, threads, logger)
     contig_lengths = get_contig_lengths(out_dir, chromosome_len)
     depths = get_depths_from_bam(out_dir, contig_lengths)
     collate_depths(depths, out_dir, chromosome_len)

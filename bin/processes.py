@@ -16,7 +16,7 @@ def write_to_log(s, logger):
                     break
 
 def run_flye(out_dir, threads, logger):
-    trim_long = os.path.join(out_dir, "porechop.fastq")
+    trim_long = os.path.join(out_dir, "filtered_long_reads.fastq.gz")
     try:
         flye = sp.Popen(["flye", "--nano-raw", trim_long, "--out-dir", out_dir, "--threads", threads ], stdout=sp.PIPE, stderr=sp.PIPE) 
         write_to_log(flye.stdout, logger)
@@ -69,24 +69,49 @@ def extract_plasmid_fastas(out_dir, contig_name):
                 SeqIO.write(dna_record, non_chrom_fa, 'fasta')
 
 
-def filtlong(input_long_reads, out_dir,min_length, min_quality,  logger):
-    out_trim_long = os.path.join(out_dir, "filtlong.fastq")
-    f = open(out_trim_long, "w")
-    try:
-        filtlong = sp.Popen(["filtlong", "--min_length", min_length, "--min_mean_q", min_quality,  input_long_reads, ], stdout=f, stderr=sp.PIPE) 
-        write_to_log(filtlong.stderr, logger)
-    except:
-        sys.exit("Error with filtlong\n")  
+# def filtlong(input_long_reads, out_dir,min_length, min_quality,  logger):
+#     out_trim_long = os.path.join(out_dir, "filtlong.fastq.gz")
+#     f = open(out_trim_long, "w")
+#     try:
+#         filtlong = sp.Popen(["filtlong", "--min_length", min_length, "--min_mean_q", min_quality,  input_long_reads ], stdout=sp.PIPE) 
+#         gzip = sp.Popen(["gzip" ], stdin=filtlong.stdout,stdout=f,stderr=sp.PIPE ) 
+#         gzip.communicate()[0]
+#     except:
+#         sys.exit("Error with filtlong\n")  
 
-def porechop(out_dir,threads, logger):
-    filtlong_reads = os.path.join(out_dir, "filtlong.fastq")
-    porechop_reads = os.path.join(out_dir, "porechop.fastq")
-    try:
-        porechop = sp.Popen(["porechop", "-i", filtlong_reads, "-o", porechop_reads, "-t", threads ], stdout=sp.PIPE, stderr=sp.PIPE) 
-        write_to_log(porechop.stderr, logger)
-    except:
-        sys.exit("Error with filtlong\n")  
 
+def nanofilt(input_long_reads, out_dir, min_length, min_quality, gzip_flag):
+    filtered_long_reads = os.path.join(out_dir, "filtered_long_reads.fastq.gz")
+    f = open(filtered_long_reads, "w")
+    if gzip_flag == True:
+        try:
+            unzip = sp.Popen(["gunzip", "-c", input_long_reads ], stdout=sp.PIPE) 
+            nanofilt = sp.Popen(["NanoFilt", "-q", min_quality, "-l", min_length, "--headcrop", "50"  ], stdin=unzip.stdout, stdout=sp.PIPE ) 
+            gzip = sp.Popen(["gzip" ], stdin=nanofilt.stdout,stdout=f,stderr=sp.PIPE ) 
+            output = gzip.communicate()[0]
+        except:
+            sys.exit("Error with nanofilt\n")  
+    else:
+        try:
+            cat = sp.Popen(["cat", input_long_reads ], stdout=sp.PIPE) 
+            nanofilt = sp.Popen(["NanoFilt", "-q", min_quality, "-l", min_length, "--headcrop", "50"  ], stdin=cat.stdout, stdout=sp.PIPE ) 
+            gzip = sp.Popen(["gzip" ], stdin=nanofilt.stdout,stdout=f,stderr=sp.PIPE ) 
+            output = gzip.communicate()[0]
+        except:
+            sys.exit("Error with nanofilt\n")  
+
+
+
+
+# def porechop(out_dir,threads, logger):
+#     filtlong_reads = os.path.join(out_dir, "filtlong.fastq.gz")
+#     porechop_reads = os.path.join(out_dir, "porechop.fastq.gz")
+#     try:
+#         porechop = sp.Popen(["porechop", "-i", filtlong_reads, "-o", porechop_reads, "-t", threads ], stdout=sp.PIPE, stderr=sp.PIPE) 
+#         porechop.communicate()[0]
+#         #write_to_log(porechop.stderr, logger)
+#     except:
+#         sys.exit("Error with porechop\n")  
 
 def trim_short_read(short_one, short_two, out_dir,  logger):
     out_one = os.path.join(out_dir, "trimmed_R1.fastq")
@@ -96,7 +121,6 @@ def trim_short_read(short_one, short_two, out_dir,  logger):
         write_to_log(fastp.stderr, logger)
     except:
         sys.exit("Error with Fastp\n")  
-
 
  ################################################
 # number 3 - hybrid map to plasmids
@@ -200,7 +224,7 @@ def index_fasta(fasta,  logger):
 
 # minimap for long reads
 def minimap_long_reads(flag, out_dir, threads, logger):
-    input_long_reads = os.path.join(out_dir, "porechop.fastq")
+    input_long_reads = os.path.join(out_dir, "porechop.fastq.gz")
     # chromosome is a flag for mapping chromosome or not
     if flag == True:
         fasta = os.path.join(out_dir, "chromosome.fasta")

@@ -224,7 +224,7 @@ def index_fasta(fasta,  logger):
 
 # minimap for long reads
 def minimap_long_reads(flag, out_dir, threads, logger):
-    input_long_reads = os.path.join(out_dir, "porechop.fastq.gz")
+    input_long_reads = os.path.join(out_dir, "filtered_long_reads.fastq.gz")
     # chromosome is a flag for mapping chromosome or not
     if flag == True:
         fasta = os.path.join(out_dir, "chromosome.fasta")

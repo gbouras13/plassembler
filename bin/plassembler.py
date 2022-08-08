@@ -40,12 +40,10 @@ if __name__ == "__main__":
     s1_zipped = input_commands.validate_fastq(args.short_one)
     s2_zipped = input_commands.validate_fastq(args.short_two)
 
-    print("Filtering long reads.")
-    logger.info("Filtering long reads.")
-    #processes.filtlong(args.longreads, out_dir, args.min_length, args.min_quality,  logger)
-    print("Trimming long reads.")
-    logger.info("Trimming long reads.")
-    #processes.porechop( out_dir, args.threads, logger)
+    print("Filtering nad Trimming long reads.")
+    logger.info("Filtering nad Trimming long reads.")
+    processes.filtlong(args.longreads, out_dir, args.min_length, args.min_quality,  logger)
+    processes.porechop( out_dir, args.threads, logger)
     processes.nanofilt(args.longreads, out_dir, args.min_length, args.min_quality, long_zipped)
 
     print("Running Flye.")
@@ -84,9 +82,11 @@ if __name__ == "__main__":
             # get double mapped regions
             processes.double_mapping_analysis(out_dir, args.threads,logger)
             # get copy number 
+            print('Calculating Plasmid Copy Numbers.')
+            logger.info("Calculating Plasmid Copy Numbers.")
             depth.get_depth(out_dir, logger, args.chromosome, args.threads)
-            #processes.move_and_copy_files(out_dir, prefix, fail)
-            #processes.remove_intermediate_files(out_dir)
+            processes.move_and_copy_files(out_dir, prefix, fail)
+            processes.remove_intermediate_files(out_dir)
 
 
     # Determine elapsed time

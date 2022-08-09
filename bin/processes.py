@@ -102,9 +102,6 @@ def nanofilt(input_long_reads, out_dir, min_length, min_quality, gzip_flag):
         except:
             sys.exit("Error with nanofilt\n")  
 
-
-
-
 # def porechop(out_dir,threads, logger):
 #     filtlong_reads = os.path.join(out_dir, "filtlong.fastq.gz")
 #     porechop_reads = os.path.join(out_dir, "porechop.fastq.gz")
@@ -455,6 +452,8 @@ def remove_intermediate_files(out_dir):
     # delete flye assemble files
     sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta") ])
     sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"combined.fasta") ])
+
 
 
 def move_and_copy_files(out_dir, prefix, fail):

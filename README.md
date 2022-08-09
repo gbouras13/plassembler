@@ -23,17 +23,17 @@ Method
 3. If the resulting assembly has more than 1 contig, the largest contig is checked. If it is over 90% of the length of the provided chromosome size, or is circular, then it is identified as the chromosome and extracted. All other contigs are also extracted as putative plasmid extra-chromosomal contigs.
 4. Short reads are filtered using fastp (https://github.com/OpenGene/fastp).
 5. Long reads are mapped to the extra-chromosomal contigs using minimap2 (https://github.com/lh3/minimap2#uguide), and short reads are mapped using bwa (https://github.com/lh3/bwa).
-6. Long reads are mapped to the chromosome using minimap2 and short reads are mapped using bwa.
-7. All reads that map to the extra-chromosomal contigs and all reads that do not map the chromosome are extracted, combined and de-deplicated.
+6. Long reads are mapped to the chromosome using minimap2 and short reads are mapped using bwa. This is done to identify reads that do not map to the chromosome (for any plasmids that Flye may have missed assembling).
+7. All reads that map to the extra-chromosomal contigs and all reads that do not map the chromosome are extracted, combined and de-duplicated.
 8. These are assembled using the hybrid assembler Unicycler to generate final plasmid contigs.
-9. Average read coverage depth for each plasmid is calculating using a modified version of code found in the linked repository (https://github.com/rrwick/Small-plasmid-Nanopore).
+9. Average read coverage depth for each plasmid is calculating using a modified version of code found in (https://github.com/rrwick/Small-plasmid-Nanopore, https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
 10. Plasmid copy number is calculated by dividing the plasmid depth by the chromosome depth.
-* For now, depth is short read only (https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
 
 
 Other Features (Work in Progress)
 
-1. All reads that map to both the chromosome and plasmid are extracted and assembled (short read only for now as likely transposons).
+1. All reads that map to both the chromosome and plasmid are extracted and assembled (short read only assembly).
+
 
 Installation
 ------
@@ -62,7 +62,8 @@ plassembler.py -h
 
 **Note for Mac Users**
 
-plassembler should run on Linux and MacOSX machines. For MacOSX machines, the current conda installation method will only install the latest available bioconda Unicycler version of v0.4.8. plassembler should still run without any issue and provide a satisfactory assembly.
+plassembler should run on Linux and MacOSX machines. For Linux environments, Unicycler v0.5.0 should be installed with the conda installation. For MacOSX environments, the current conda installation method will only install the latest available bioconda Unicycler version of v0.4.8. plassembler should still run without any issue and provide a satisfactory assembly.
+
 However, Ryan Wick (author of Unicycler) suggests that v0.5.0 should be used, as v0.4.8 is not compatible with the latest versions of spades (https://github.com/rrwick/Unicycler/releases/tag/v0.5.0). This will require manual installation.
 
 To install Unicycler v0.5.0, please see the Installation section of the Unicycler github https://github.com/rrwick/Unicycler. In particular, it is recommended that you install plassembler from github:
@@ -88,7 +89,7 @@ To run plassembler
 
 ` plassembler.py -l <long read fastq> -o <output dir> -s1 < short read R1 fastq> -s2 < short read R2 fastq>  -c <estimated chromosome length>`
 
--c will default to 2500000 (a lower bound for the estimated genome length of staphylococcus aureus).
+* -c will default to 2500000 (a lower bound for the estimated genome length of staphylococcus aureus).
 
 To specify threads:
 
@@ -98,11 +99,11 @@ To specify a prefix for the output files:
 
 ` plassembler.py -l <long read fastq> -o <output dir> -s1 < short read R1 fastq> -s2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix>`
 
-To specify a minimum length and minimum read quality Q-score for filtlong :
+To specify a minimum length and minimum read quality Q-score for nanofilt :
 
 ` plassembler.py -l <long read fastq> -o <output dir> -s1 < short read R1 fastq> -s2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality>`
 
--m will default to 1000 and -q will default to 9. Note that for some tiny plasmids, -m may need to be reduced (see https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
+* -m will default to 1000 and -q will default to 9. Note that for some tiny plasmids, -m may need to be reduced (see https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
 
 To overwrite an existing output directory, use -f
 
@@ -113,7 +114,9 @@ plassembler defaults to 8 threads.
 
 Outputs
 -------
-plassembler will output a `_plasmids.fasta` file, which will contain the assembled plasmid sequence(s) in fasta format, and a `_plasmids.gfa` file, which will contain the assembly  graph that can be visualised in Bandage (https://github.com/rrwick/Bandage) - they should all hopefully be circular plasmids.
+plassembler will output a `_plasmids.fasta` file, which will contain the assembled plasmid sequence(s) in fasta format, and a `_plasmids.gfa` file, which will contain the assembly  graph that can be visualised in Bandage (https://github.com/rrwick/Bandage) - they should all ideally be circular plasmids.
+
+plassembler also outputs a `copy_number_summary.tsv` files, which gives the estimated copy number for each plasmid, for both short reads and long reads (see https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2 for more details about plasmid copy numbers).
 
 Acknowledgements
 -------
@@ -128,10 +131,16 @@ Bugs and Suggestions
 --------
 If you come across bugs with plassembler, or would like to make any suggestions to improve the program, please open an issue or email george.bouras@adelaide.edu.au.
 
-To be Added
------
-The other functionality that is TBA with plassembler is the ability to estimate the copy number of the plasmid vs the chromosomes (see https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
-
 Other Future Directions
 ------
 At the moment, plassembler is designed for users with hybrid ONT long read (R9.4.1 and earlier) and matching short read data. However, with the new Kit 14 chemistry, ONT long reads may be accurate enough that short read sequencing is not required to polish bacterial assemblies. Other approaches may be more appropriate for Kit 14 long read only assemblies - see https://twitter.com/rrwick/status/1548926644085108738?cxt=HHwWhMClvfCk8v4qAAAA - this is not supported at the moment but may be in the future.
+
+Citations
+-----
+
+If you use plassembler, please cite:
+
+* Kolmogorov, M., Yuan, J., Lin, Y. et al. Assembly of long, error-prone reads using repeat graphs. Nat Biotechnol 37, 540–546 (2019). https://doi.org/10.1038/s41587-019-0072-8
+* Li H., Minimap2: pairwise alignment for nucleotide sequences, Bioinformatics, Volume 34, Issue 18 Pages 3094–3100 (2018), https://doi.org/10.1093/bioinformatics/bty191
+* Li H., Aligning sequence reads, clone sequences and assembly contigs with BWA-MEM. arXiv preprint arXiv:1303.3997 (2013).
+*

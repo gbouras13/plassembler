@@ -40,7 +40,7 @@ def extract_chromosome(out_dir, chromosome_len, no_plasmids_flag):
     chrom_circ = info_df[info_df['length'] == max_length].iloc[0]['circ']
     # chromosome isn't circular or at least 80% of inputted chromosome length
     correct_chromosome = True
-    if max_length < int(chromosome_len)*0.9:
+    if max_length < int(chromosome_len)*0.9 or chrom_circ != 'Y':  
         correct_chromosome = False
     else:
         extract_chromosome_fasta(out_dir, chrom_contig)

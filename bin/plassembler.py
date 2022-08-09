@@ -10,9 +10,7 @@ import recovery
 
 
 if __name__ == "__main__":
-
     
-
     # get start time
     start_time = time.time()
 

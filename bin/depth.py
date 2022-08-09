@@ -22,9 +22,10 @@ def get_depth(out_dir, logger,  threads, prefix):
     contig_lengths = get_contig_lengths(out_dir)
     depths = get_depths_from_bam(out_dir, "short", contig_lengths)
     depths_long = get_depths_from_bam(out_dir, "long", contig_lengths)
+    circular_status = get_contig_circularity(out_dir)
     summary_df_short = collate_depths(depths,"short", out_dir)
     summary_df_long = collate_depths(depths_long,"long", out_dir)
-    combine_outputs(out_dir, summary_df_short, summary_df_long, prefix)
+    combine_outputs(out_dir, summary_df_short, summary_df_long, prefix, circular_status)
 
 def concatenate_chrom_plasmids(out_dir, logger):
     chrom_fasta =os.path.join(out_dir,"chromosome.fasta")
@@ -43,6 +44,20 @@ def get_contig_lengths(out_dir):
         dna_header = dna_record.id
         contig_lengths[dna_header] = plas_len
     return contig_lengths
+
+# get circular status of contigs
+def get_contig_circularity(out_dir):
+    circular_status = {}
+    # add circularity
+    circular_status['chromosome'] = 'circular'
+    for dna_record in SeqIO.parse(os.path.join(out_dir, "combined.fasta"), 'fasta'):
+        dna_header = dna_record.id
+        # check if circular is in unicycler output description
+        if "circular=true" in dna_record.description:
+            circular_status[dna_header] = "circular"
+        else:
+            circular_status[dna_header] = "not_circular"
+    return circular_status
 
 def bwa_map_depth_sort(out_dir, threads):
     trim_one = os.path.join(out_dir, "trimmed_R1.fastq")
@@ -139,13 +154,15 @@ def collate_depths(depths, flag, out_dir):
         'q75_depth_long': q75_depth
         })
         summary_df['plasmid_copy_number_long'] = round(summary_df['mean_depth_long'] / chromosome_depth,2)
-    # return df
-        
-    #print(summary_df)
+    # return df         
+    print(summary_df)
     return(summary_df)
 
-def combine_outputs(out_dir, df_short, df_long, prefix):
+def combine_outputs(out_dir, df_short, df_long, prefix, circular_status):
     combined_df = pd.merge(df_short, df_long, on='contig', how='outer')
+        # add in circularity info 
+
+    combined_df['circularity'] = combined_df['contig'].map(circular_status)
     out_file = os.path.join(out_dir, prefix + "_copy_number_summary.tsv")
     with open(out_file, 'w') as f:
         combined_df.to_csv(f, sep="\t", index=False, header=True)

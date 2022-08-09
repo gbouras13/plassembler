@@ -10,7 +10,7 @@ import depth
 
 if __name__ == "__main__":
 
-    print("Starting plassembler.")
+    
 
     # get start time
     start_time = time.time()
@@ -31,6 +31,7 @@ if __name__ == "__main__":
     LOG_FILE = os.path.join(args.outdir, prefix + "_" + str(time_for_log) + ".log")
     logger = logging.getLogger()
     logging.basicConfig(level=logging.INFO,filename=LOG_FILE,format='%(asctime)s - %(levelname)s - %(message)s')
+    print("Starting plassembler.")
     logger.info("Starting plassembler")
     print("Checking input fastqs.")
     logger.info("Checking input fastqs")

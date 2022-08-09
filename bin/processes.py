@@ -18,7 +18,7 @@ def write_to_log(s, logger):
 def run_flye(out_dir, threads, logger):
     trim_long = os.path.join(out_dir, "filtered_long_reads.fastq.gz")
     try:
-        flye = sp.Popen(["flye", "--nano-raw", trim_long, "--out-dir", out_dir, "--threads", threads, "--plasmids" ], stdout=sp.PIPE, stderr=sp.PIPE) 
+        flye = sp.Popen(["flye", "--nano-raw", trim_long, "--out-dir", out_dir, "--threads", threads], stdout=sp.PIPE, stderr=sp.PIPE) 
         write_to_log(flye.stdout, logger)
     except:
         sys.exit("Error with Flye\n")  

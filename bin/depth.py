@@ -49,11 +49,12 @@ def get_contig_lengths(out_dir):
 def get_contig_circularity(out_dir):
     circular_status = {}
     # add circularity
-    circular_status['chromosome'] = 'circular'
     for dna_record in SeqIO.parse(os.path.join(out_dir, "combined.fasta"), 'fasta'):
         dna_header = dna_record.id
         # check if circular is in unicycler output description
         if "circular=true" in dna_record.description:
+            circular_status[dna_header] = "circular"
+        elif "chromosome" in dna_record.id:
             circular_status[dna_header] = "circular"
         else:
             circular_status[dna_header] = "not_circular"

@@ -28,7 +28,7 @@ Method
 
 1. Long reads are filtered using nanofilt (https://github.com/wdecoster/nanofilt) .
 2. Long-read assembly is conducted with Flye (https://github.com/fenderglass/Flye).
-3. If the resulting assembly has more than 1 contig, the largest contig is checked. If it is over 90% of the length of the provided chromosome size, or is circular, then it is identified as the chromosome and extracted. All other contigs are extracted as putative plasmid extra-chromosomal contigs.
+3. If the resulting assembly has more than 1 contig, the largest contig is checked. If it is over 90% of the length of the provided chromosome size, then it is identified as the chromosome and extracted. All other contigs are extracted as putative plasmid extra-chromosomal contigs.
 4. Short reads are filtered using fastp (https://github.com/OpenGene/fastp).
 5. Long reads are mapped to the extra-chromosomal contigs using minimap2 (https://github.com/lh3/minimap2#uguide), and short reads are mapped using bwa (https://github.com/lh3/bwa).
 6. Long reads are mapped to the chromosome using minimap2 and short reads are mapped using bwa. This is done to identify reads that do not map to the chromosome (for any plasmids that Flye may have missed assembling).
@@ -125,6 +125,8 @@ Outputs
 plassembler will output a `_plasmids.fasta` file, which will contain the assembled plasmid sequence(s) in fasta format, and a `_plasmids.gfa` file, which will contain the assembly  graph that can be visualised in Bandage (https://github.com/rrwick/Bandage) - they should all ideally be circular plasmids.
 
 plassembler also outputs a `copy_number_summary.tsv` files, which gives the estimated copy number for each plasmid, for both short reads and long reads (see https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2 for more details about plasmid copy numbers).
+
+* If plassembler fails to find any plasmids, these files will exist, but will be empty (to ensure plassembler can be easily integrated into workflow managers like Snakemake).
 
 Acknowledgements
 -------

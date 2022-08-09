@@ -1,6 +1,6 @@
 plassembler is a pipeline to assemble accurate extra-chromosomal plasmids from hybrid ONT/short read bacterial sequencing data.
 
-pharokka uses Flye (Kolmogorov et al 2019) to create an initial long-read only assembly. Following this, minimap2 (Li 2018) and BWA are used to map long and short read sets to the Flye assembly.
+plassembler uses Flye (Kolmogorov et al 2019) to create an initial long-read only assembly. Following this, minimap2 (Li 2018) and BWA are used to map long and short read sets to the Flye assembly.
 
 Reads that map to the non-chromosome contigs (i.e. the putative plasmids), and reads that do not map to the chromosome (to recover possible plasmids Flye has missed) are then extracted, combined and de-duplicated.
 

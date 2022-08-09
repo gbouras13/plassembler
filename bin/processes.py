@@ -31,7 +31,7 @@ def contig_count(out_dir):
     print("Flye assembled " + str(contig_count) + " contigs.")
     return contig_count
 
-def extract_chromosome(out_dir, chromosome_len):
+def extract_chromosome(out_dir, chromosome_len, no_plasmids_flag):
     info_file =  os.path.join(out_dir, "assembly_info.txt")
     col_list = ["seq_name", "length", "cov", "circ", "repeat", "mult", "alt_group", "graph_path"] 
     info_df = pd.read_csv(info_file, delimiter= '\t', index_col=False , names=col_list, skiprows=1) 
@@ -40,11 +40,13 @@ def extract_chromosome(out_dir, chromosome_len):
     chrom_circ = info_df[info_df['length'] == max_length].iloc[0]['circ']
     # chromosome isn't circular or at least 80% of inputted chromosome length
     correct_chromosome = True
-    if chrom_circ != 'Y' or max_length < int(chromosome_len)*0.8:
+    if max_length < int(chromosome_len)*0.9:
         correct_chromosome = False
     else:
         extract_chromosome_fasta(out_dir, chrom_contig)
-        extract_plasmid_fastas(out_dir, chrom_contig)
+        # only extract the plasmids if more than 1 contig was assembled
+        if no_plasmids_flag == False:
+            extract_plasmid_fastas(out_dir, chrom_contig)
     return correct_chromosome
 
 def extract_chromosome_fasta(out_dir, contig_name):
@@ -200,7 +202,6 @@ def double_mapping_analysis(out_dir, threads, logger):
     print('Extracting Reads mapping to Plasmids and Chromosome.')
     logger.info('Extracting Reads mapping to Plasmids and Chromosome.')
     extract_reads_mapping_to_plasmid_and_chromosome(out_dir, logger)
-
     print('Assembling Double Mapping Reads.')
     logger.info('Assembling Double Mapping Reads.')
     # assemble 
@@ -426,6 +427,7 @@ def extract_reads_mapping_to_plasmid_and_chromosome(out_dir, logger):
         write_to_log(bbmap_s2.stdout, logger)
     except:
         sys.exit("Error with bbmap\n")  
+
 
 
 

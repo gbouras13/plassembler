@@ -141,7 +141,7 @@ def collate_depths(depths, flag, out_dir):
         summary_df['plasmid_copy_number_long'] = round(summary_df['mean_depth_long'] / chromosome_depth,2)
     # return df
         
-    print(summary_df)
+    #print(summary_df)
     return(summary_df)
 
 def combine_outputs(out_dir, df_short, df_long, prefix):

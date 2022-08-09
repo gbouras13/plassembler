@@ -8,26 +8,28 @@ plassembler is designed for automated assembly of extra-chromosomal plasmids in 
 
 If you are assembling a small number of bacterial genomes manually, I would recommend using Trycycler (https://github.com/rrwick/Trycycler/wiki/Generating-assemblies).
 
+Generally, I would highly recommend reading the following guides to bacterial genome assembly regardless of whether you want to use plassembler (https://github.com/rrwick/Trycycler/wiki https://github.com/rrwick/Trycycler/wiki/Guide-to-bacterial-genome-assembly).
+
 Why Does plassembler exist?
 ----
 
-In long read assembled bacterial genomes, small extra-chromosomal plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated (see https://f1000research.com/articles/8-2138 https://github.com/rrwick/Trycycler/wiki/Clustering-contigs).
+In long read assembled bacterial genomes, small extra-chromosomal plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated or missed (see https://f1000research.com/articles/8-2138 https://github.com/rrwick/Trycycler/wiki/Clustering-contigs).
 
-plassembler was created as an automated way to ensure plasmids assemble correctly without duplicated regions.
+plassembler was created as an automated way to ensure plasmids assemble correctly without duplicated regions for high-throughput uses.
 
 Method
 -------
 
 1. Long reads are filtered using nanofilt (https://github.com/wdecoster/nanofilt) .
 2. Long-read assembly is conducted with Flye (https://github.com/fenderglass/Flye).
-3. If the resulting assembly has more than 1 contig, the largest contig is checked. If it is over 90% of the length of the provided chromosome size, or is circular, then it is identified as the chromosome and extracted. All other contigs are also extracted as putative plasmid extra-chromosomal contigs.
+3. If the resulting assembly has more than 1 contig, the largest contig is checked. If it is over 90% of the length of the provided chromosome size, or is circular, then it is identified as the chromosome and extracted. All other contigs are extracted as putative plasmid extra-chromosomal contigs.
 4. Short reads are filtered using fastp (https://github.com/OpenGene/fastp).
 5. Long reads are mapped to the extra-chromosomal contigs using minimap2 (https://github.com/lh3/minimap2#uguide), and short reads are mapped using bwa (https://github.com/lh3/bwa).
 6. Long reads are mapped to the chromosome using minimap2 and short reads are mapped using bwa. This is done to identify reads that do not map to the chromosome (for any plasmids that Flye may have missed assembling).
 7. All reads that map to the extra-chromosomal contigs and all reads that do not map the chromosome are extracted, combined and de-duplicated.
 8. These are assembled using the hybrid assembler Unicycler to generate final plasmid contigs.
 9. Average read coverage depth for each plasmid is calculating using a modified version of code found in (https://github.com/rrwick/Small-plasmid-Nanopore, https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
-10. Plasmid copy number is calculated by dividing the plasmid depth by the chromosome depth.
+10. Plasmid copy number is calculated by dividing the plasmid read depth by the chromosome read depth.
 
 
 Other Features (Work in Progress)
@@ -143,4 +145,6 @@ If you use plassembler, please cite:
 * Kolmogorov, M., Yuan, J., Lin, Y. et al. Assembly of long, error-prone reads using repeat graphs. Nat Biotechnol 37, 540–546 (2019). https://doi.org/10.1038/s41587-019-0072-8
 * Li H., Minimap2: pairwise alignment for nucleotide sequences, Bioinformatics, Volume 34, Issue 18 Pages 3094–3100 (2018), https://doi.org/10.1093/bioinformatics/bty191
 * Li H., Aligning sequence reads, clone sequences and assembly contigs with BWA-MEM. arXiv preprint arXiv:1303.3997 (2013).
-*
+* Wick RR, Judd LM, Gorrie CL, Holt KE Unicycler: Resolving bacterial genome assemblies from short and long sequencing reads. PLoS Comput Biol 13(6): e1005595 (2017). https://doi.org/10.1371/journal.pcbi.1005595
+* Heng Li, Bob Handsaker, Alec Wysoker, Tim Fennell, Jue Ruan, Nils Homer, Gabor Marth, Goncalo Abecasis, Richard Durbin, 1000 Genome Project Data Processing Subgroup, The Sequence Alignment/Map format and SAMtools, Bioinformatics, Volume 25, Issue 16, 15 August 2009, Pages 2078–2079, https://doi.org/10.1093/bioinformatics/btp352
+* Wick RR, Judd LM, Wyres KL, Holt KE. Recovery of small plasmid sequences via Oxford Nanopore sequencing. Microb Genom. 2021 Aug;7(8):000631. doi: 10.1099/mgen.0.000631. PMID: 34431763; PMCID: PMC8549360.

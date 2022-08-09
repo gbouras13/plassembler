@@ -83,7 +83,7 @@ if __name__ == "__main__":
             # get copy number 
             print('Calculating Plasmid Copy Numbers.')
             logger.info("Calculating Plasmid Copy Numbers.")
-            depth.get_depth(out_dir, logger,  args.threads)
+            depth.get_depth(out_dir, logger,  args.threads, prefix)
             processes.move_and_copy_files(out_dir, prefix, fail)
             processes.remove_intermediate_files(out_dir)
 

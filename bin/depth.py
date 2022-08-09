@@ -14,7 +14,7 @@ import pandas as pd
 
 # concatenate plasmids and chromosome 
 
-def get_depth(out_dir, logger,  threads):
+def get_depth(out_dir, logger,  threads, prefix):
     concatenate_chrom_plasmids(out_dir, logger)
     processes.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
     bwa_map_depth_sort(out_dir, threads)
@@ -24,7 +24,7 @@ def get_depth(out_dir, logger,  threads):
     depths_long = get_depths_from_bam(out_dir, "long", contig_lengths)
     summary_df_short = collate_depths(depths,"short", out_dir)
     summary_df_long = collate_depths(depths_long,"long", out_dir)
-    combine_outputs(out_dir, summary_df_short, summary_df_long)
+    combine_outputs(out_dir, summary_df_short, summary_df_long, prefix)
 
 def concatenate_chrom_plasmids(out_dir, logger):
     chrom_fasta =os.path.join(out_dir,"chromosome.fasta")
@@ -144,9 +144,9 @@ def collate_depths(depths, flag, out_dir):
     print(summary_df)
     return(summary_df)
 
-def combine_outputs(out_dir, df_short, df_long):
+def combine_outputs(out_dir, df_short, df_long, prefix):
     combined_df = pd.merge(df_short, df_long, on='contig', how='outer')
-    out_file = os.path.join(out_dir, "copy_number_summary.tsv")
+    out_file = os.path.join(out_dir, prefix + "_copy_number_summary.tsv")
     with open(out_file, 'w') as f:
         combined_df.to_csv(f, sep="\t", index=False, header=True)
 

@@ -11,7 +11,8 @@ theme:
 nav:
     - ABOUT:
       - Overview: index.md
-      - Why Use pharokka?: reasons.md
+      - Why Use plassembler?: reasons.md
+      - Method: method.md
     - RUNNING:
       - Install: install.md
       - Usage: run.md

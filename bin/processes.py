@@ -482,4 +482,5 @@ def touch_file(path):
 def touch_output_fail_files(out_dir, prefix):
     touch_file(os.path.join(out_dir, prefix + "_plasmids.fasta"))
     touch_file(os.path.join(out_dir, prefix + "_plasmids.gfa"))
+    touch_file(os.path.join(out_dir, prefix + "_copy_number_summary.tsv"))
 

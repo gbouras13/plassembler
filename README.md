@@ -17,6 +17,12 @@ In long read assembled bacterial genomes, small extra-chromosomal plasmids are o
 
 plassembler was created as an automated way to ensure plasmids assemble correctly without duplicated regions for high-throughput uses.
 
+
+Documentation
+-------
+
+Documentation can be found at http://plassembler.readthedocs.io/.
+
 Method
 -------
 

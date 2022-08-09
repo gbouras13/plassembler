@@ -1,5 +1,6 @@
 site_name: plassembler
 site_url: "https://github.com/gbouras13/plassembler"
+site_author: George Bouras
 theme:
     name: readthedocs
     highlightjs: true

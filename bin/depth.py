@@ -54,6 +54,7 @@ def get_contig_circularity(out_dir):
         # check if circular is in unicycler output description
         if "circular=true" in dna_record.description:
             circular_status[dna_header] = "circular"
+        # circular chromsome
         elif "chromosome" in dna_record.id:
             circular_status[dna_header] = "circular"
         else:

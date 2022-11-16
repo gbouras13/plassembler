@@ -6,17 +6,19 @@ Automated Bacterial Extra-chromosomal Plasmid Assembly Program
 
 plassembler is designed for automated assembly of extra-chromosomal plasmids in haploid bacterial genomes that have been sequenced with hybrid ONT (R9.4.1 or earlier) + paired-end short read sequencing.
 
-If you are assembling a small number of bacterial genomes manually, I would recommend using Trycycler (https://github.com/rrwick/Trycycler/wiki/Generating-assemblies).
+If you are assembling a small number of bacterial genomes manually, I would highly recommend using [Trycycler](https://github.com/rrwick/Trycycler).
 
-Generally, I would highly recommend reading the following guides to bacterial genome assembly regardless of whether you want to use plassembler (https://github.com/rrwick/Trycycler/wiki https://github.com/rrwick/Trycycler/wiki/Guide-to-bacterial-genome-assembly).
+Additionally, I would recommend reading the following guides to bacterial genome assembly regardless of whether you want to use plassembler:
+*  [Trycycler](https://github.com/rrwick/Trycycler/wiki/Guide-to-bacterial-genome-assembly)
+*  [Perfect Bacterial Assembly Tutorial](https://github.com/rrwick/Perfect-bacterial-genome-tutorial)
+*  [Perfect bacterial assembly preprint](https://preprints.scielo.org/index.php/scielo/preprint/view/5053)
 
 Why Does plassembler exist?
 ----
 
 In long read assembled bacterial genomes, small extra-chromosomal plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated or missed (see https://f1000research.com/articles/8-2138 https://github.com/rrwick/Trycycler/wiki/Clustering-contigs).
 
-plassembler was created as an automated way to ensure plasmids assemble correctly without duplicated regions for high-throughput uses.
-
+plassembler was created as an automated way to ensure plasmids assemble correctly without duplicated regions for high-throughput uses - and to provide some useful statistics as well (like copy number).
 
 Documentation
 -------
@@ -40,7 +42,7 @@ Method
 
 Other Features (Work in Progress)
 
-1. All reads that map to both the chromosome and plasmid are extracted and assembled (short read only assembly).
+1. All reads that map to both the chromosome and plasmid are extracted and assembled (short read only assembly). This may be useful to identify possible insertion sequences and transposases that are shared between plasmid and chromosome.
 
 
 Installation
@@ -70,9 +72,15 @@ plassembler.py -h
 
 **Note for Mac Users**
 
-plassembler should run on Linux and MacOSX machines. For Linux environments, Unicycler v0.5.0 should be installed with the conda installation. For MacOSX environments, the current conda installation method will only install the latest available bioconda Unicycler version of v0.4.8. plassembler should still run without any issue and provide a satisfactory assembly.
+plassembler should run on Linux and MacOSX machines. For Linux environments, Unicycler v0.5.0 should be installed with the conda installation.
 
-However, Ryan Wick (author of Unicycler) suggests that v0.5.0 should be used, as v0.4.8 is not compatible with the latest versions of spades (https://github.com/rrwick/Unicycler/releases/tag/v0.5.0). This will require manual installation.
+You can force it as follows:
+
+`conda install -c gbouras13 plassembler unicycler==0.5.0`
+
+For MacOSX environments, the current conda installation method will only install the latest available bioconda Unicycler version of v0.4.8. plassembler should still run without any issue and provide a satisfactory assembly.
+
+However, Ryan Wick (author of Unicycler) suggests that v0.5.0 should be used, as v0.4.8 is not compatible with the latest versions of spades ( see https://github.com/rrwick/Unicycler/releases/tag/v0.5.0). This will require manual installation.
 
 To install Unicycler v0.5.0, please see the Installation section of the Unicycler github https://github.com/rrwick/Unicycler. In particular, it is recommended that you install plassembler from github:
 
@@ -119,19 +127,53 @@ To overwrite an existing output directory, use -f
 
 plassembler defaults to 8 threads.
 
+```
+usage: plassembler.py [-h] -l LONGREADS [-o OUTDIR] -s1 SHORT_ONE -s2
+                      SHORT_TWO [-m MIN_LENGTH] [-t THREADS] [-f] [-p PREFIX]
+                      [-c CHROMOSOME] [-q MIN_QUALITY] [-V]
+
+plassembler: accurate extra-chromosomal plasmid assembler pipeline for haploid bacterial genomes.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -l LONGREADS, --longreads LONGREADS
+                        Fastq File of ONT Long Reads.
+  -o OUTDIR, --outdir OUTDIR
+                        Directory to write the output to.
+  -s1 SHORT_ONE, --short_one SHORT_ONE
+                        R1 short read fastq file.
+  -s2 SHORT_TWO, --short_two SHORT_TWO
+                        R2 short read fastq file.
+  -m MIN_LENGTH, --min_length MIN_LENGTH
+                        minimum length for long reads for nanofilt. Defaults to 1000.
+  -t THREADS, --threads THREADS
+                        Number of threads for flye and unicycler. Defaults to 8.
+  -f, --force           Overwrites the output directory.
+  -p PREFIX, --prefix PREFIX
+                        Prefix for output files. This is not required
+  -c CHROMOSOME, --chromosome CHROMOSOME
+                        Approximate chromosome length of bacteria
+  -q MIN_QUALITY, --min_quality MIN_QUALITY
+                        minimum quality of long reads for nanofilt. Defaults to 9.
+  -V, --version         show program's version number and exit
+
+```
+
 
 Outputs
 -------
-plassembler will output a `_plasmids.fasta` file, which will contain the assembled plasmid sequence(s) in fasta format, and a `_plasmids.gfa` file, which will contain the assembly  graph that can be visualised in Bandage (https://github.com/rrwick/Bandage) - they should all ideally be circular plasmids.
+plassembler will output a `_plasmids.fasta` file, which will contain the assembled plasmid sequence(s) in fasta format, and a `_plasmids.gfa` file, which will contain the assembly graph from Unicycler that can be visualised in Bandage (https://github.com/rrwick/Bandage). 
 
-plassembler also outputs a `copy_number_summary.tsv` files, which gives the estimated copy number for each plasmid, for both short reads and long reads (see https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2 for more details about plasmid copy numbers).
+Ideally, all contigs should be circular putative plasmids.
 
-* If plassembler fails to find any plasmids, these files will exist, but will be empty (to ensure plassembler can be easily integrated into workflow managers like Snakemake).
+plassembler also outputs a `copy_number_summary.tsv` file, which gives the estimated copy number for each plasmid, for both short reads and long reads (see https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2 for more details about plasmid copy numbers).
+
+If plassembler fails to find any plasmids, these files will still exist, but will be empty (to ensure plassembler can be easily integrated into workflow managers like Snakemake).
 
 Acknowledgements
 -------
 
-Infinite thanks are owed to Ryan Wick (https://github.com/rrwick), who not only wrote Unicycler and some other code used in plassembler, but also gave me numerous ideas about how to approach the plasmid assembly issue.
+Infinite thanks are owed to Ryan Wick (https://github.com/rrwick), who not only wrote Unicycler and some other code used in plassembler, but also gave me numerous ideas about how to approach the plasmid assembly issue. If you are doing any form of bacterial genome assembly, you should read all of his work!
 
 Version Log
 --------
@@ -143,7 +185,7 @@ If you come across bugs with plassembler, or would like to make any suggestions 
 
 Other Future Directions
 ------
-At the moment, plassembler is designed for users with hybrid ONT long read (R9.4.1 and earlier) and matching short read data. However, with the new Kit 14 chemistry, ONT long reads may be accurate enough that short read sequencing is not required to polish bacterial assemblies. Other approaches may be more appropriate for Kit 14 long read only assemblies - see https://twitter.com/rrwick/status/1548926644085108738?cxt=HHwWhMClvfCk8v4qAAAA - this is not supported at the moment but may be in the future.
+At the moment, plassembler is designed for users with hybrid ONT long read and matching short read data. However, with the new Kit 14 chemistry, ONT long reads may be accurate enough that short read sequencing is not required to polish bacterial assemblies. Other approaches may be more appropriate for Kit 14 long read only assemblies - see https://twitter.com/rrwick/status/1548926644085108738?cxt=HHwWhMClvfCk8v4qAAAA. This is not supported at the moment but may be in the future when I get some data.
 
 Citations
 -----

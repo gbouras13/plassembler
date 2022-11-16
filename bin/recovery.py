@@ -46,10 +46,10 @@ def recover_plasmids(out_dir, threads, logger):
     long_reads = os.path.join(out_dir, "long_read_chromosome_unmapped.fastq")
     successful_unicycler = True
     processes.unicycler(False, threads, logger, short_r1, short_r2, long_reads, os.path.join(out_dir, "unicycler_output"))
-    # check if unicycler completely (usually it won't)
+    # check if unicycler succeded ( it won't if no plasmids)
     successful_unicycler = os.path.isfile(os.path.join(out_dir, "unicycler_output", "assembly.fasta")) 
     if successful_unicycler == False:
-        print('Error with Unicycler - Likely due to insufficient Coverage (likely, there is truly no plasmids)')
-        logger.info('Error with Unicycler - Likely due to insufficient Coverage (likely, there is truly no plasmids)')
+        print('Unicycler failed - there are likely no plasmids in your isolate.')
+        logger.info('Unicycler failed - there are likely no plasmids in your isolate.')
     return successful_unicycler
 

@@ -13,10 +13,10 @@ v = __version__
 
 def get_input():
 	parser = argparse.ArgumentParser(description='plassembler: accurate extra-chromosomal plasmid assembler pipeline for haploid bacterial genomes.', formatter_class=RawTextHelpFormatter)
-	parser.add_argument('-l', '--longreads', action="store", help='Fastq File of ONT Long Reads.',  required=True)
+	parser.add_argument('-l', '--longreads', action="store", help='Fastq File of ONT Long Reads. Required',  required=True)
 	parser.add_argument('-o', '--outdir', action="store", help='Directory to write the output to.', default=os.path.join(os.getcwd(), "output/") )
-	parser.add_argument('-s1', '--short_one', action="store", help='R1 short read fastq file.',  required=True)
-	parser.add_argument('-s2', '--short_two', action="store", help='R2 short read fastq file.',  required=True)
+	parser.add_argument('-s1', '--short_one', action="store", help='R1 short read fastq file. Required.',  required=True)
+	parser.add_argument('-s2', '--short_two', action="store", help='R2 short read fastq file. Required.',  required=True)
 	parser.add_argument('-m', '--min_length', action="store", help='minimum length for long reads for nanofilt. Defaults to 1000.',  default='1000')
 	parser.add_argument('-t', '--threads', help="Number of threads for flye and unicycler. Defaults to 8.", action="store", default = str(8))
 	parser.add_argument('-f', '--force', help="Overwrites the output directory.", action="store_true" )

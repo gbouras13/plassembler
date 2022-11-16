@@ -83,8 +83,8 @@ if __name__ == "__main__":
     else:
         print("Extracting Chromosome.")
         logger.info("Extracting Chromosome.")
-        chromosome_cirularised_flag = processes.extract_chromosome(args.outdir, args.chromosome, no_plasmids_flag)
-        if chromosome_cirularised_flag == False:
+        chromosome_flag = processes.extract_chromosome(args.outdir, args.chromosome, no_plasmids_flag)
+        if chromosome_flag == False:
             print('Insufficient long read depth for Flye assembly to generate chromosome. Increasing sequencing depth is recommended.')
             logger.info("Insufficient long read depth for Flye assembly to generate chromosome. Increasing sequencing depth is recommended.")
             fail = True 

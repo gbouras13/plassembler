@@ -62,7 +62,7 @@ def case_three(out_dir, threads, logger):
     print('Concatenating and Deduplicating Fastqs.')
     logger.info('Concatenating and Deduplicating Fastqs.')
 
-    plassemblerModules.concatenate_fastqs(out_dir,logger)
+    plassemblerModules.concatenate_all_fastqs(out_dir,logger)
     plassemblerModules.deduplicate_fastqs(out_dir, threads, logger)
 
     # running unicycler

@@ -14,17 +14,17 @@ requirements:
     - pip
     - python
     - cython
- run:
-  - flye>=2.9
-  - unicycler>=0.4.8
-  - bwa
-  - biopython
-  - minimap2
-  - pandas
-  - fastp
-  - nanofilt
-  - seqkit
-  - bbmap
+  run:
+    - flye>=2.9
+    - unicycler>=0.4.8
+    - bwa
+    - biopython
+    - minimap2
+    - pandas
+    - fastp
+    - nanofilt
+    - seqkit
+    - bbmap
 
 test:
   commands:

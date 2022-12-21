@@ -26,6 +26,7 @@ def concatenate_all_fastqs(out_dir,logger):
         concatenate_single(chrom_fastq_two_short, non_chrom_fastq_two_short, short_two_file, logger)
     except:
         sys.exit("Error with concatenate_fastqs\n")  
+    
         
 def concatenate_single(fastq_in1, fastq_in2, fastq_out, logger):
     """ concatenates 2 fastq files

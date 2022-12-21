@@ -5,13 +5,16 @@ import gzip
 from argparse import RawTextHelpFormatter
 from Bio import SeqIO
 import shutil
-from version import __version__
+import plassemblerModules
 
-v = __version__
+v = '0.1.1'
 
 ### GLOBAL VARIABLES
 
 def get_input():
+	"""gets input for plassembler
+    :return: args
+    """
 	parser = argparse.ArgumentParser(description='plassembler: accurate extra-chromosomal plasmid assembler pipeline for haploid bacterial genomes.', formatter_class=RawTextHelpFormatter)
 	parser.add_argument('-l', '--longreads', action="store", help='Fastq File of ONT Long Reads. Required',  required=True)
 	parser.add_argument('-o', '--outdir', action="store", help='Directory to write the output to.', default=os.path.join(os.getcwd(), "output/") )
@@ -20,6 +23,7 @@ def get_input():
 	parser.add_argument('-m', '--min_length', action="store", help='minimum length for long reads for nanofilt. Defaults to 1000.',  default='1000')
 	parser.add_argument('-t', '--threads', help="Number of threads for flye and unicycler. Defaults to 8.", action="store", default = str(8))
 	parser.add_argument('-f', '--force', help="Overwrites the output directory.", action="store_true" )
+	parser.add_argument('-r', '--raw_flag', help="Uses --nano-raw for Flye - fast reads. Otherwise will be --nano-hq", action="store_true" )
 	parser.add_argument('-p', '--prefix', action="store", help='Prefix for output files. This is not required',  default='Default')
 	parser.add_argument('-c', '--chromosome', action="store", help='Approximate chromosome length of bacteria',  default=2500000)
 	parser.add_argument('-q', '--min_quality', action="store", help='minimum quality of long reads for nanofilt. Defaults to 9.',  default=str(9))
@@ -29,6 +33,11 @@ def get_input():
 	return args
 
 def instantiate_dirs(output_dir, force):
+	"""checks that the output directory doesn't already exist, overwrites if forced
+	:param output_dir: output directory path
+    :param force: flag to overwrite the output directory
+    :return: output_dir
+    """
 	# remove outdir on force
 	if force == True:
 		if os.path.isdir(output_dir) == True:
@@ -44,6 +53,10 @@ def instantiate_dirs(output_dir, force):
 	return output_dir
 
 def validate_fastq(file):
+	"""Checks the input fastq is really a fastq
+	:param file: fastq file
+    :return: zipped - Boolean whether the input fastq is gzipped.
+    """
 	# to get extension
 	filename, file_extension = os.path.splitext(file)
 	# flag for whether file is zipped
@@ -53,7 +66,7 @@ def validate_fastq(file):
 		with gzip.open(file, "rt") as handle:
 			fastq = SeqIO.parse(handle, "fastq")
 			if any(fastq):
-				print("FASTQ " +file + " checked")
+				print("FASTQ " + file + " checked")
 			else:
 				sys.exit("Error: Input file is not in the FASTQ format.\n")  
 	else:

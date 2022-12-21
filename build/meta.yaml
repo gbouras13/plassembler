@@ -10,6 +10,10 @@ source:
   git_url: https://github.com/gbouras13/plassembler
 
 requirements:
+  host:
+    - pip
+    - python
+    - cython
  run:
   - flye>=2.9
   - unicycler>=0.4.8
@@ -22,12 +26,19 @@ requirements:
   - seqkit
   - bbmap
 
+test:
+  commands:
+    - plassembler.py --version
+
 about:
   home: https://github.com/gbouras13/plassembler
   license: MIT
   license_familY: MIT
-  summary: "Automated Bacterial Extra-chromosomal Plasmid Assembly Program"
+  summary: "Automated Bacterial Plasmid Assembly Program"
 
 extra:
   recipe-maintainers:
     - gbouras13
+
+
+

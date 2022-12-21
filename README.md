@@ -1,10 +1,10 @@
 plassembler
 ===============
 
-Automated Bacterial Extra-chromosomal Plasmid Assembly Program
+Automated Bacterial Plasmid Assembly Program
 ------------
 
-plassembler is designed for automated assembly of extra-chromosomal plasmids in haploid bacterial genomes that have been sequenced with hybrid ONT (R9.4.1 or earlier) + paired-end short read sequencing.
+plassembler is designed for automated assembly of plasmids in haploid bacterial genomes that have been sequenced with hybrid ONT (R9.4.1 or earlier) + paired-end short read sequencing.
 
 If you are assembling a small number of bacterial genomes manually, I would highly recommend using [Trycycler](https://github.com/rrwick/Trycycler).
 
@@ -16,7 +16,7 @@ Additionally, I would recommend reading the following guides to bacterial genome
 Why Does plassembler exist?
 ----
 
-In long read assembled bacterial genomes, small extra-chromosomal plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated or missed (see https://f1000research.com/articles/8-2138 https://github.com/rrwick/Trycycler/wiki/Clustering-contigs).
+In long read assembled bacterial genomes, small plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated or missed (see https://f1000research.com/articles/8-2138 https://github.com/rrwick/Trycycler/wiki/Clustering-contigs).
 
 plassembler was created as an automated way to ensure plasmids assemble correctly without duplicated regions for high-throughput uses - and to provide some useful statistics as well (like copy number).
 

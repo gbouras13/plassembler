@@ -45,6 +45,12 @@ def main(argv):
     logger.info("Filtering long reads.")
     plassemblerModules.nanofilt(args.longreads, out_dir, args.min_length, args.min_quality, long_zipped)
 
+    if args.unicycler == True:
+        plassemblerModules.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+        plassemblerModules.run_unicycler(False, args.threads, logger, short_R1, short_R2, long_reads, os.path.join(out_dir, "unicycler_output"))
+
+
+
     # running Flye
     print("Running Flye.")
     logger.info("Running Flye")
@@ -81,17 +87,21 @@ def main(argv):
         logger.info("Recovering possible plasmids from short reads.")
         successful_unicycler_recovery = plassemblerModules.case_one(out_dir, args.threads, logger)
 
-        # if unicycler worked, calculate the plasmid copy numbers
+        # if unicycler successfully finished, calculate the plasmid copy numbers
         if successful_unicycler_recovery == True:
-            print('Unicycler found plasmids. Calculating Plasmid Copy Numbers.')
-            logger.info("Unicycler found plasmids. Calculating Plasmid Copy Numbers.")
+            print('Unicycler identified plasmids. Calculating Plasmid Copy Numbers.')
+            logger.info("Unicycler identified plasmids. Calculating Plasmid Copy Numbers.")
             plassemblerModules.get_depth(out_dir, logger,  args.threads, prefix)
-            #plassemblerModules.move_and_copy_files(out_dir, prefix, successful_unicycler_recovery)
-            #plassemblerModules.remove_intermediate_files(out_dir)
-        else: # successful recovery false, just touch the files empty for downstream (snakemake)
-            print('placeholder')
-            #plassemblerModules.move_and_copy_files(out_dir, prefix, successful_unicycler_recovery)
-            #plassemblerModules.remove_intermediate_files(out_dir)
+            plassemblerModules.move_and_copy_files(out_dir, prefix, successful_unicycler_recovery)
+            plassemblerModules.remove_intermediate_files(out_dir)
+        ####################################################################
+        # Case 4: where there are truly no plasmids
+        ####################################################################
+        else: # unicycler did not successfully finish, just touch the files empty for downstream (snakemake)
+            print('No plasmids found.')
+            logger.info("No plasmids found.")
+            plassemblerModules.move_and_copy_files(out_dir, prefix, successful_unicycler_recovery)
+            plassemblerModules.remove_intermediate_files(out_dir)
 
     # where more than 1 contig was assembled
     else:
@@ -101,17 +111,19 @@ def main(argv):
         logger.info("Extracting Chromosome.")
         chromosome_flag = plassemblerModules.extract_chromosome(out_dir, args.chromosome, no_plasmids_flag)
         ####################################################################
-        # Case 2 - where no chromosome was identified (below read length) - need more long reads - exit plassembler
+        # Case 2 - where no chromosome was identified (likely below required depth) - need more long reads or user got chromosome parameter wrong - exit plassembler
         ####################################################################
         if chromosome_flag == False:
-            print('Insufficient long read depth for Flye assembly to generate chromosome. Please check you -c or --chromosome value. Increasing sequencing depth is recommended.')
-            logger.info("Insufficient long read depth for Flye assembly to generate chromosome. Please check you -c or --chromosome value. Increasing sequencing depth is recommended.")
-            #plassemblerModules.move_and_copy_files(out_dir, prefix, chromosome_flag)
-            #plassemblerModules.remove_intermediate_files(out_dir)
+            print('No chromosome was idenfitied. Likely, there was insufficient long read depth for Flye assembly to generate chromosome. Also please check you -c or --chromosome parameter, it may be too high. Increasing sequencing depth is recommended.')
+            logger.info("No chromosome was idenfitied. Likely, there was insufficient long read depth for Flye assembly to generate chromosome. Also please check you -c or --chromosome parameter, it may be too high. Increasing sequencing depth is recommended.")
+            plassemblerModules.move_and_copy_files(out_dir, prefix, chromosome_flag)
+            plassemblerModules.remove_intermediate_files(out_dir)
         ####################################################################
-        # Case 3 - where a chromosome and plasmids were identified in the Flye assembly
+        # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> get mapped to plasmids, unmapped to chromosome and assembly
         ####################################################################
         else:
+            print('Chromosome Identified. Plassembler will now try to leverage short reads to assemble plasmids accurately.')
+            logger.info("Chromosome Identified. Plassembler will now try to leverage short reads to assemble plasmids accurately.")
             print('Trimming short reads.')
             logger.info("Trimming short reads.")
             plassemblerModules.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
@@ -123,8 +135,8 @@ def main(argv):
             logger.info("Calculating Plasmid Copy Numbers.")
             # assumes unicycler works - write a test if not
             plassemblerModules.get_depth(out_dir, logger,  args.threads, prefix)
-            #plassemblerModules.move_and_copy_files(out_dir, prefix, chromosome_flag)
-            #plassemblerModules.remove_intermediate_files(out_dir)
+            plassemblerModules.move_and_copy_files(out_dir, prefix, chromosome_flag)
+            plassemblerModules.remove_intermediate_files(out_dir)
 
 
     # Determine elapsed time

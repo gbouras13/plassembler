@@ -39,14 +39,27 @@ class test_contig_count(unittest.TestCase):
         self.assertEqual(return_object, expected_return)
 
 class test_extract_chromosome(unittest.TestCase):
-    """ Test for extract_chromosome"""
+    """ Tests for extract_chromosome"""
     @classmethod
     def setUpClass(cls):
         cls.logger = logging.getLogger('test_logger.log')
         cls.logger.setLevel(logging.INFO)
 
-    def test_get_extract_chromosome_only_chromosome(self):
+    def test_get_extract_chromosome_only_chromosome_case_one(self):
         out_dir = 'case_one/output'
+
+        expected_return  = True
+
+        chrom_length = 2400000
+
+        no_plasmid_flag = True
+
+        return_object = plassemblerModules.extract_chromosome(out_dir, chrom_length, no_plasmid_flag)
+
+        self.assertEqual(return_object, expected_return)
+
+    def test_get_extract_chromosome_case_three(self):
+        out_dir = 'case_three/output'
 
         expected_return  = True
 
@@ -116,7 +129,39 @@ class test_get_contig_lengths(unittest.TestCase):
         return_object = plassemblerModules.get_contig_lengths(out_dir)
 
         self.assertEqual(return_object, expected_return)
+
+    def test_get_contig_lengths_case_three(self):
+        out_dir = 'case_three/output'
+
+        expected_return  = {
+                "chromosome": 2857100,
+                "1": 29025
+                }
+
+        return_object = plassemblerModules.get_contig_lengths(out_dir)
+
+        self.assertEqual(return_object, expected_return)
+
     
+class test_get_contig_circularity(unittest.TestCase):
+    """ Test for get_contig_circularity"""
+    @classmethod
+    def setUpClass(cls):
+        cls.logger = logging.getLogger('test_logger.log')
+        cls.logger.setLevel(logging.INFO)
+
+    def test_get_contig_circularity(self):
+        out_dir = 'case_one/output'
+
+        expected_return  = {
+                "chromosome": 'circular',
+                "1": 'circular'
+                }
+
+        return_object = plassemblerModules.get_contig_circularity(out_dir)
+
+        self.assertEqual(return_object, expected_return)
+
 
 
 

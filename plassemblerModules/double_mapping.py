@@ -4,8 +4,6 @@ import subprocess as sp
 import plassemblerModules
 
 
-
-
 def double_mapping_analysis(out_dir, threads, logger):
 
     print('Extracting Reads mapping to Plasmids and Chromosome.')
@@ -21,11 +19,7 @@ def double_mapping_analysis(out_dir, threads, logger):
 # sub functions 
 ############################
 
-
-
-
-
- ##### Processing Sam to Bam #######
+##### Processing Sam to Bam #######
 
 ### concatenating and deduplicating
 

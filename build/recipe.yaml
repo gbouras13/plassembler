@@ -1,6 +1,8 @@
+context: {}
 package:
-  name: "plassembler"
-  version: "0.1.1"
+
+  name: plassembler
+  version: 0.1.1
 
 build:
   number: 0
@@ -35,11 +37,12 @@ about:
   home: https://github.com/gbouras13/plassembler
   license: MIT
   license_familY: MIT
-  summary: "Automated Bacterial Plasmid Assembly Program"
+  summary: Automated Bacterial Plasmid Assembly Program
 
 extra:
   recipe-maintainers:
     - gbouras13
+
 
 
 

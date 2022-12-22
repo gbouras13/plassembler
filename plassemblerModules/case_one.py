@@ -60,8 +60,8 @@ def case_one(out_dir, threads, logger):
     successful_unicycler = os.path.isfile(os.path.join(out_dir, "unicycler_output", "assembly.fasta")) 
     
     if successful_unicycler == False:
-        print('Unicycler failed - there are likely no plasmids in your isolate.')
-        logger.info('Unicycler failed - there are likely no plasmids in your isolate.')
+        print('Unicycler failed to recovery any plasmids - there are likely no plasmids in your isolate.')
+        logger.info('Unicycler failed to recovery any plasmids - there are likely no plasmids in your isolate.')
     
     return successful_unicycler
 

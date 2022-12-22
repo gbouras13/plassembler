@@ -20,7 +20,7 @@ In long-read first assembled bacterial genomes, small plasmids are often difficu
 
 plassembler was created as an automated tool to ensure plasmids assemble correctly without duplicated regions for high-throughput uses - and to provide some useful statistics as well (like copy number). Additionally, it will likely recover small plasmids that long read assemblers like Flye simply miss.
 
-Why Not Use Unicycler
+Why Not Use Unicycler?
 ----
 
 Unicycler is awesome and still probably the best way to assemble plasmids from hybrid sequencing - plassembler uses it! But there are a few reasons to use plassembler instead:

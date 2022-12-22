@@ -42,8 +42,8 @@ def case_one(out_dir, threads, logger):
     print('Extracting Fastqs.')
     logger.info('Extracting Fastqs.')
 
-    extract.extract_long_fastq(out_dir, "chromosome", logger)
-    extract.extract_short_fastq( out_dir, "chromosome",  threads,  logger)   
+    bam.extract_long_fastq(out_dir, "chromosome", logger)
+    bam.extract_short_fastq( out_dir, "chromosome",  threads,  logger)   
 
     # running unicycler
     print('Running Unicycler')

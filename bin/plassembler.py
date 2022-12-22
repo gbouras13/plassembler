@@ -78,8 +78,8 @@ if __name__ == "__main__":
     if contig_count == 1:
         logger.info("Only one contig was assembled with Flye.")
         print("Only one contig was assembled with Flye.")
-        print('Plassembler will now try to leverage short reads to assemble plasmids.')
-        logger.info("Plassembler will now try to leverage short reads to assemble plasmids.")
+        print('Plassembler will now try to use short reads to find possible plasmids.')
+        logger.info("Plassembler will now try to use short reads to find possible plasmids.")
 
         # no_plasmids_flag = True as no plasmids
         no_plasmids_flag = True
@@ -128,8 +128,8 @@ if __name__ == "__main__":
         # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> mappeed to plasmids, unmapped to chromosome and assembly
         ####################################################################
         else:
-            print('Chromosome Identified. Plassembler will now try to leverage short reads to assemble plasmids accurately.')
-            logger.info("Chromosome Identified. Plassembler will now try to leverage short reads to assemble plasmids accurately.")
+            print('Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.')
+            logger.info("Chromosome Identified. Plassembler will now use both long and short reads to assemble plasmids accurately.")
             print('Trimming short reads.')
             logger.info("Trimming short reads.")
             qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)

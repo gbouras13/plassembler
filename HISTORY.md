@@ -5,7 +5,7 @@ History
 0.1.2 (2022-12-22)
 ------------------
 
-* Code refactored into modules.
+* Code refactored.
 * Tests added.
 * Bioconda release.
 

@@ -2,6 +2,8 @@ import os
 import mapping
 import os
 import extract
+import concat 
+import deduplicate
 import unicycler
 import bam
 
@@ -47,27 +49,27 @@ def case_three(out_dir, threads, logger):
     bam.sam_to_bam( out_dir, "non_chromosome_short", threads,  logger)
 
     ### extractng mapped_unmapped bams ###
-    plassemblerModules.bam_to_mapped_or_unmapped(out_dir, "chromosome_long", threads, logger)
-    plassemblerModules.bam_to_mapped_or_unmapped(out_dir, "non_chromosome_long", threads, logger)
-    plassemblerModules.bam_to_mapped_or_unmapped(out_dir, "chromosome_short", threads, logger)
-    plassemblerModules.bam_to_mapped_or_unmapped(out_dir, "non_chromosome_short", threads, logger)
+    bam.bam_to_mapped_or_unmapped(out_dir, "chromosome_long", threads, logger)
+    bam.bam_to_mapped_or_unmapped(out_dir, "non_chromosome_long", threads, logger)
+    bam.bam_to_mapped_or_unmapped(out_dir, "chromosome_short", threads, logger)
+    bam.bam_to_mapped_or_unmapped(out_dir, "non_chromosome_short", threads, logger)
 
     ### extracting fastqs
     print('Extracting Fastqs.')
     logger.info('Extracting Fastqs.')
 
-    plassemblerModules.extract_long_fastq(out_dir, "chromosome", logger)
-    plassemblerModules.extract_long_fastq(out_dir, "non_chromosome", logger)
-    plassemblerModules.extract_short_fastq( out_dir, "chromosome",  threads,  logger)   
-    plassemblerModules.extract_short_fastq( out_dir, "non_chromosome",  threads,  logger)   
+    bam.extract_long_fastq(out_dir, "chromosome", logger)
+    bam.extract_long_fastq(out_dir, "non_chromosome", logger)
+    bam.extract_short_fastq( out_dir, "chromosome",  threads,  logger)   
+    bam.extract_short_fastq( out_dir, "non_chromosome",  threads,  logger)   
 
     # concatenating and deduplicating fastqs
 
     print('Concatenating and Deduplicating Fastqs.')
     logger.info('Concatenating and Deduplicating Fastqs.')
 
-    plassemblerModules.concatenate_all_fastqs(out_dir,logger)
-    plassemblerModules.deduplicate_fastqs(out_dir, threads, logger)
+    concat.concatenate_all_fastqs(out_dir,logger)
+    deduplicate.deduplicate_fastqs(out_dir, threads, logger)
 
     # running unicycler
     print('Running Unicycler')
@@ -78,6 +80,6 @@ def case_three(out_dir, threads, logger):
     short_r2 = os.path.join(out_dir, "short_read_dedup_R2.fastq.gz")
     long_reads = os.path.join(out_dir, "long_read_dedup.fastq")
 
-    plassemblerModules.run_unicycler(False, threads, logger, short_r1, short_r2, long_reads, os.path.join(out_dir, "unicycler_output"))
+    unicycler.run_unicycler(False, threads, logger, short_r1, short_r2, long_reads, os.path.join(out_dir, "unicycler_output"))
 
 

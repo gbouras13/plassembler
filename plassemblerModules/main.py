@@ -45,12 +45,6 @@ def main(argv):
     logger.info("Filtering long reads.")
     plassemblerModules.nanofilt(args.longreads, out_dir, args.min_length, args.min_quality, long_zipped)
 
-    if args.unicycler == True:
-        plassemblerModules.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
-        plassemblerModules.run_unicycler(False, args.threads, logger, short_R1, short_R2, long_reads, os.path.join(out_dir, "unicycler_output"))
-
-
-
     # running Flye
     print("Running Flye.")
     logger.info("Running Flye")
@@ -119,7 +113,7 @@ def main(argv):
             plassemblerModules.move_and_copy_files(out_dir, prefix, chromosome_flag)
             plassemblerModules.remove_intermediate_files(out_dir)
         ####################################################################
-        # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> get mapped to plasmids, unmapped to chromosome and assembly
+        # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> mappeed to plasmids, unmapped to chromosome and assembly
         ####################################################################
         else:
             print('Chromosome Identified. Plassembler will now try to leverage short reads to assemble plasmids accurately.')

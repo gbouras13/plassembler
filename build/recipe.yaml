@@ -27,7 +27,6 @@ requirements:
     - fastp
     - nanofilt
     - seqkit
-    - bbmap
 
 test:
   commands:

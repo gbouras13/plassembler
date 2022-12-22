@@ -20,15 +20,6 @@ from .unicycler import run_unicycler
 
 
 
-__version__ = "0.1.1"
-
-
-# #from .processes import write_to_log, run_flye, contig_count, extract_chromosome, extract_chromosome_fasta, extract_plasmid_fastas, nanofilt, trim_short_read, plasmid_assembly,double_mapping_analysis,index_fasta,minimap_long_reads, bwa_map_short_reads, sam_to_bam, bam_to_mapped_or_unmapped, extract_long_fastq, extract_short_fastq, concatenate_fastqs,concatenate_single,deduplicate_fastqs,unicycler, extract_reads_mapping_to_plasmid_and_chromosome, remove_intermediate_files, move_and_copy_files,touch_file,touch_output_fail_files 
-
-# from .processes import run_minimap2, keep_primary_supplementary_mappings_convert_sam, keep_primary_supplementary_mappings_convert_sam_direct, run_flagstat
-# from .post_processing import get_total_read_count, parse_bam, pivot_df
-# from .main import run
-# from .version import __version__
 
 __all__ = ['sam_to_bam', 'bam_to_mapped_or_unmapped', 'extract_long_fastq', 'extract_short_fastq',
             'case_one',
@@ -43,5 +34,6 @@ __all__ = ['sam_to_bam', 'bam_to_mapped_or_unmapped', 'extract_long_fastq', 'ext
             'write_to_log',
             'index_fasta', 'minimap_long_reads', 'bwa_map_short_reads',
             'nanofilt', 'trim_short_read',
+            'run',
             'run_unicycler'
            ]

@@ -2,6 +2,13 @@
 History
 =======
 
+0.1.2 (2022-12-22)
+------------------
+
+* Code refactored into modules.
+* Tests added.
+* Bioconda release.
+
 0.1.1 (2022-08-09)
 ------------------
 

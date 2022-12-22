@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess as sp
-import logging
+import log
 
 
 
@@ -47,6 +47,6 @@ def trim_short_read(short_one, short_two, out_dir,  logger):
     out_two = os.path.join(out_dir, "trimmed_R2.fastq")
     try:
         fastp = sp.Popen(["fastp", "--in1", short_one, "--in2", short_two, "--out1", out_one, "--out2", out_two ], stdout=sp.PIPE, stderr=sp.PIPE) 
-        logging.write_to_log(fastp.stderr, logger)
+        log.write_to_log(fastp.stderr, logger)
     except:
         sys.exit("Error with Fastp\n")  

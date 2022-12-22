@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess as sp
-import logging
+import log
 
 #################################
 # original mapping
@@ -16,7 +16,7 @@ def index_fasta(fasta,  logger):
     """
     try:
         bwa_index = sp.Popen(["bwa", "index", fasta ], stdout=sp.PIPE, stderr=sp.PIPE) 
-        logging.write_to_log(bwa_index.stdout, logger)
+        log.write_to_log(bwa_index.stdout, logger)
     except:
         sys.exit("Error with bwa index\n")  
 
@@ -39,7 +39,7 @@ def minimap_long_reads(chromosome_flag, out_dir, threads, logger):
     f = open(sam, "w")
     try:
         minimap = sp.Popen(["minimap2", "-ax", "map-ont", "-t", threads, fasta, input_long_reads ], stdout=f, stderr=sp.PIPE) 
-        logging.write_to_log(minimap.stderr, logger)
+        log.write_to_log(minimap.stderr, logger)
     except:
         sys.exit("Error with minimap2\n")  
 
@@ -64,6 +64,6 @@ def bwa_map_short_reads(out_dir, chromosome_flag, threads, logger):
     f = open(sam, "w")
     try:
         bwa_map = sp.Popen(["bwa", "mem", "-t", threads, fasta, trim_one, trim_two ], stdout=f, stderr=sp.PIPE) 
-        logging.write_to_log(bwa_map.stderr, logger)
+        log.write_to_log(bwa_map.stderr, logger)
     except:
         sys.exit("Error with bwa mem\n")  

@@ -20,6 +20,16 @@ In long-read first assembled bacterial genomes, small plasmids are often difficu
 
 plassembler was created as an automated tool to ensure plasmids assemble correctly without duplicated regions for high-throughput uses - and to provide some useful statistics as well (like copy number). Additionally, it will likely recover small plasmids that long read assemblers like Flye simply miss.
 
+Why Not Use Unicycler
+----
+
+Unicycler is awesome and still probably the best way to assemble plasmids from hybrid sequencing - plassembler uses it! But there are a few reasons to use plassembler instead:
+
+1. Time. plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so is much faster. 
+2. Plassembler will output only the plasmids, which may be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://preprints.scielo.org/index.php/scielo/preprint/view/5053) so plassembler can get you only what is necessary from Unicycler.
+3. Plassembler will give you summary coverage stats for both long and short reads.
+4. Plassembler can be used as fast-ish quality control to check if your short and long reads come from the same sample - if plassembler results in many non-circular contigs (particularly those that, with the help of something like BLAST, map to bacterial chromosomes), it is likely because your read sets do not come from the same isolate! 
+
 Documentation
 -------
 
@@ -180,9 +190,6 @@ plassembler also outputs a `copy_number_summary.tsv` file, which gives the estim
 If plassembler fails to find any plasmids, these files will still exist, but will be empty (to ensure plassembler can be easily integrated into workflow managers like Snakemake).
 
 plassembler will also output a log file, a `flye_output` directory, which contains the output from Flye (it may be useful to decide whether you need more sequencing reads, or some strange assembly artifact occured) and a `unicycler_output` directory containing the output from Unicycler.
-
-**Other Benefits**
-If plassembler results in many non-circular contigs (particularly those that, with the help of something like BLAST, map to bacterial chromosomes), it is likely because your read sets do not come from the same isolate! Accordingly, plassembler can also be used for QC purposes in this way.
 
 
 Acknowledgements

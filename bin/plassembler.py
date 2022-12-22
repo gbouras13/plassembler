@@ -11,7 +11,6 @@ import case_one
 import case_three
 import depth
 import extract
-import logging
 import mapping
 import unicycler 
 import cleanup

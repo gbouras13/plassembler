@@ -30,7 +30,7 @@ requirements:
 
 test:
   imports:
-    - plassemblerModules
+    - plassembler
   commands:
     - plassembler.py --version
 

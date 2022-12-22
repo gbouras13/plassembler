@@ -16,7 +16,7 @@ Additionally, I would recommend reading the following guides to bacterial genome
 Why Does plassembler exist?
 ----
 
-In long-read first assembled bacterial genomes, small plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated or missed (see https://f1000research.com/articles/8-2138 https://github.com/rrwick/Trycycler/wiki/Clustering-contigs).
+In long-read first assembled bacterial genomes, small plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated or missed (see [this](https://f1000research.com/articles/8-2138) and [this](https://github.com/rrwick/Trycycler/wiki/Clustering-contigs) ).
 
 plassembler was created as an automated tool to ensure plasmids assemble correctly without duplicated regions for high-throughput uses - and to provide some useful statistics as well (like copy number). Additionally, it will likely recover small plasmids that long read assemblers like Flye simply miss.
 
@@ -84,9 +84,9 @@ You can force it as follows:
 
 For MacOSX environments, the current conda installation method will only install the latest available bioconda Unicycler version of v0.4.8. plassembler should still run without any issue and provide a satisfactory assembly.
 
-However, Ryan Wick (author of Unicycler) suggests that v0.5.0 should be used, as v0.4.8 is not compatible with the latest versions of spades (see https://github.com/rrwick/Unicycler/releases/tag/v0.5.0). This will require manual installation.
+However, Ryan Wick (author of Unicycler) suggests that v0.5.0 should be used, as v0.4.8 is not compatible with the latest versions of spades (see [here](https://github.com/rrwick/Unicycler/releases/tag/v0.5.0) ). This will require manual installation.
 
-To install Unicycler v0.5.0, please see the Installation section of [Unicycler]https://github.com/rrwick/Unicycler#installation. In particular, it is recommended that you install plassembler with Unicycler from github as follows:
+To install Unicycler v0.5.0, please see the Installation section of [Unicycler](https://github.com/rrwick/Unicycler#installation). In particular, it is recommended that you install plassembler with Unicycler from github as follows:
 
 ```
 conda create -n plassemblerENV

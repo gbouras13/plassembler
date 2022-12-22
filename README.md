@@ -134,7 +134,7 @@ To overwrite an existing output directory, use -f
 
 ` plassembler.py -l <long read fastq> -o <output dir> -s1 < short read R1 fastq> -s2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality> -f`
 
-plassembler defaults to 8 threads.
+plassembler defaults to 1 thread.
 
 ```
 usage: plassembler [-h] -l LONGREADS [-o OUTDIR] -s1 SHORT_ONE -s2 SHORT_TWO

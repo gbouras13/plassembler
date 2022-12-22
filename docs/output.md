@@ -1,13 +1,19 @@
-plassembler creates a number of output files
+Outputs
+-------
+plassembler will output a `_plasmids.fasta` file, which will contain the assembled plasmid sequence(s) in FASTA format, and a `_plasmids.gfa` file, which will contain the assembly graph from Unicycler that can be visualised in [Bandage](https://github.com/rrwick/Bandage). 
 
-The main outputs are `_plasmids.fasta` and `_plasmids.gfa`, which contain the Unicycler assembly outputs in fasta and graph format. The `.gfa` file can be visualised is programs such as Bandage (https://github.com/rrwick/Bandage/).
+plassembler also outputs a `copy_number_summary.tsv` file, which gives the estimated copy number for each plasmid, for both short reads and long reads (see this [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2) for more details about plasmid copy numbers).
 
-plassmbler also outputs `copy_number_summary.tsv`, which gives plasmid copy number statistics for both short and long read sets.
+If plassembler fails to find any plasmids, these files will still exist, but will be empty (to ensure plassembler can be easily integrated into workflow managers like Snakemake).
 
-**Note**
+plassembler will also output a log file, a `flye_output` directory, which contains the output from Flye (it may be useful to decide whether you need more sequencing reads, or some strange assembly artifact occured) and a `unicycler_output` directory containing the output from Unicycler.
 
-* If plassembler fails to find any plasmids, these files will exist, but will be empty (to ensure plassembler can be easily integrated into workflow managers like Snakemake).
+**Other Benefits**
+If plassembler results in many non-circular contigs (particularly those that, with the help of something like BLAST, map to bacterial chromosomes), it is likely because your read sets do not come from the same isolate! Accordingly, plassembler can also be used for QC purposes in this way.
 
-plassembler will contain all flye output in the `flye_output` directory and all unicycler output in the `unicycler_output` directory.
+**What happens if plassembler fails to find a plasmid?**
 
-Additionally, as a work in progress, there will also be a directory `unicycler_plasmid_chromosome_map_output` that contains the short read only assemblies from all short reads that map to both the chromosome and plasmids (https://www.pnas.org/doi/10.1073/pnas.2008731118).
+* There are two reasons why plassembler will fail to find a plasmid:
+
+1. Where Flye assembles a complete chromosome, but fails to find any plasmids. Most of the time, this simply means that there are no plasmids in the your bacterial isolate. 
+2. Where there is insufficient coverage for Flye to assemble a complete circular chromosome. In these cases, it is recommended that you either do more long read sequencing so that you can assemble a complete circular chromosome, or check that your -c parameter is correcting set.

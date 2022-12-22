@@ -1,0 +1,6 @@
+pyyaml>=6.0
+pytest-runner >= 5.0.0
+biopython
+pandas
+numpy
+

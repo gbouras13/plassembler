@@ -16,11 +16,7 @@ source:
   sha256: {{ sha256 }}
 
 requirements:
-  host:
-    - python >=3.6
-    - pip
-    - cython
-  run:
+ run:
     - python >=3.6
     - flye >=2.9
     - unicycler >=0.4.8

@@ -38,7 +38,6 @@ if __name__ == "__main__":
     
     # instiate the output directory
     out_dir = input_commands.instantiate_dirs(args.outdir, args.force) # incase there is already an out_dir
-    #out_dir = args.outdir
 
     # beginning logging
     LOG_FILE = os.path.join(out_dir, prefix + "_" + str(time_for_log) + ".log")
@@ -50,9 +49,9 @@ if __name__ == "__main__":
     logger.info("Checking input fastqs")
 
     # checking fastq 
-    long_zipped = qc.validate_fastq(args.longreads)
-    s1_zipped = plassemblqcerModules.validate_fastq(args.short_one)
-    s2_zipped = qc.validate_fastq(args.short_two)
+    long_zipped = input_commands.validate_fastq(args.longreads)
+    s1_zipped = input_commands.validate_fastq(args.short_one)
+    s2_zipped = input_commands.validate_fastq(args.short_two)
 
     # filtering long readfastq
     print("Filtering long reads.")

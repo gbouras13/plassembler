@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess as sp
 import pandas as pd
-import logging
+import log
 
 
 
@@ -21,7 +21,7 @@ def run_flye(out_dir, threads, raw_flag, logger):
         nanopore_flye_model = "--nano-raw"
     try:
         flye = sp.Popen(["flye", nanopore_flye_model, trim_long, "--out-dir", out_dir, "--threads", threads], stdout=sp.PIPE, stderr=sp.PIPE) 
-        logging.write_to_log(flye.stdout, logger)
+        log.write_to_log(flye.stdout, logger)
     except:
         sys.exit("Error with Flye\n")  
 

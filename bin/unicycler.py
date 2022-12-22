@@ -1,6 +1,6 @@
 import sys
 import subprocess as sp
-import plassemblerModules
+import log
 
 
 ### unicycler and deduplicating
@@ -21,6 +21,6 @@ def run_unicycler(short_only, threads, logger, short_one, short_two, long, unicy
             unicycler = sp.Popen(["unicycler", "-1", short_one, "-2", short_two, "-l", long, "-t", threads, "-o",  unicycler_output_dir ], stdout=sp.PIPE, stderr=sp.PIPE) 
         else: 
             unicycler = sp.Popen(["unicycler", "-1", short_one, "-2", short_two, "-t", threads, "-o",  unicycler_output_dir ], stdout=sp.PIPE, stderr=sp.PIPE) 
-        plassemblerModules.write_to_log(unicycler.stdout, logger)
+        log.write_to_log(unicycler.stdout, logger)
     except:
         sys.exit("Error with Unicycler.\n")  

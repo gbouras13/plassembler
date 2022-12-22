@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess as sp
-import logging
+import log
 
 # sam to bam
 def sam_to_bam(out_dir, combo, threads, logger):
@@ -28,7 +28,7 @@ def sam_to_bam(out_dir, combo, threads, logger):
     outFile = open(bam, "w")
     try:
         sam_to_bam = sp.Popen(["samtools", "view", "-h", "-@", threads, "-b", sam], stdout=outFile, stderr=sp.PIPE) 
-        logging.write_to_log(sam_to_bam.stderr, logger)
+        log.write_to_log(sam_to_bam.stderr, logger)
     except:
         sys.exit("Error with samtools view.\n")  
 
@@ -62,7 +62,7 @@ def bam_to_mapped_or_unmapped(out_dir, combo, threads, logger):
     outFile = open(map_bam, "w")
     try:
         bam_to_map = sp.Popen(["samtools", "view", "-h", "-@", threads, map_flag, "4", bam], stdout=outFile, stderr=sp.PIPE) 
-        logging.write_to_log(bam_to_map.stderr, logger)
+        log.write_to_log(bam_to_map.stderr, logger)
     except:
         sys.exit("Error with samtools view. \n")  
 
@@ -87,7 +87,7 @@ def extract_long_fastq(out_dir, chrom, logger):
     out_fastq = open(long_fastq, "w")
     try:
         extract_long_fastq = sp.Popen(["samtools", "bam2fq", bam], stdout=out_fastq, stderr=sp.PIPE) 
-        logging.write_to_log(extract_long_fastq.stderr, logger)
+        log.write_to_log(extract_long_fastq.stderr, logger)
     except:
         sys.exit("Error with samtools bam2fastq\n")  
 
@@ -113,6 +113,6 @@ def extract_short_fastq(out_dir, chrom, threads, logger):
         map_flag = "-F"
     try:
         extract_short_fastq= sp.Popen(["samtools", "fastq", "-@", threads, map_flag, "4", bam, "-1", fastq_one, "-2", fastq_two, "-0", "/dev/null", "-s", "/dev/null", "-n"], stdout=sp.PIPE, stderr=sp.PIPE) 
-        logging.write_to_log(extract_short_fastq.stdout, logger)
+        log.write_to_log(extract_short_fastq.stdout, logger)
     except:
         sys.exit("Error with samtools fastq.\n")  

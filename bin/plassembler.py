@@ -5,14 +5,14 @@ import time
 import datetime
 import input_commands
 import qc
-import flye
+import run_flye
 import extract
 import case_one
 import case_three
 import depth
 import extract
 import mapping
-import unicycler 
+import run_unicycler 
 import cleanup
 
 
@@ -60,12 +60,12 @@ if __name__ == "__main__":
     # running Flye
     print("Running Flye.")
     logger.info("Running Flye")
-    flye.run_flye( out_dir, args.threads,args.raw_flag, logger)
+    run_flye.run_flye( out_dir, args.threads,args.raw_flag, logger)
 
     # count contigs
     print("Counting Contigs.")
     logger.info("Counting Contigs")
-    contig_count = flye.contig_count(out_dir)
+    contig_count = run_flye.contig_count(out_dir)
 
     # flag for extracting the plasmid chromosomes
     # no_plasmids_flag = false means there are plasmids
@@ -120,8 +120,8 @@ if __name__ == "__main__":
         # Case 2 - where no chromosome was identified (likely below required depth) - need more long reads or user got chromosome parameter wrong - exit plassembler
         ####################################################################
         if chromosome_flag == False:
-            print('No chromosome was idenfitied. Likely, there was insufficient long read depth for Flye assembly to generate chromosome. Also please check you -c or --chromosome parameter, it may be too high. Increasing sequencing depth is recommended.')
-            logger.info("No chromosome was idenfitied. Likely, there was insufficient long read depth for Flye assembly to generate chromosome. Also please check you -c or --chromosome parameter, it may be too high. Increasing sequencing depth is recommended.")
+            print('No chromosome was idenfitied. Likely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended. Also please check your -c or --chromosome parameter, it may be too high. ')
+            logger.info("No chromosome was idenfitied. Likely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended. Also please check your -c or --chromosome parameter, it may be too high.")
             cleanup.move_and_copy_files(out_dir, prefix, chromosome_flag)
             cleanup.remove_intermediate_files(out_dir)
         ####################################################################

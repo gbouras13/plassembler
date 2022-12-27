@@ -4,7 +4,7 @@ import os
 import extract
 import concat 
 import deduplicate
-import unicycler
+import run_unicycler
 import bam
 
 
@@ -80,6 +80,6 @@ def case_three(out_dir, threads, logger):
     short_r2 = os.path.join(out_dir, "short_read_dedup_R2.fastq.gz")
     long_reads = os.path.join(out_dir, "long_read_dedup.fastq")
 
-    unicycler.run_unicycler(False, threads, logger, short_r1, short_r2, long_reads, os.path.join(out_dir, "unicycler_output"))
+    run_unicycler.run_unicycler(False, threads, logger, short_r1, short_r2, long_reads, os.path.join(out_dir, "unicycler_output"))
 
 

@@ -26,7 +26,7 @@ To overwrite an existing output directory, use -f
 plassembler defaults to 1 threads.
 
 ```
-usage: plassembler [-h] -l LONGREADS [-o OUTDIR] -s1 SHORT_ONE -s2 SHORT_TWO
+usage: plassembler.py [-h] -l LONGREADS [-o OUTDIR] -s1 SHORT_ONE -s2 SHORT_TWO
                    [-m MIN_LENGTH] [-t THREADS] [-f] [-r] [-p PREFIX] [-c CHROMOSOME]
                    [-q MIN_QUALITY] [-V]
 
@@ -58,10 +58,3 @@ optional arguments:
   -V, --version         show program's version number and exit
 
 ```
-
-**What happens if plassembler fails to find a plasmid?**
-
-* There are two reasons why plassembler will fail to find a plasmid:
-
-1. Where Flye assembles a complete chromosome, but fails to find any plasmids. Most of the time, this simply means that there are no plasmids in the your bacterial isolate. For now, plassembler will just finish. I am working on adding a module to identify reads that do not map to the chromosome and assembling those for plasmids - to identify plasmids that Flye may miss.
-2. Where there is insufficient coverage for Flye to assemble a complete circular chromosome. In these cases, it is recommended that you either do more long read sequencing so that you can assemble a complete circular chromosome, or use Unicycler directly to create a hybrid assembly.

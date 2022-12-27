@@ -1,7 +1,7 @@
 import mapping
 import os
 import extract
-import unicycler
+import run_unicycler
 import bam
 
 def case_one(out_dir, threads, logger):
@@ -55,7 +55,7 @@ def case_one(out_dir, threads, logger):
     long_reads = os.path.join(out_dir, "long_read_chromosome_unmapped.fastq")
     
     # is not short only
-    unicycler.run_unicycler(False, threads, logger, short_R1, short_R2, long_reads, os.path.join(out_dir, "unicycler_output"))
+    run_unicycler.run_unicycler(False, threads, logger, short_R1, short_R2, long_reads, os.path.join(out_dir, "unicycler_output"))
     
     # flag for successful unicycler run
     successful_unicycler = True

@@ -2,6 +2,11 @@
 History
 =======
 
+0.1.3 (2022-12-27)
+------------------
+
+* Fix bugs in bioconda release - unicycler.py and flye.py conflicts
+
 0.1.2 (2022-12-22)
 ------------------
 

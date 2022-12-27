@@ -7,7 +7,7 @@ from Bio import SeqIO
 import shutil
 
 
-v = '0.1.2'
+v = '0.1.3'
 
 ### GLOBAL VARIABLES
 

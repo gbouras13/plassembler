@@ -11,8 +11,6 @@ import case_one
 import case_three
 import depth
 import extract
-import mapping
-import run_unicycler 
 import cleanup
 
 

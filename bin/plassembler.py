@@ -40,8 +40,12 @@ if __name__ == "__main__":
     LOG_FILE = os.path.join(out_dir, prefix + "_" + str(time_for_log) + ".log")
     logger = logging.getLogger()
     logging.basicConfig(level=logging.INFO,filename=LOG_FILE,format='%(asctime)s - %(levelname)s - %(message)s')
-    print("Starting plassembler.")
-    logger.info("Starting plassembler")
+    print("Starting plassembler " + args.version )
+    logger.info("Starting plassembler " + args.version )
+
+    # add the inputs to the log
+    logging.info("Input args: %r", args)
+
     print("Checking input fastqs.")
     logger.info("Checking input fastqs")
 

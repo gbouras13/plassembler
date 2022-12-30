@@ -16,6 +16,8 @@ import cleanup
 
 from version import __version__
 
+v = __version__
+
 if __name__ == "__main__":
 
     # get start time
@@ -40,8 +42,8 @@ if __name__ == "__main__":
     LOG_FILE = os.path.join(out_dir, prefix + "_" + str(time_for_log) + ".log")
     logger = logging.getLogger()
     logging.basicConfig(level=logging.INFO,filename=LOG_FILE,format='%(asctime)s - %(levelname)s - %(message)s')
-    print("Starting plassembler " + args.version )
-    logger.info("Starting plassembler " + args.version )
+    print("Starting plassembler " + v)
+    logger.info("Starting plassembler " + v )
 
     # add the inputs to the log
     logging.info("Input args: %r", args)

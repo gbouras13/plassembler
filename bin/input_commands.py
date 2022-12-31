@@ -6,10 +6,9 @@ from argparse import RawTextHelpFormatter
 from Bio import SeqIO
 import shutil
 import subprocess as sp
-import logging
 
 
-v = '0.1.3'
+v = '0.1.4'
 
 ### GLOBAL VARIABLES
 

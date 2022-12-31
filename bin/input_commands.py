@@ -116,7 +116,7 @@ def check_dependencies(logger):
 	unicycler_minorest_version = int(unicycler_version.split('.')[2])
 
 	print("Unicycler version found is v" + str(unicycler_major_version) +"." + str(unicycler_minor_version) +"."+str(unicycler_minorest_version)+".")
-	logger.info("Flye version found is v" + str(unicycler_major_version) +"." + str(unicycler_minor_version) +"."+str(unicycler_minorest_version)+".")
+	logger.info("Unicycler version found is v" + str(unicycler_major_version) +"." + str(unicycler_minor_version) +"."+str(unicycler_minorest_version)+".")
 
 	if unicycler_minor_version < 4 :
 		sys.exit("Unicycler is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")

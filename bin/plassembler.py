@@ -34,6 +34,8 @@ if __name__ == "__main__":
         prefix = "plassembler"
     else:
         prefix = args.prefix
+
+
     
     # instiate the output directory
     out_dir = input_commands.instantiate_dirs(args.outdir, args.force) # incase there is already an out_dir
@@ -42,11 +44,16 @@ if __name__ == "__main__":
     LOG_FILE = os.path.join(out_dir, prefix + "_" + str(time_for_log) + ".log")
     logger = logging.getLogger()
     logging.basicConfig(level=logging.INFO,filename=LOG_FILE,format='%(asctime)s - %(levelname)s - %(message)s')
-    print("Starting plassembler v " + v)
-    logger.info("Starting plassembler v " + v )
+    print("Starting plassembler v" + v)
+    logger.info("Starting plassembler v" + v )
 
     # add the inputs to the log
     logging.info("Input args: %r", args)
+
+    # check deps 
+    print("Checking dependencies.")
+    logger.info("Checking dependencies.")
+    input_commands.check_dependencies(logger)
 
     print("Checking input fastqs.")
     logger.info("Checking input fastqs")

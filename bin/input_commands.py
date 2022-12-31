@@ -5,6 +5,8 @@ import gzip
 from argparse import RawTextHelpFormatter
 from Bio import SeqIO
 import shutil
+import subprocess as sp
+import logging
 
 
 v = '0.1.3'
@@ -78,5 +80,85 @@ def validate_fastq(file):
 			else:
 				sys.exit("Error: Input file is not in the FASTQ format.\n") 
 	return zipped
+
+def check_dependencies(logger):
+	"""Checks the version of Unicycler, spades and Flye
+    :return:
+    """
+	# Flye
+	process = sp.Popen(["flye", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT) 
+	flye_out, _ = process.communicate()
+	flye_out = flye_out.decode().strip()
+	flye_major_version = int(flye_out.split('.')[0])
+	flye_minor_version = int(flye_out.split('.')[1])
+	flye_minorest_version = flye_out.split('.')[2]
+
+	print("Flye version found is v" + str(flye_major_version) +"." + str(flye_minor_version) +"."+flye_minorest_version + ".")
+	logger.info("Flye version found is v" + str(flye_major_version) +"." + str(flye_minor_version) +"."+flye_minorest_version +".")
+
+	if flye_major_version != 2:
+		sys.exit("Flye is too old - please reinstall plassembler.")
+	if flye_minor_version != 9:
+		sys.exit("Flye is too old - please reinstall plassembler.")
+
+	print("Flye version is ok.")
+	logger.info("Flye version is ok.")
+
+	# unicycler
+	process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT) 
+	unicycler_out, _ = process.communicate()
+	unicycler_out = unicycler_out.decode()
+	unicycler_version = unicycler_out.split(' ')[1]
+	# get rid of the "v"
+	unicycler_version = unicycler_version[1:]
+
+	unicycler_major_version = int(unicycler_version.split('.')[0])
+	unicycler_minor_version = int(unicycler_version.split('.')[1])
+	unicycler_minorest_version = int(unicycler_version.split('.')[2])
+
+	print("Unicycler version found is v" + str(unicycler_major_version) +"." + str(unicycler_minor_version) +"."+str(unicycler_minorest_version)+".")
+	logger.info("Flye version found is v" + str(unicycler_major_version) +"." + str(unicycler_minor_version) +"."+str(unicycler_minorest_version)+".")
+
+	if unicycler_minor_version < 4 :
+		sys.exit("Unicycler is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
+	elif unicycler_minor_version == 4 and unicycler_minorest_version < 8:
+		sys.exit("Unicycler is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
+	elif unicycler_minor_version == 4 and unicycler_minorest_version >= 8:
+		print("Unicycler version is older than v0.5.0 - plassembler will continue but please consider installing Unicycler v0.5.0. See instructions as https://github.com/gbouras13/plassembler.")
+		logger.info("Unicycler version is older than v0.5.0 - plassembler will continue but please consider installing Unicycler v0.5.0. See instructions as https://github.com/gbouras13/plassembler.")
+	else:
+		print("Unicycler version is ok.")
+		logger.info("Unicycler version is ok.")
+
+
+
+
+
+
+
+
+
+
+	# # to get extension
+	# filename, file_extension = os.path.splitext(file)
+	# # flag for whether file is zipped
+	# zipped = True
+	# if file_extension == ".gz":
+	# # if gzipped 
+	# 	with gzip.open(file, "rt") as handle:
+	# 		fastq = SeqIO.parse(handle, "fastq")
+	# 		if any(fastq):
+	# 			print("FASTQ " + file + " checked")
+	# 		else:
+	# 			sys.exit("Error: Input file is not in the FASTQ format.\n")  
+	# else:
+	# 	zipped = False
+	# 	with open(file, "r") as handle:
+	# 		fastq = SeqIO.parse(handle, "fastq")
+	# 		if any(fastq):
+	# 			print("FASTQ " +file + " checked")
+	# 		else:
+	# 			sys.exit("Error: Input file is not in the FASTQ format.\n") 
+	# return zipped
 
 

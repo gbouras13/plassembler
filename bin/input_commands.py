@@ -124,8 +124,8 @@ def check_dependencies(logger):
 	elif unicycler_minor_version == 4 and unicycler_minorest_version < 8:
 		sys.exit("Unicycler is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
 	elif unicycler_minor_version == 4 and unicycler_minorest_version >= 8:
-		print("Unicycler version is older than v0.5.0 - plassembler will continue but please consider installing Unicycler v0.5.0. See instructions as https://github.com/gbouras13/plassembler.")
-		logger.info("Unicycler version is older than v0.5.0 - plassembler will continue but please consider installing Unicycler v0.5.0. See instructions as https://github.com/gbouras13/plassembler.")
+		print("Unicycler version is older than v0.5.0 - plassembler will continue but please consider installing Unicycler v0.5.0. See instructions at https://github.com/gbouras13/plassembler.")
+		logger.info("Unicycler version is older than v0.5.0 - plassembler will continue but please consider installing Unicycler v0.5.0. See instructions at https://github.com/gbouras13/plassembler.")
 	else:
 		print("Unicycler version is ok.")
 		logger.info("Unicycler version is ok.")

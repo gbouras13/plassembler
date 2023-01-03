@@ -2,6 +2,16 @@
 History
 =======
 
+0.1.4 (2023-01-03)
+------------------
+
+* Adds install_database.py, the Plassembler database and functionality for mapping plasmid contigs to PLDSB.
+* Update the API to -1 and -2 for short reads, matching Unicycler.
+* Adds mash as dependency.
+* Adds plassembler_top_hits_mash_plsdb.tsv output.
+* Adds plasmid_copy_number_short and plasmid_copy_number_long to fasta header for each plasmid.
+* Checks dependencies upon initialisation, with message to install Unicycler manually if required.
+
 0.1.3 (2022-12-27)
 ------------------
 

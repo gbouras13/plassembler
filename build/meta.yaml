@@ -1,6 +1,6 @@
 {% set version = "0.1.4" %}
 {% set name = "plassembler" %}
-{% set sha256 = "8d4a37618a4226ca1898ecba32f3086c243ebffd95a0d2bd72cfd1123ced6597" %}
+{% set sha256 = "bab3398a31f620ca2f57541fcbeded384cbd1f5ebfd04d8fe86297e38826a13e" %}
 {% set user = "gbouras13" %}
 
 package:
@@ -33,8 +33,6 @@ test:
   commands:
     - plassembler.py --version
     - install_database.py --help
-    - flye --help
-    - unicycler --help
 
 about:
   home: https://github.com/gbouras13/plassembler

@@ -31,7 +31,7 @@ Unicycler is awesome and still probably the best way to assemble plasmids from h
 2. Plassembler will output only the likely plasmids, which may be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://preprints.scielo.org/index.php/scielo/preprint/view/5053) so plassembler can get you only what is necessary from Unicycler.
 3. Plassembler will give you summary coverage stats for both long and short reads.
 4. Plassembler can be used as fast-ish quality control to check if your short and long reads come from the same sample - if plassembler results in many non-circular contigs (particularly those that have no hits in PLSDB), it is likely because your read sets do not come from the same isolate! 
-5. As of v 0.1.4, you will get information whether each assembled contig has a similar entry in [PLSDB](https://doi.org/10.1093/nar/gkab1111). Especially for common pathogen species that are well represented in databases, this will likely tell you specifically what plasmid you have in your sample. Additionally, if there are many contigs with no PLSDB hits, this can help you determine that your long and short reads do not come from the same isolate, or that there may be some other biological phenomenon in your "isolate" (for example, perhaps there is some other non-plasmid mobile genetic element present in low abuncance). For less commonly sequenced species, I would not suggest that that absence of a PLSDB hit is necessary meaningful, especially for circular contigs - those would likely be novel plasmids uncaptured by PLSDB.
+5. As of v 0.1.4, you will get information whether each assembled contig has a similar entry in [PLSDB](https://doi.org/10.1093/nar/gkab1111). Especially for common pathogen species that are well represented in databases, this will likely tell you specifically what plasmid you have in your sample. Additionally, if there are many contigs with no PLSDB hits, this can help you determine that your long and short reads do not come from the same isolate, or that there may be some other biological phenomenon in your "isolate" (for example, perhaps there is some other non-plasmid mobile genetic element present in low abundance). For less commonly sequenced species, I would not suggest that that absence of a PLSDB hit is necessary meaningful, especially for circular contigs - those would likely be novel plasmids uncaptured by PLSDB.
 
 Documentation
 -------
@@ -96,13 +96,13 @@ Unicycler v0.5.0 Installation Issues
 ------
 
 
-For Linux environments, Unicycler v0.5.0 should be installed with the conda installation.
+For Linux environments, Unicycler v0.5.0 should be installed with the plassembler bioconda installation.
 
 You can force it as follows:
 
 `conda install -c bioconda plassembler unicycler==0.5.0`
 
-or manually install Unicycler after installing plassembler:
+or manually install Unicycler v0.5.0 after installing plassembler:
 
 ```
 conda install -c bioconda plassembler
@@ -164,7 +164,7 @@ To specify a minimum length and minimum read quality Q-score for nanofilt :
 
 To overwrite an existing output directory, use -f
 
-` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -s1 < short read R1 fastq> -s2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality> -f`
+` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality> -f`
 
 plassembler defaults to 1 thread.
 

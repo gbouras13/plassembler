@@ -11,9 +11,9 @@ Method
 8. The de-deduplicated read sets are assembled using the hybrid assembler [Unicycler](https://github.com/rrwick/Unicycler) to generate final plasmid contigs.
 9. Average read coverage depth for each plasmid is calculated using a modified version of code found [here](https://github.com/rrwick/Small-plasmid-Nanopore). See also this [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
 10. Plasmid copy number is calculated by dividing the plasmid read depth by the chromosome read depth.
-
+11. All plasmid contigs are compared against [PLSDB](https://doi.org/10.1093/nar/gkab1111) using [mash](https://github.com/marbl/Mash) with a cutoff maximum mash distance of 0.1.
 
 
 Other Features (Work in Progress)
 
-1. All reads that map to both the chromosome and plasmid are extracted and assembled (short read only assembly).
+1. All reads that map to both the chromosome and plasmid are extracted and assembled (short read only assembly). This may be useful to identify possible insertion sequences and transposases that are shared between plasmid and chromosome.

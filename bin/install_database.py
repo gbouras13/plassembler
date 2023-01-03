@@ -15,7 +15,7 @@ def get_db_input():
     :return: args
     """
     parser = argparse.ArgumentParser(description='script to download required PLSDB databases', formatter_class=RawTextHelpFormatter)
-    parser.add_argument('-d', '--database', action="store", required = True, help='Database Directory - will be created and must be specificed if -d is not used.')
+    parser.add_argument('-d', '--database', action="store", required = True, help='Database Directory.')
     args = parser.parse_args()
     return args
 

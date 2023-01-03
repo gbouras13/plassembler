@@ -126,6 +126,7 @@ plassembler.py -h
 Unicycler v0.5.0 Installation Issues
 ------
 
+**Linux**
 
 For Linux environments, Unicycler v0.5.0 should be installed with the plassembler bioconda installation.
 

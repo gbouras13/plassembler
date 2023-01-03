@@ -12,7 +12,9 @@ import case_three
 import depth
 import extract
 import cleanup
-
+import run_mash
+import install_database
+import sys
 
 from version import __version__
 
@@ -54,6 +56,17 @@ if __name__ == "__main__":
     print("Checking dependencies.")
     logger.info("Checking dependencies.")
     input_commands.check_dependencies(logger)
+
+    # check the mash database is installed
+    print("Checking database installation")
+    logger.info("Checking database installation")
+    database_installed = install_database.check_db_installation(args.database)
+    if database_installed == True:
+        print("Database successfully checked")
+        logger.info("Database successfully checked")
+    else:
+        sys.exit("\nPlease run install_database.py \n") 
+
 
     print("Checking input fastqs.")
     logger.info("Checking input fastqs")
@@ -108,7 +121,18 @@ if __name__ == "__main__":
         if successful_unicycler_recovery == True:
             print('Unicycler identified plasmids. Calculating Plasmid Copy Numbers.')
             logger.info("Unicycler identified plasmids. Calculating Plasmid Copy Numbers.")
-            depth.get_depth(out_dir, logger,  args.threads, prefix)
+            depths_df = depth.get_depth(out_dir, logger,  args.threads, prefix)
+
+            # run mash
+            print('Calculating mash distances to PLSDB.')
+            logger.info('Calculating mash distances to PLSDB.')
+            run_mash.mash_sketch(out_dir, logger)
+            run_mash.run_mash(out_dir, args.database, logger)
+            mash_empty = run_mash.process_mash_tsv(out_dir, args.database, prefix)
+            # rename contigs and update copy bumber with plsdb
+            cleanup.rename_contigs(out_dir, prefix)
+            cleanup.update_copy_number_summary_plsdb(out_dir, prefix, mash_empty)
+
             cleanup.move_and_copy_files(out_dir, prefix, successful_unicycler_recovery)
             cleanup.remove_intermediate_files(out_dir)
         ####################################################################
@@ -150,8 +174,19 @@ if __name__ == "__main__":
             # get copy number 
             print('Calculating Plasmid Copy Numbers.')
             logger.info("Calculating Plasmid Copy Numbers.")
-            # assumes unicycler works - write a test if not
             depth.get_depth(out_dir, logger,  args.threads, prefix)
+
+            # run mash
+            print('Calculating mash distances to PLSDB.')
+            logger.info('Calculating mash distances to PLSDB.')
+            run_mash.mash_sketch(out_dir, logger)
+            run_mash.run_mash(out_dir, args.database, logger)
+            mash_empty = run_mash.process_mash_tsv(out_dir, args.database, prefix)
+
+            # rename contigs and update copy bumber with plsdb
+            cleanup.rename_contigs(out_dir, prefix)
+            cleanup.update_copy_number_summary_plsdb(out_dir, prefix, mash_empty)
+
             cleanup.move_and_copy_files(out_dir, prefix, chromosome_flag)
             cleanup.remove_intermediate_files(out_dir)
 

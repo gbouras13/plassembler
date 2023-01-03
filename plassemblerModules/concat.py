@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess as sp
-import plassemblerModules
+
 
 def concatenate_all_fastqs(out_dir,logger):
     """ moves and copies files
@@ -37,5 +37,5 @@ def concatenate_single(fastq_in1, fastq_in2, fastq_out, logger):
     :return: 
     """
     concat_fastq = sp.Popen(["cat", fastq_in1, fastq_in2 ], stdout=fastq_out, stderr=sp.PIPE)
-    plassemblerModules.write_to_log(concat_fastq.stderr, logger) 
+    log.write_to_log(concat_fastq.stderr, logger) 
 

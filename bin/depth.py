@@ -218,4 +218,6 @@ def combine_depth_dfs(out_dir, df_short, df_long, prefix, circular_status):
     out_file = os.path.join(out_dir, prefix + "_copy_number_summary.tsv")
     with open(out_file, 'w') as f:
         combined_df.to_csv(f, sep="\t", index=False, header=True)
+    
+
 

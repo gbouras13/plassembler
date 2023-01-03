@@ -162,6 +162,23 @@ class test_get_contig_circularity(unittest.TestCase):
 
         self.assertEqual(return_object, expected_return)
 
+# tests the run_mash.py 
+
+class test_get_contig_count_run_mash(unittest.TestCase):
+    """ Test for the get_contig_count from run_mash.sh"""
+    @classmethod
+    def setUpClass(cls):
+        cls.logger = logging.getLogger('test_logger.log')
+        cls.logger.setLevel(logging.INFO)
+
+    def test_get_contig_count_run_mash(self):
+        plasmid_fasta = 'case_one/output/unicycler_output/assembly.fasta'
+
+        expected_return = 1
+
+        return_object = plassemblerModules.get_contig_count(plasmid_fasta)
+
+        self.assertEqual(return_object, expected_return)
 
 
 

@@ -1,8 +1,7 @@
-
 import os
 import sys
 import subprocess as sp
-import plassemblerModules
+
 
 
 def deduplicate_fastqs(out_dir, threads, logger):
@@ -21,11 +20,11 @@ def deduplicate_fastqs(out_dir, threads, logger):
     dedup_short_two = os.path.join(out_dir, "short_read_dedup_R2.fastq.gz")
     try:
         dedup_long= sp.Popen(["seqkit", "rmdup", concat_long, "-j", threads, "-n", "-o",dedup_long], stdout=sp.PIPE, stderr=sp.PIPE) 
-        plassemblerModules.write_to_log(dedup_long.stdout, logger)
+        log.write_to_log(dedup_long.stdout, logger)
         dedup_s1= sp.Popen(["seqkit", "rmdup", concat_short_one, "-j", threads, "-n", "-o",dedup_short_one], stdout=sp.PIPE, stderr=sp.PIPE) 
-        plassemblerModules.write_to_log(dedup_s1.stdout, logger)
+        log.write_to_log(dedup_s1.stdout, logger)
         dedup_s2= sp.Popen(["seqkit", "rmdup", concat_short_two, "-j", threads, "-n", "-o",dedup_short_two], stdout=sp.PIPE, stderr=sp.PIPE) 
-        plassemblerModules.write_to_log(dedup_s2.stdout, logger)
+        log.write_to_log(dedup_s2.stdout, logger)
     except:
         sys.exit("Error with seqkit\n")  
 

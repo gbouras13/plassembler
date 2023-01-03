@@ -10,7 +10,7 @@ import subprocess as sp
 import statistics
 import numpy as np
 import pandas as pd
-import plassemblerModules
+
 
 def get_depth(out_dir, logger,  threads, prefix):
     """ wrapper function to get depth of each plasmid
@@ -21,7 +21,7 @@ def get_depth(out_dir, logger,  threads, prefix):
     :return: 
     """
     concatenate_chrom_plasmids(out_dir, logger)
-    plassemblerModules.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
+    mapping.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
     bwa_map_depth_sort(out_dir, threads)
     minimap_depth_sort(out_dir, threads)
     contig_lengths = get_contig_lengths(out_dir)
@@ -43,7 +43,7 @@ def concatenate_chrom_plasmids(out_dir, logger):
     plas_fasta = os.path.join(out_dir,"unicycler_output", "assembly.fasta")
     concat_fasta = open(os.path.join(out_dir, "combined.fasta"), "w")
     try:
-        plassemblerModules.concatenate_single(chrom_fasta, plas_fasta, concat_fasta, logger)
+        concat.concatenate_single(chrom_fasta, plas_fasta, concat_fasta, logger)
     except:
         sys.exit("Error with concatenate_fastas\n")  
 
@@ -217,4 +217,6 @@ def combine_depth_dfs(out_dir, df_short, df_long, prefix, circular_status):
     out_file = os.path.join(out_dir, prefix + "_copy_number_summary.tsv")
     with open(out_file, 'w') as f:
         combined_df.to_csv(f, sep="\t", index=False, header=True)
+    
+
 

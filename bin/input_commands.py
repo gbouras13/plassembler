@@ -27,6 +27,7 @@ def get_input():
 	parser.add_argument('-r', '--raw_flag', help="Use --nano-raw for Flye Guppy FAST reads. \nBy default, Flye will assume SUP or HAC reads and use --nano-hq", action="store_true" )
 	parser.add_argument('-p', '--prefix', action="store", help='Prefix for output files. This is not required',  default='Default')
 	parser.add_argument('-c', '--chromosome', action="store", help='Approximate chromosome length of bacteria',  default=2500000)
+	parser.add_argument('-d', '--database', action="store", help='Directory of PLSDB database downloaded using install_database.py.',  required=True)
 	parser.add_argument('-q', '--min_quality', action="store", help='minimum quality of long reads for nanofilt. Defaults to 9.',  default=str(9))
 	parser.add_argument('-V', '--version', action='version', version=v)
 	args = parser.parse_args()

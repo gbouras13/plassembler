@@ -58,12 +58,12 @@ if __name__ == "__main__":
     input_commands.check_dependencies(logger)
 
     # check the mash database is installed
-    print("Checking database installation")
-    logger.info("Checking database installation")
+    print("Checking database installation.")
+    logger.info("Checking database installation.")
     database_installed = install_database.check_db_installation(args.database)
     if database_installed == True:
-        print("Database successfully checked")
-        logger.info("Database successfully checked")
+        print("Database successfully checked.")
+        logger.info("Database successfully checked.")
     else:
         sys.exit("\nPlease run install_database.py \n") 
 

@@ -1,6 +1,6 @@
-{% set version = "0.1.3" %}
+{% set version = "0.1.4" %}
 {% set name = "plassembler" %}
-{% set sha256 = "78c777c7e0180afcccf2136791d7890cbf853d75a122b495f9eb4e4e7e27b80c" %}
+{% set sha256 = "8d4a37618a4226ca1898ecba32f3086c243ebffd95a0d2bd72cfd1123ced6597" %}
 {% set user = "gbouras13" %}
 
 package:

@@ -86,9 +86,12 @@ def process_mash_tsv(out_dir, plassembler_db_dir, prefix):
         tophits = []
 
         for contig in contigs:
-            tmp_df = mash_df.loc[mash_df['contig'] == contig].sort_values('mash_distance').reset_index(drop=True).loc[0]
-            tophits.append([tmp_df.contig, tmp_df.ACC_NUCCORE, tmp_df.mash_distance, tmp_df.mash_pval, tmp_df.mash_matching_hashes])
-        
+            hit_df = mash_df.loc[mash_df['contig'] == contig].sort_values('mash_distance').reset_index(drop=True)
+            hits = len(hit_df['mash_distance'])
+            # add only if there is a hit
+            if hits > 0:
+                tmp_df = mash_df.loc[mash_df['contig'] == contig].sort_values('mash_distance').reset_index(drop=True).loc[0]
+                tophits.append([tmp_df.contig, tmp_df.ACC_NUCCORE, tmp_df.mash_distance, tmp_df.mash_pval, tmp_df.mash_matching_hashes])
             # create tophits df
         tophits_mash_df = pd.DataFrame(tophits, columns=["contig", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
 

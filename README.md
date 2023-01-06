@@ -19,8 +19,8 @@ Table of Contents
   - [Automated Bacterial Plasmid Assembly Program](#automated-bacterial-plasmid-assembly-program)
   - [Table of Contents](#table-of-contents)
 - [Quick Start](#quick-start)
-- [Why Does plassembler exist?](#why-does-plassembler-exist)
-- [Why Not Use Unicycler?](#why-not-use-unicycler)
+- [Why Does Plassembler Exist?](#why-does-plassembler-exist)
+- [Why Not Just Use Unicycler?](#why-not-just-use-unicycler)
 - [Documentation](#documentation)
 - [Method](#method)
 - [Installation](#installation)
@@ -48,26 +48,25 @@ And finally assembly:
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length>`
 
-Please read below for more details, especially if you are an inexperienced command line user.
+Please read the [Installation](#installation) section for more details, especially if you are an inexperienced command line user.
 
-# Why Does plassembler exist?
+# Why Does Plassembler Exist?
 
 In long-read first assembled bacterial genomes, small plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated or missed (see [this](https://f1000research.com/articles/8-2138) and [this](https://github.com/rrwick/Trycycler/wiki/Clustering-contigs) ).
 
-plassembler was created as an automated tool to ensure plasmids assemble correctly without duplicated regions for high-throughput uses - and to provide some useful statistics as well (like copy number for long and short read sets). Plassembler will likely also recover small plasmids that long read assemblers like Flye simply miss.
+Plassembler was created as an automated tool to ensure plasmids assemble correctly without duplicated regions for high-throughput uses - and to provide some useful statistics as well (like copy number for both long and short read sets). Plassembler will likely also recover small plasmids that long read assemblers like Flye simply miss.
 
 As of v 0.1.4, plassembler also uses [mash](https://github.com/marbl/Mash) as a quick way to determine whether each assembled contig has any similar hits in [PLSDB](https://doi.org/10.1093/nar/gkab1111). 
 
-# Why Not Use Unicycler?
-
+# Why Not Just Use Unicycler?
 
 Unicycler is awesome and still probably the best way to assemble plasmids from hybrid sequencing - plassembler uses it! But there are a few reasons to use plassembler instead:
 
-1. Time. plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so it is much faster. 
+1. Time. Plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so it is much faster (3-5x usually). 
 2. Plassembler will output only the likely plasmids, which may be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://preprints.scielo.org/index.php/scielo/preprint/view/5053) so plassembler can get you only what is necessary from Unicycler.
-3. Plassembler will give you summary coverage stats for both long and short reads.
+3. Plassembler will give you summary depth and copy number stats for both long and short reads.
 4. Plassembler can be used as fast-ish quality control to check if your short and long reads come from the same sample - if plassembler results in many non-circular contigs (particularly those that have no hits in PLSDB), it is likely because your read sets do not come from the same isolate! 
-5. As of v 0.1.4, you will get information whether each assembled contig has a similar entry in [PLSDB](https://doi.org/10.1093/nar/gkab1111). Especially for common pathogen species that are well represented in databases, this will likely tell you specifically what plasmid you have in your sample. Additionally, if there are many contigs with no PLSDB hits, this can help you determine that your long and short reads do not come from the same isolate, or that there may be some other biological phenomenon in your "isolate" (for example, perhaps there is some other non-plasmid mobile genetic element present in low abundance). For less commonly sequenced species, I would not suggest that that absence of a PLSDB hit is necessary meaningful, especially for circular contigs - those would likely be novel plasmids uncaptured by PLSDB.
+5. As of v 0.1.4, you will get information whether each assembled contig has a similar entry in [PLSDB](https://doi.org/10.1093/nar/gkab1111). Especially for common pathogen species that are well represented in databases, this will likely tell you specifically what plasmid you have in your sample. Additionally, if there are many contigs with no PLSDB hits, this can help you determine that your long and short reads do not come from the same isolate, or that there may be some other biological phenomenon in your isolate (for example, perhaps there is some other non-plasmid mobile genetic element present in low abundance). Especially for less commonly sequenced species, I would not suggest that that absence of a PLSDB hit is necessary meaningful, especially for circular contigs - those would likely be novel plasmids uncaptured by PLSDB.
 
 # Documentation
 
@@ -89,16 +88,14 @@ Documentation can be found at http://plassembler.readthedocs.io/.
 
 Other Features (Work in Progress)
 
-1. All reads that map to both the chromosome and plasmid are extracted and assembled (short read only assembly). This may be useful to identify possible insertion sequences and transposases that are shared between plasmid and chromosome.
+1. All reads that map to both the chromosome and plasmids are extracted and assembled (short read only assembly). This may be useful to identify possible insertion sequences and transposases that are shared between plasmid and chromosome.
 
 
 # Installation
 
-Plassembler is on bioconda. 
+Plassembler should run and has been tested on Linux and MacOSX machines. 
 
-plassembler should run and has been tested on Linux and MacOSX machines. 
-
-The easiest way to install plassembler is via conda.
+The easiest way to install plassembler is via conda - Plassembler is on bioconda. 
 
 `conda install -c bioconda plassembler`
 
@@ -170,16 +167,15 @@ python3 setup.py install --makeargs "CXX=g++"
 
 # Running plassembler
 
-
 To run plassembler, first you need to install the database in a directory of your chosing:
 
 `install_database.py -d <database directory>`
 
-Once this is finished, you can run plassembler as followed
+Once this is finished, you can run plassembler as follows:
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length>`
 
-* -c will default to 2500000 (a lower bound for the estimated genome length of Staphylococcus aureus).
+* -c will default to 2500000 (a lower bound for the estimated genome length of _Staphylococcus aureus_) if it is absent.
 
 To specify more threads:
 
@@ -189,11 +185,11 @@ To specify a prefix for the output files:
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix>`
 
-To specify a minimum length and minimum read quality Q-score for nanofilt :
+To specify a minimum long read length and minimum read quality Q-score for nanofilt:
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality>`
 
-* -m will default to 500 and -q will default to 8. Note that for some tiny plasmids, -m may need to be reduced (see this [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2) ).
+* -m will default to 500 and -q will default to 8. Note that for some tiny plasmids, -m should be reduced or perhaps even set to 1 (see this [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2) ).
 
 To overwrite an existing output directory, use -f
 
@@ -294,7 +290,7 @@ At the moment, plassembler is designed for users with hybrid ONT long read and m
 
 Further, other approaches may be more appropriate for Kit 14 long read only assemblies - see this [tweet](https://twitter.com/rrwick/status/1548926644085108738?cxt=HHwWhMClvfCk8v4qAAAA). 
 
-In theory, plassembler can be applied to Pacbio reads not just ONT reads - it would only take a small tweak to change Flye parameters. If you would like this functionality, please let me know, I just haven't had the usecase for it.
+In theory, plassembler could be applied to Pacbio reads not just ONT reads - it would only take a small tweak to change Flye parameters. If you would like this functionality, please let me know, I just haven't had the usecase for it.
 
 # Citations
 

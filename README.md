@@ -253,7 +253,8 @@ Plassembler v0.1.4 was compared against Unicycler v0.5.0 in terms of speed and a
 
 
 
-|                               | **Plassembler**    | **Unicycler**     | **Ground Truth**   |
+
+|       **Benchmarking**         | **Plassembler**    | **Unicycler**     | **Ground Truth**   |
 |-------------------------------|--------------------|-------------------|--------------------|
 | **_Acinetobacter baumannii_** |                    |                   |                    |
 | Time (sec)                    | 1330               | 3938              |                    |
@@ -279,6 +280,42 @@ Plassembler v0.1.4 was compared against Unicycler v0.5.0 in terms of speed and a
 | **_Staphylococcus aureus_ 60x**     |                         |                   |                    |
 | Time (sec)                    | 897               | 3158              |                    |
 | Plasmids (bp)                 | 2473 | 2473 | 2473 |
+
+
+
+| **Small Plasmid Duplication**  | **Plassembler**   | **Flye (Output from Plassembler)**  |
+|-------------------------------|--------------------|-------------------|
+| **_Acinetobacter baumannii_** |                    |                   |                    
+| Plasmids (bp)                 | 6078       | 12147    |
+| **_Citrobacter koseri_**      |                    |                   |                    
+| Plasmids (bp)                 | 9294        | 27773      |
+| **_Enterobacter kobei_**      |                         |                   |                    
+| Plasmids (bp)               | 4665, 3715, 2370                | 9652, (3715 plasmid missing), 4676              |                    
+| **_Haemophilus sp002998595_**      |                         |                   |                    
+| Plasmids (bp)                 | 10719, 9975     | 21402, 9962  | 
+| **_Klebsiella oxytoca_**      |                         |                   |                               
+| Plasmids (bp)                 | 4574    | 4566 | 
+| **_Klebsiella variicola_**      |                         |                   |                                 
+| Plasmids (bp)                 |  5783, 3514  |  11573, (3514 plasmid missing) |
+| **_Staphylococcus aureus_ 30x**     |                         |                   |                    
+| Plasmids (bp)                 | 2473 | 2471 | 
+| **_Staphylococcus aureus_ 60x**     |                         |                   |                    
+| Plasmids (bp)                 | 2473 | 1611 |
+
+
+Table 2 | Small Plasmid Duplication
+		Ground Truth	Flye Assembly (From Plassembler Output)
+Acinetobacter
+baumannii	Plasmids (bp)	 6078	12147
+Citrobacter
+koseri	Plasmids (bp)	 9294	27773
+Enterobacter kobei	Plasmids (bp)	4665, 3715, 2370 	9652, (3715 plasmid missing), 4676
+Haemophilus sp002998595	Plasmids (bp)	10719, 9975	21402, 9962
+Klebsiella oxytoca	Plasmids (bp)	4574	4566
+Klebsiella variicola	Plasmids (bp)	5783	11573
+Klebsiella variicola	Plasmids (bp)	5783, 3514	11573, (3514 plasmid missing)
+Staphylococcus aureus 30x	Plasmids (bp)	2473	2471 
+Staphylococcus aureus 60x	Plasmids (bp)	2473	1611 (incomplete) 
 
 
 

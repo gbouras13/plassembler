@@ -252,7 +252,7 @@ Plassembler was benchmarked using 6 pathogen isolates from this [study](https://
 Plassembler v0.1.4 was compared against Unicycler v0.5.0 in terms of speed and accuracy. All circularised contigs were denoted as plasmids, along with the known linear plasmid in Klebsiella Variicola.  Benchmarking was conducted on an Intel® Xeon® CPU E5-2698 v3 @ 2.30GHz specifying 16 threads. The full methodology can be found at https://plassembler.readthedocs.io/en/latest/benchmarking/ and all output can be found at the Zenodo repository ___. 
 
 
-|-------------------------------|--------------------|-------------------|--------------------|
+
 |                               | **Plassembler**    | **Unicycler**     | **Ground Truth**   |
 |-------------------------------|--------------------|-------------------|--------------------|
 | **_Acinetobacter baumannii_** |                    |                   |                    |

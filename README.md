@@ -252,23 +252,24 @@ Plassembler was benchmarked using 6 pathogen isolates from this [study](https://
 Plassembler v0.1.4 was compared against Unicycler v0.5.0 in terms of speed and accuracy. All circularised contigs were denoted as plasmids, along with the known linear plasmid in Klebsiella Variicola.  Benchmarking was conducted on an Intel® Xeon® CPU E5-2698 v3 @ 2.30GHz specifying 16 threads. The full methodology can be found at https://plassembler.readthedocs.io/en/latest/benchmarking/ and all output can be found at the Zenodo repository ___. 
 
 
-|                                      |  | **Plassembler** | **Unicycler** | **Ground Truth** |
-| **_Acinetobacter baumannii_** | Time (sec) | 1330 | 3938 |  |
-| | Plasmids (bp)                        | 145069, 6078 | 145059, 6078 | 145059, 6078 |
-| **_Citrobacter koseri_**      | Time (sec) | 1321 | 4106 |  |
-| | Plasmids (bp)                        | 64962, 9294 | 64962, 9294 | 64962, 9294 |
-| **_Enterobacter kobei_**             | Time (sec) | 2097 | 4661 |  |
-| | Plasmids (bp)                        | 136482, 108411, 4665, 3715, 2370 | 136482, 108411, 4665, 3715, 2370 | 136482, 108411, 4665, 3715, 2370 |
-| **_Haemophilus sp002998595_**        | Time (sec) | 1325 | 3221 |  |
-| | Plasmids (bp)                        | 39345, 10719, 9975 | 39345, 10719, 9975 | 39398, 10719, 9975, 7392, 5675 |
-| **_Klebsiella oxytoca_**             | Time (sec) | 1467 | 5552 |  |
-| | Plasmids (bp)                        | 118161, 58472, 4574 | 118161, 58472, 4574 | 118161, 58472, 4574 |
-| **_Klebsiella variicola_**           | Time (sec) | 1816 | 4527 |  |
-| | Plasmids (bp)                        | 250884, 243620, 31078 (linear), 5783, 3514 | 250902, 243534, 31078 (linear), 5783, 3514 | 250980, 243620, 31780 (linear), 5783, 3514 |
+|                            |  | **Plassembler** | **Unicycler** | **Ground Truth** |
+|------------------------|--------------------|-------------------|--------------------|
+| **_Acinetobacter baumannii_** | Time (sec)      | 1330 | 3938 |  |
+| | Plasmids (bp)               | 145069, 6078    | 145059, 6078 | 145059, 6078 |
+| **_Citrobacter koseri_**      | Time (sec)      | 1321 | 4106 |  |
+| | Plasmids (bp)               | 64962, 9294     | 64962, 9294 | 64962, 9294 |
+| **_Enterobacter kobei_**      | Time (sec)      | 2097 | 4661 |  |
+| | Plasmids (bp)               | 136482, 108411, 4665, 3715, 2370 | 136482, 108411, 4665, 3715, 2370 | 136482, 108411, 4665, 3715, 2370 |
+| **_Haemophilus sp002998595_** | Time (sec)      | 1325 | 3221 |  |
+| | Plasmids (bp)               | 39345, 10719, 9975 | 39345, 10719, 9975 | 39398, 10719, 9975, 7392, 5675 |
+| **_Klebsiella oxytoca_**      | Time (sec) | 1467 | 5552 |  |
+| | Plasmids (bp)               | 118161, 58472, 4574 | 118161, 58472, 4574 | 118161, 58472, 4574 |
+| **_Klebsiella variicola_**    | Time (sec) | 1816 | 4527 |  |
+| | Plasmids (bp)               | 250884, 243620, 31078 (linear), 5783, 3514 | 250902, 243534, 31078 (linear), 5783, 3514 | 250980, 243620, 31780 (linear), 5783, 3514 |
 | **_Staphylococcus aureus_ 30x**  | Time (sec) | 548 | 2200 |  |
-|                                      | Plasmids (bp) | 2473 | 2473 | Not Applicable |
+|                                  | Plasmids (bp) | 2473 | 2473 | Not Applicable |
 | **_Staphylococcus aureus_ 60x**  | Time (sec) | 897 | 3000 |  |
-| | Plasmids (bp)                        | 2473 | 2473 | Not Applicable |
+| | Plasmids (bp)                  | 2473 | 2473 | Not Applicable |
 
 
 

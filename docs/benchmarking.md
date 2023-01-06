@@ -274,7 +274,6 @@ Benchmarking Output is as follows:
 Time & Accuracy
 ------
 
-
 |                               | **Plassembler**    | **Unicycler**     | **Ground Truth**   |
 |-------------------------------|--------------------|-------------------|--------------------|
 | **_Acinetobacter baumannii_** |                    |                   |                    |

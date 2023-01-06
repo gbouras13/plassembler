@@ -234,7 +234,6 @@ optional arguments:
 
 ```
 
-
 # Outputs
 
 plassembler will output a `_plasmids.fasta` file, which will contain the assembled plasmid sequence(s) in FASTA format (including long and short read copy numbers in the header), and a `_plasmids.gfa` file, which will contain the assembly graph from Unicycler that can be visualised in [Bandage](https://github.com/rrwick/Bandage). 
@@ -251,7 +250,7 @@ plassembler will also output a log file, a `flye_output` directory, which contai
 
 Plassembler was benchmarked using 6 pathogen isolates from this [study](https://doi.org/10.1099/mgen.0.000631)  available [here](https://bridges.monash.edu/articles/dataset/Small_plasmid_Nanopore_data/13543754) o along with one Staphylococcus aureus isolate (SAMN32360844 in BioProject [PRJNA914892]() https://www.ncbi.nlm.nih.gov/bioproject/PRJNA803313 ) .
 
-Plassembler v0.1.4 was compared against Unicycler v0.5.0 in terms of speed and accuracy. All circularised contigs were denoted as plasmids, along with the known linear plasmid in Klebsiella Variicola.  Benchmarking was conducted on an Intel® Xeon® CPU E5-2698 v3 @ 2.30GHz specifying 16 threads. The full methodology can be found at https://plassembler.readthedocs.io/en/latest/benchmarking/ and all output can be found at the Zenodo repository ___. 
+Plassembler v0.1.4 was compared against Unicycler v0.5.0 in terms of speed and accuracy. All circularised contigs were denoted as plasmids, along with the known linear plasmid in Klebsiella Variicola.  Benchmarking was conducted on an Intel® Xeon® CPU E5-2698 v3 @ 2.30GHz specifying 16 threads. The full methodology can be found [here](https://plassembler.readthedocs.io/en/latest/benchmarking/) and all output can be found at the Zenodo repository ___. 
 
 Time & Accuracy
 ------
@@ -306,9 +305,6 @@ Small Plasmid Duplication
 | Plasmids (bp)                 | 2473 | 2471 | 
 | **_Staphylococcus aureus_ 60x**     |                         |                   |                    
 | Plasmids (bp)                 | 2473 | 1611 |
-
-
-
 
 
 # Acknowledgements

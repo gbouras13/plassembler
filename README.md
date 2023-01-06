@@ -28,6 +28,8 @@ Table of Contents
 - [Running plassembler](#running-plassembler)
 - [Outputs](#outputs)
 - [Benchmarking](#benchmarking)
+  - [Time \& Accuracy](#time--accuracy)
+  - [Small Plasmid Duplication](#small-plasmid-duplication)
 - [Acknowledgements](#acknowledgements)
 - [Version Log](#version-log)
 - [Bugs and Suggestions](#bugs-and-suggestions)
@@ -251,8 +253,8 @@ Plassembler was benchmarked using 6 pathogen isolates from this [study](https://
 
 Plassembler v0.1.4 was compared against Unicycler v0.5.0 in terms of speed and accuracy. All circularised contigs were denoted as plasmids, along with the known linear plasmid in Klebsiella Variicola.  Benchmarking was conducted on an Intel® Xeon® CPU E5-2698 v3 @ 2.30GHz specifying 16 threads. The full methodology can be found at https://plassembler.readthedocs.io/en/latest/benchmarking/ and all output can be found at the Zenodo repository ___. 
 
-
-
+Time & Accuracy
+------
 
 |       **Benchmarking**         | **Plassembler**    | **Unicycler**     | **Ground Truth**   |
 |-------------------------------|--------------------|-------------------|--------------------|
@@ -282,6 +284,9 @@ Plassembler v0.1.4 was compared against Unicycler v0.5.0 in terms of speed and a
 | Plasmids (bp)                 | 2473 | 2473 | 2473 |
 
 
+Small Plasmid Duplication
+------
+
 
 | **Small Plasmid Duplication**  | **Plassembler**   | **Flye (Output from Plassembler)**  |
 |-------------------------------|--------------------|-------------------|
@@ -302,20 +307,6 @@ Plassembler v0.1.4 was compared against Unicycler v0.5.0 in terms of speed and a
 | **_Staphylococcus aureus_ 60x**     |                         |                   |                    
 | Plasmids (bp)                 | 2473 | 1611 |
 
-
-Table 2 | Small Plasmid Duplication
-		Ground Truth	Flye Assembly (From Plassembler Output)
-Acinetobacter
-baumannii	Plasmids (bp)	 6078	12147
-Citrobacter
-koseri	Plasmids (bp)	 9294	27773
-Enterobacter kobei	Plasmids (bp)	4665, 3715, 2370 	9652, (3715 plasmid missing), 4676
-Haemophilus sp002998595	Plasmids (bp)	10719, 9975	21402, 9962
-Klebsiella oxytoca	Plasmids (bp)	4574	4566
-Klebsiella variicola	Plasmids (bp)	5783	11573
-Klebsiella variicola	Plasmids (bp)	5783, 3514	11573, (3514 plasmid missing)
-Staphylococcus aureus 30x	Plasmids (bp)	2473	2471 
-Staphylococcus aureus 60x	Plasmids (bp)	2473	1611 (incomplete) 
 
 
 

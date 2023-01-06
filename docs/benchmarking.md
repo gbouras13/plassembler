@@ -271,6 +271,9 @@ conda deactivate
 
 Benchmarking Output is as follows:
 
+Time & Accuracy
+------
+
 
 |                               | **Plassembler**    | **Unicycler**     | **Ground Truth**   |
 |-------------------------------|--------------------|-------------------|--------------------|
@@ -298,3 +301,28 @@ Benchmarking Output is as follows:
 | **_Staphylococcus aureus_ 60x**     |                         |                   |                    |
 | Time (sec)                    | 897               | 3158              |                    |
 | Plasmids (bp)                 | 2473 | 2473 | 2473 |
+
+
+
+Small Plasmid Duplication
+------
+
+
+| **Small Plasmid Duplication**  | **Plassembler**   | **Flye (Output from Plassembler)**  |
+|-------------------------------|--------------------|-------------------|
+| **_Acinetobacter baumannii_** |                    |                   |                    
+| Plasmids (bp)                 | 6078       | 12147    |
+| **_Citrobacter koseri_**      |                    |                   |                    
+| Plasmids (bp)                 | 9294        | 27773      |
+| **_Enterobacter kobei_**      |                         |                   |                    
+| Plasmids (bp)               | 4665, 3715, 2370                | 9652, (3715 plasmid missing), 4676              |                    
+| **_Haemophilus sp002998595_**      |                         |                   |                    
+| Plasmids (bp)                 | 10719, 9975     | 21402, 9962  | 
+| **_Klebsiella oxytoca_**      |                         |                   |                               
+| Plasmids (bp)                 | 4574    | 4566 | 
+| **_Klebsiella variicola_**      |                         |                   |                                 
+| Plasmids (bp)                 |  5783, 3514  |  11573, (3514 plasmid missing) |
+| **_Staphylococcus aureus_ 30x**     |                         |                   |                    
+| Plasmids (bp)                 | 2473 | 2471 | 
+| **_Staphylococcus aureus_ 60x**     |                         |                   |                    
+| Plasmids (bp)                 | 2473 | 1611 |

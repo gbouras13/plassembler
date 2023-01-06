@@ -1,6 +1,6 @@
 ##### Plassembler Benchmarking v0.1.4
 
-* Firstly, I downloaded the 6 tarballs from https://bridges.monash.edu/articles/dataset/Small_plasmid_Nanopore_data/13543754 
+* Firstly, I downloaded the 6 tarballs from this [link](https://bridges.monash.edu/articles/dataset/Small_plasmid_Nanopore_data/13543754). 
 
 * These contained tech_rep_1_rapid_reads.fastq.gz, tech_rep_2_rapid_reads.fastq.gz, tech_rep_1_ligation_reads.fastq.gz, tech_rep_2_ligation_reads.fastq.gz, tech_rep_1_illumina_reads  and tech_rep_2_illumina_reads tarballs.
 
@@ -15,7 +15,7 @@ These are the barcodes linked to the species
  
 **Serratia Marscecens**
 
-* barcode08 Serratia Marcescens was excluded from benchmarking due to how devilishly difficult it was for Ryan Wick to assemble it, even with Trycycler - see his comments https://github.com/rrwick/Small-plasmid-Nanopore/blob/main/method.md#Long-read. 
+* barcode08 Serratia Marcescens was excluded from benchmarking due to how devilishly difficult it was for Ryan Wick to assemble it, even with Trycycler - see his [comments](https://github.com/rrwick/Small-plasmid-Nanopore/blob/main/method.md#Long-read). 
 * I tried assembling it in different ways with different read subsets, but kept getting different results every time depending on what read subset I chose or even how I randomly sampled the reads, indicating there was enormous heterogeneity in this sample. Even when I used all reads (over 400x chromosome coverage), the Flye step in Plassembler could not resolve the 184447bp plasmid which was concerning! So I excluded it from the benchmarking.
 
 

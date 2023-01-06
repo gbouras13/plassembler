@@ -19,3 +19,6 @@ nav:
       - Usage: run.md
     - OUTPUT:
       - Output: output.md
+    - BENCHMARKING:
+      - Benchmarking: benchmarking.md
+

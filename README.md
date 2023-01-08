@@ -44,7 +44,7 @@ The easiest way to install plassembler is via conda:
 
 Followed by database download and installation:
 
-`install_database.py -o <path/to/databse_dir>`
+`install_database.py -d <path/to/databse_dir>`
 
 And finally assembly:
 

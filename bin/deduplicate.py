@@ -29,3 +29,18 @@ def deduplicate_fastqs(out_dir, threads, logger):
     except:
         sys.exit("Error with seqkit\n")  
 
+def deduplicate_long_fastqs(out_dir, threads, logger):
+    """ deduplicates fastq
+    :param out_dir:  Output Directory
+    :param logger: logger
+    :param threads: threads
+    :return: 
+    """
+    # sets file paths
+    concat_long = os.path.join(out_dir, "long_read_concat.fastq")
+    dedup_long = os.path.join(out_dir, "long_read_dedup.fastq")
+    try:
+        dedup_long= sp.Popen(["seqkit", "rmdup", concat_long, "-j", threads, "-n", "-o",dedup_long], stdout=sp.PIPE, stderr=sp.PIPE) 
+        log.write_to_log(dedup_long.stdout, logger)
+    except:
+        sys.exit("Error with seqkit\n")  

@@ -8,7 +8,9 @@ import qc
 import run_flye
 import extract
 import case_one
+import case_one_kmer
 import case_three
+import case_three_kmer
 import depth
 import extract
 import cleanup
@@ -36,7 +38,6 @@ if __name__ == "__main__":
         prefix = "plassembler"
     else:
         prefix = args.prefix
-
 
     
     # instiate the output directory
@@ -67,14 +68,23 @@ if __name__ == "__main__":
     else:
         sys.exit("\nPlease run install_database.py \n") 
 
-
     print("Checking input fastqs.")
     logger.info("Checking input fastqs")
 
+    if args.kmer_mode == False:
+        if args.short_one == 'nothing':
+            logger.info("You have running hybrid mode and have forgotten to specify short reads fastq files. Please try again and specify these with -1 and -2.")
+            sys.exit("You have running hybrid mode and have forgotten to specify short reads fastq files. Please try again and specify these with -1 and -2.")
+    else:
+        logger.info("You have chosen --kmer_mode with long reads only. Ignoring any short reads.")
+        print("You have chosen --kmer_mode with long reads only. Ignoring any short reads.")
+
+
     # checking fastq 
     long_zipped = input_commands.validate_fastq(args.longreads)
-    s1_zipped = input_commands.validate_fastq(args.short_one)
-    s2_zipped = input_commands.validate_fastq(args.short_two)
+    if args.kmer_mode == False:
+        s1_zipped = input_commands.validate_fastq(args.short_one)
+        s2_zipped = input_commands.validate_fastq(args.short_two)
 
     # filtering long readfastq
     print("Filtering long reads.")
@@ -102,20 +112,32 @@ if __name__ == "__main__":
     if contig_count == 1:
         logger.info("Only one contig was assembled with Flye.")
         print("Only one contig was assembled with Flye.")
-        print('Plassembler will now try to use short reads to find possible plasmids.')
-        logger.info("Plassembler will now try to use short reads to find possible plasmids.")
+
+        if args.kmer_mode == False:
+            print('Plassembler will now try to use short reads to find possible plasmids.')
+            logger.info("Plassembler will now try to use short reads to find possible plasmids.")
+        else:
+            print('Plassembler will now try to use Unicycler to find possible plasmids that Flye may have missed in the long reads.')
+            logger.info('Plassembler will now try to use Unicycler to find possible plasmids that Flye may have missed in the long reads.')
+
 
         # no_plasmids_flag = True as no plasmids
         no_plasmids_flag = True
         chromosome_flag = extract.extract_chromosome(out_dir, args.chromosome, no_plasmids_flag)
         
-        print('Trimming short reads.')
-        logger.info("Trimming short reads.")
-        qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+        if args.kmer_mode == False:
+            print('Trimming short reads.')
+            logger.info("Trimming short reads.")
+            qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
 
-        print('Recovering possible plasmids from short reads.')
-        logger.info("Recovering possible plasmids from short reads.")
-        successful_unicycler_recovery = case_one.case_one(out_dir, args.threads, logger)
+            print('Recovering possible plasmids from short reads.')
+            logger.info("Recovering possible plasmids from short reads.")
+            successful_unicycler_recovery = case_one.case_one(out_dir, args.threads, logger)
+        else:
+            print('Recovering possible plasmids using Unicycler.')
+            logger.info("Recovering possible plasmids using Unicycler.")
+            successful_unicycler_recovery = case_one_kmer.case_one_kmer(out_dir, args.threads, logger)
+
 
         # if unicycler successfully finished, calculate the plasmid copy numbers
         if successful_unicycler_recovery == True:
@@ -163,14 +185,25 @@ if __name__ == "__main__":
         # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> mappeed to plasmids, unmapped to chromosome and assembly
         ####################################################################
         else:
-            print('Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.')
-            logger.info("Chromosome Identified. Plassembler will now use both long and short reads to assemble plasmids accurately.")
-            print('Trimming short reads.')
-            logger.info("Trimming short reads.")
-            qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
-            ##### modules
-            # assembly plasmids
-            case_three.case_three(out_dir, args.threads,logger)
+            if args.kmer_mode == False:
+                print('Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.')
+                logger.info("Chromosome Identified. Plassembler will now use both long and short reads to assemble plasmids accurately.")
+                
+                print('Trimming short reads.')
+                logger.info("Trimming short reads.")
+                qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+                ##### modules
+                # assembly plasmids
+                case_three.case_three(out_dir, args.threads,logger)
+
+
+            # kmer_mode
+            else:
+                print('Chromosome Identified. Plassembler will now use long reads and Unicycler to assemble plasmids accurately.')
+                logger.info("Chromosome Identified. Plassembler will now use long reads and Unicycler to assemble plasmids accurately.")
+                case_three_kmer.case_three_kmer(out_dir, args.threads,logger)
+
+            
             # get copy number 
             print('Calculating Plasmid Copy Numbers.')
             logger.info("Calculating Plasmid Copy Numbers.")

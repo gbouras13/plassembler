@@ -24,3 +24,17 @@ def run_unicycler(short_only, threads, logger, short_one, short_two, long, unicy
         log.write_to_log(unicycler.stdout, logger)
     except:
         sys.exit("Error with Unicycler.\n")  
+
+def run_unicycler_kmer(threads, logger, long, unicycler_output_dir):
+    """ runs Unicycler on long reads as single end reads
+    :param long: long read fastq
+    :param unicycler_output_dir: unicycler Output Directory
+    :param threads: threads
+    :param logger: logger
+    :return: 
+    """
+    try:
+        unicycler = sp.Popen(["unicycler",  "-s", long, "-t", threads, "-o",  unicycler_output_dir ], stdout=sp.PIPE, stderr=sp.PIPE) 
+        log.write_to_log(unicycler.stdout, logger)
+    except:
+        sys.exit("Error with Unicycler.\n")  

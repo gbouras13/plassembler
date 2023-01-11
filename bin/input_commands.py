@@ -19,8 +19,8 @@ def get_input():
 	parser = argparse.ArgumentParser(description='plassembler: accurate extra-chromosomal plasmid assembler pipeline for haploid bacterial genomes.', formatter_class=RawTextHelpFormatter)
 	parser.add_argument('-d', '--database', action="store", help='Directory of PLSDB database downloaded using install_database.py.',  required=True)
 	parser.add_argument('-l', '--longreads', action="store", help='Fastq File of ONT Long Reads. Required',  required=True)
-	parser.add_argument('-1', '--short_one', action="store", help='R1 short read fastq file. Required.',  required=True)
-	parser.add_argument('-2', '--short_two', action="store", help='R2 short read fastq file. Required.',  required=True)
+	parser.add_argument('-1', '--short_one', action="store", help='R1 short read fastq file. Required.',  default='nothing')
+	parser.add_argument('-2', '--short_two', action="store", help='R2 short read fastq file. Required.',  default='nothing')
 	parser.add_argument('-c', '--chromosome', action="store", help='Approximate chromosome length of bacteria. Defaults to 2500000.',  default=2500000)
 	parser.add_argument('-o', '--outdir', action="store", help='Directory to write the output to. Defaults to output/', default=os.path.join(os.getcwd(), "output/") )
 	parser.add_argument('-m', '--min_length', action="store", help='minimum length for long reads for nanofilt. Defaults to 500.',  default='500')
@@ -29,6 +29,7 @@ def get_input():
 	parser.add_argument('-r', '--raw_flag', help="Use --nano-raw for Flye Guppy FAST reads. \nBy default, Flye will assume SUP or HAC reads and use --nano-hq", action="store_true" )
 	parser.add_argument('-p', '--prefix', action="store", help='Prefix for output files. This is not required',  default='Default')
 	parser.add_argument('-q', '--min_quality', action="store", help='minimum quality of long reads for nanofilt. Defaults to 9.',  default=str(9))
+	parser.add_argument('-k', '--kmer_mode',  help='Nanopore 10.4 and above reads. No short reads required.', action="store_true" )
 	parser.add_argument('-V', '--version', action='version',help='show plassembler version and exit.', version=v)
 	args = parser.parse_args()
 

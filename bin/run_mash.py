@@ -45,8 +45,6 @@ def run_mash(out_dir, plassembler_db_dir, logger):
     except:
         sys.exit("Error with mash dist.\n")  
 
-#mash dist test_mash/unicycler_output/assembly.fasta.msh ../plsdb_110222_plassembler_v0.1.4_databases/plsdb.msh -v 0.1 -d 0.1 -i
-
 def get_contig_count(out_dir):
     """
     Process mash output

@@ -7,6 +7,7 @@ from Bio import SeqIO
 import shutil
 import subprocess as sp
 from version import __version__
+import log
 
 v = __version__
 
@@ -131,35 +132,84 @@ def check_dependencies(logger):
 		print("Unicycler version is ok.")
 		logger.info("Unicycler version is ok.")
 
+#samtools
+	try:
+		samtools = sp.Popen(["samtools"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("Samtools found.")
+		logger.info("Samtools found.")
+		log.write_to_log(samtools.stderr, logger)
+	except:
+		sys.exit("Samtools not found.\n")  
+
+#bwa
+	try:
+		bwa = sp.Popen(["bwa"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("bwa found.")
+		logger.info("bwa found.")
+		log.write_to_log(bwa.stderr, logger)
+	except:
+		sys.exit("bwa not found.\n")  
+
+#bwa
+	try:
+		minimap2 = sp.Popen(["minimap2", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("minimap2 found.")
+		logger.info("minimap2 found.")
+		log.write_to_log(minimap2.stdout, logger)
+	except:
+		sys.exit("minimap2 not found.\n")  
+
+#minimap2
+	try:
+		minimap2 = sp.Popen(["minimap2", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("minimap2 found.")
+		logger.info("minimap2 found.")
+		log.write_to_log(minimap2.stdout, logger)
+	except:
+		sys.exit("minimap2 not found.\n")  
+
+#fastp
+	try:
+		fastp = sp.Popen(["fastp", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("fastp found.")
+		logger.info("fastp found.")
+		log.write_to_log(fastp.stdout, logger)
+	except:
+		sys.exit("fastp not found.\n")  
+
+#fastp
+	try:
+		nanofilt = sp.Popen(["nanofilt", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("nanofilt found.")
+		logger.info("nanofilt found.")
+		log.write_to_log(nanofilt.stdout, logger)
+	except:
+		sys.exit("nanofilt not found.\n")  
+
+	#mash
+	try:
+		seqkit = sp.Popen(["seqkit", "version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("seqkit found.")
+		logger.info("seqkit found.")
+		log.write_to_log(seqkit.stdout, logger)
+	except:
+		sys.exit("seqkit not found.\n")  
+
+#mash
+	try:
+		mash = sp.Popen(["mash"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("mash found.")
+		logger.info("mash found.")
+		log.write_to_log(mash.stdout, logger)
+	except:
+		sys.exit("mash not found.\n")  
+	
+	# all dependencies found
+	print("All dependencies found.")
+	logger.info("All dependencies found.")
 
 
 
 
-
-
-
-
-
-	# # to get extension
-	# filename, file_extension = os.path.splitext(file)
-	# # flag for whether file is zipped
-	# zipped = True
-	# if file_extension == ".gz":
-	# # if gzipped 
-	# 	with gzip.open(file, "rt") as handle:
-	# 		fastq = SeqIO.parse(handle, "fastq")
-	# 		if any(fastq):
-	# 			print("FASTQ " + file + " checked")
-	# 		else:
-	# 			sys.exit("Error: Input file is not in the FASTQ format.\n")  
-	# else:
-	# 	zipped = False
-	# 	with open(file, "r") as handle:
-	# 		fastq = SeqIO.parse(handle, "fastq")
-	# 		if any(fastq):
-	# 			print("FASTQ " +file + " checked")
-	# 		else:
-	# 			sys.exit("Error: Input file is not in the FASTQ format.\n") 
-	# return zipped
 
 

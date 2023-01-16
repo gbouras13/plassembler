@@ -58,6 +58,7 @@ if __name__ == "__main__":
     logger.info("Checking dependencies.")
     input_commands.check_dependencies(logger)
 
+
     # check the mash database is installed
     print("Checking database installation.")
     logger.info("Checking database installation.")
@@ -141,9 +142,13 @@ if __name__ == "__main__":
 
         # if unicycler successfully finished, calculate the plasmid copy numbers
         if successful_unicycler_recovery == True:
+
             print('Unicycler identified plasmids. Calculating Plasmid Copy Numbers.')
             logger.info("Unicycler identified plasmids. Calculating Plasmid Copy Numbers.")
-            depths_df = depth.get_depth(out_dir, logger,  args.threads, prefix)
+            if args.kmer_mode == False:
+                depth.get_depth(out_dir, logger,  args.threads, prefix)
+            else:
+                depth.get_depth_kmer(out_dir, logger,  args.threads, prefix)
 
             # run mash
             print('Calculating mash distances to PLSDB.')
@@ -195,19 +200,19 @@ if __name__ == "__main__":
                 ##### modules
                 # assembly plasmids
                 case_three.case_three(out_dir, args.threads,logger)
-
+                # get copy number 
+                print('Calculating Plasmid Copy Numbers.')
+                logger.info("Calculating Plasmid Copy Numbers.")
+                depth.get_depth(out_dir, logger,  args.threads, prefix)
 
             # kmer_mode
             else:
                 print('Chromosome Identified. Plassembler will now use long reads and Unicycler to assemble plasmids accurately.')
                 logger.info("Chromosome Identified. Plassembler will now use long reads and Unicycler to assemble plasmids accurately.")
                 case_three_kmer.case_three_kmer(out_dir, args.threads,logger)
-
-            
-            # get copy number 
-            print('Calculating Plasmid Copy Numbers.')
-            logger.info("Calculating Plasmid Copy Numbers.")
-            depth.get_depth(out_dir, logger,  args.threads, prefix)
+                print('Calculating Plasmid Copy Numbers.')
+                logger.info("Calculating Plasmid Copy Numbers.")
+                depth.get_depth_kmer(out_dir, logger,  args.threads, prefix)
 
             # run mash
             print('Calculating mash distances to PLSDB.')

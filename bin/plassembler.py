@@ -222,7 +222,10 @@ if __name__ == "__main__":
             mash_empty = run_mash.process_mash_tsv(out_dir, args.database, prefix)
 
             # rename contigs and update copy bumber with plsdb
-            cleanup.rename_contigs(out_dir, prefix)
+            if args.kmer_mode == False:
+                cleanup.rename_contigs(out_dir, prefix)
+            else:
+                cleanup.rename_contigs_kmer(out_dir, prefix)
             cleanup.update_copy_number_summary_plsdb(out_dir, prefix, mash_empty)
 
             cleanup.move_and_copy_files(out_dir, prefix, chromosome_flag)

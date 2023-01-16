@@ -30,8 +30,8 @@ To overwrite an existing output directory, use -f
 plassembler defaults to 1 thread.
 
 ```
-usage: plassembler.py [-h] -d DATABASE -l LONGREADS -1 SHORT_ONE -2 SHORT_TWO [-c CHROMOSOME] [-o OUTDIR] [-m MIN_LENGTH]
-                      [-t THREADS] [-f] [-r] [-p PREFIX] [-q MIN_QUALITY] [-V]
+usage: plassembler.py [-h] -d DATABASE -l LONGREADS [-1 SHORT_ONE] [-2 SHORT_TWO] [-c CHROMOSOME] [-o OUTDIR] [-m MIN_LENGTH]
+                      [-t THREADS] [-f] [-r] [-p PREFIX] [-q MIN_QUALITY] [-k] [-V]
 
 plassembler: accurate extra-chromosomal plasmid assembler pipeline for haploid bacterial genomes.
 
@@ -60,6 +60,6 @@ optional arguments:
                         Prefix for output files. This is not required
   -q MIN_QUALITY, --min_quality MIN_QUALITY
                         minimum quality of long reads for nanofilt. Defaults to 9.
+  -k, --kmer_mode       Very high quality Nanopore R10.4 and above reads. No short reads required. Experimental for now.
   -V, --version         show plassembler version and exit.
-
 ```

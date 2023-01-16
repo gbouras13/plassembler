@@ -2,12 +2,12 @@
 History
 =======
 
-0.1.5 (2023-01-06)
+0.1.5 (2023-01-16)
 ------------------
 
 * Adds checks for dependencies.
 * Adds samtools to bioconda recipe (thanks Jan/gaworj).
-* Adds long-only kmer_mode for very high quality Nanopore reads - experimental until I get more data especially on small plasmids. Does exactly the same (Flye -> Unicycler). 
+* Adds long-only kmer_mode for very high quality Nanopore reads (R10.4 and above) - experimental until I get more data especially with small plasmids. Does exactly the same (Flye -> Unicycler). Seems to work pretty well. 
 
 
 0.1.4 (2023-01-03)

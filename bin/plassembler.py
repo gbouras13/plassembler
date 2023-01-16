@@ -74,8 +74,8 @@ if __name__ == "__main__":
 
     if args.kmer_mode == False:
         if args.short_one == 'nothing':
-            logger.info("You have running hybrid mode and have forgotten to specify short reads fastq files. Please try again and specify these with -1 and -2.")
-            sys.exit("You have running hybrid mode and have forgotten to specify short reads fastq files. Please try again and specify these with -1 and -2.")
+            logger.info("ERROR: You have running hybrid mode and have forgotten to specify short reads fastq files. Please try again and specify these with -1 and -2.")
+            sys.exit("ERROR: You have running hybrid mode and have forgotten to specify short reads fastq files. Please try again and specify these with -1 and -2.")
     else:
         logger.info("You have chosen --kmer_mode with long reads only. Ignoring any short reads.")
         print("You have chosen --kmer_mode with long reads only. Ignoring any short reads.")
@@ -244,3 +244,4 @@ if __name__ == "__main__":
 
 
 
+r

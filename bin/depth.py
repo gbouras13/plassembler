@@ -50,7 +50,7 @@ def get_depth_kmer(out_dir, logger,  threads, prefix):
     depthsLong = get_depths_from_bam(out_dir, "long", contig_lengths)
     circular_status = get_contig_circularity(out_dir)
     summary_depth_df_long = collate_depths(depthsLong,"long",contig_lengths)
-    combine_depth_dfs(out_dir, summary_depth_df_long, prefix, circular_status)
+    kmer_final_output(out_dir, summary_depth_df_long, prefix, circular_status)
 
 
 def concatenate_chrom_plasmids(out_dir, logger):

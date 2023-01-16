@@ -28,6 +28,7 @@ requirements:
     - nanofilt >=2.2.0
     - seqkit
     - mash >=2.2
+    - samtools >=1.10
 
 test:
   commands:

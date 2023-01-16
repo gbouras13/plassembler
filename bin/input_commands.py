@@ -7,6 +7,7 @@ from Bio import SeqIO
 import shutil
 import subprocess as sp
 from version import __version__
+import log
 
 v = __version__
 
@@ -19,8 +20,8 @@ def get_input():
 	parser = argparse.ArgumentParser(description='plassembler: accurate extra-chromosomal plasmid assembler pipeline for haploid bacterial genomes.', formatter_class=RawTextHelpFormatter)
 	parser.add_argument('-d', '--database', action="store", help='Directory of PLSDB database downloaded using install_database.py.',  required=True)
 	parser.add_argument('-l', '--longreads', action="store", help='Fastq File of ONT Long Reads. Required',  required=True)
-	parser.add_argument('-1', '--short_one', action="store", help='R1 short read fastq file. Required.',  required=True)
-	parser.add_argument('-2', '--short_two', action="store", help='R2 short read fastq file. Required.',  required=True)
+	parser.add_argument('-1', '--short_one', action="store", help='R1 short read fastq file. Required.',  default='nothing')
+	parser.add_argument('-2', '--short_two', action="store", help='R2 short read fastq file. Required.',  default='nothing')
 	parser.add_argument('-c', '--chromosome', action="store", help='Approximate chromosome length of bacteria. Defaults to 2500000.',  default=2500000)
 	parser.add_argument('-o', '--outdir', action="store", help='Directory to write the output to. Defaults to output/', default=os.path.join(os.getcwd(), "output/") )
 	parser.add_argument('-m', '--min_length', action="store", help='minimum length for long reads for nanofilt. Defaults to 500.',  default='500')
@@ -29,6 +30,7 @@ def get_input():
 	parser.add_argument('-r', '--raw_flag', help="Use --nano-raw for Flye Guppy FAST reads. \nBy default, Flye will assume SUP or HAC reads and use --nano-hq", action="store_true" )
 	parser.add_argument('-p', '--prefix', action="store", help='Prefix for output files. This is not required',  default='Default')
 	parser.add_argument('-q', '--min_quality', action="store", help='minimum quality of long reads for nanofilt. Defaults to 9.',  default=str(9))
+	parser.add_argument('-k', '--kmer_mode',  help='Very high quality Nanopore R10.4 and above reads. No short reads required. Experimental for now.', action="store_true" )
 	parser.add_argument('-V', '--version', action='version',help='show plassembler version and exit.', version=v)
 	args = parser.parse_args()
 
@@ -130,35 +132,84 @@ def check_dependencies(logger):
 		print("Unicycler version is ok.")
 		logger.info("Unicycler version is ok.")
 
+#samtools
+	try:
+		samtools = sp.Popen(["samtools"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("Samtools found.")
+		logger.info("Samtools found.")
+		log.write_to_log(samtools.stderr, logger)
+	except:
+		sys.exit("Samtools not found.\n")  
+
+#bwa
+	try:
+		bwa = sp.Popen(["bwa"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("bwa found.")
+		logger.info("bwa found.")
+		log.write_to_log(bwa.stderr, logger)
+	except:
+		sys.exit("bwa not found.\n")  
+
+#bwa
+	try:
+		minimap2 = sp.Popen(["minimap2", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("minimap2 found.")
+		logger.info("minimap2 found.")
+		log.write_to_log(minimap2.stdout, logger)
+	except:
+		sys.exit("minimap2 not found.\n")  
+
+#minimap2
+	try:
+		minimap2 = sp.Popen(["minimap2", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("minimap2 found.")
+		logger.info("minimap2 found.")
+		log.write_to_log(minimap2.stdout, logger)
+	except:
+		sys.exit("minimap2 not found.\n")  
+
+#fastp
+	try:
+		fastp = sp.Popen(["fastp", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("fastp found.")
+		logger.info("fastp found.")
+		log.write_to_log(fastp.stdout, logger)
+	except:
+		sys.exit("fastp not found.\n")  
+
+#fastp
+	try:
+		nanofilt = sp.Popen(["nanofilt", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("nanofilt found.")
+		logger.info("nanofilt found.")
+		log.write_to_log(nanofilt.stdout, logger)
+	except:
+		sys.exit("nanofilt not found.\n")  
+
+	#mash
+	try:
+		seqkit = sp.Popen(["seqkit", "version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("seqkit found.")
+		logger.info("seqkit found.")
+		log.write_to_log(seqkit.stdout, logger)
+	except:
+		sys.exit("seqkit not found.\n")  
+
+#mash
+	try:
+		mash = sp.Popen(["mash"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("mash found.")
+		logger.info("mash found.")
+		log.write_to_log(mash.stdout, logger)
+	except:
+		sys.exit("mash not found.\n")  
+	
+	# all dependencies found
+	print("All dependencies found.")
+	logger.info("All dependencies found.")
 
 
 
 
-
-
-
-
-
-	# # to get extension
-	# filename, file_extension = os.path.splitext(file)
-	# # flag for whether file is zipped
-	# zipped = True
-	# if file_extension == ".gz":
-	# # if gzipped 
-	# 	with gzip.open(file, "rt") as handle:
-	# 		fastq = SeqIO.parse(handle, "fastq")
-	# 		if any(fastq):
-	# 			print("FASTQ " + file + " checked")
-	# 		else:
-	# 			sys.exit("Error: Input file is not in the FASTQ format.\n")  
-	# else:
-	# 	zipped = False
-	# 	with open(file, "r") as handle:
-	# 		fastq = SeqIO.parse(handle, "fastq")
-	# 		if any(fastq):
-	# 			print("FASTQ " +file + " checked")
-	# 		else:
-	# 			sys.exit("Error: Input file is not in the FASTQ format.\n") 
-	# return zipped
 
 

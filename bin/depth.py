@@ -13,8 +13,10 @@ import pandas as pd
 import mapping
 import concat
 
+
+
 def get_depth(out_dir, logger,  threads, prefix):
-    """ wrapper function to get depth of each plasmid
+    """ wrapper function to get depth of each plasmid in kmer mode
     :param prefix: prefix (default plassembler)
     :param out_dir:  Output Directory
     :param threads: threads
@@ -29,9 +31,26 @@ def get_depth(out_dir, logger,  threads, prefix):
     depthsShort = get_depths_from_bam(out_dir, "short", contig_lengths)
     depthsLong = get_depths_from_bam(out_dir, "long", contig_lengths)
     circular_status = get_contig_circularity(out_dir)
-    summaryDepthdf_short = collate_depths(depthsShort,"short",contig_lengths)
-    summaryDepthdf_long = collate_depths(depthsLong,"long",contig_lengths)
-    combine_depth_dfs(out_dir, summaryDepthdf_short, summaryDepthdf_long, prefix, circular_status)
+    summary_depth_df_short = collate_depths(depthsShort,"short",contig_lengths)
+    summary_depth_df_long = collate_depths(depthsLong,"long",contig_lengths)
+    combine_depth_dfs(out_dir, summary_depth_df_short, summary_depth_df_long, prefix, circular_status)
+
+def get_depth_kmer(out_dir, logger,  threads, prefix):
+    """ wrapper function to get depth of each plasmid - kmer mode 
+    :param prefix: prefix (default plassembler)
+    :param out_dir:  Output Directory
+    :param threads: threads
+    :param logger: logger
+    :return: 
+    """
+    concatenate_chrom_plasmids(out_dir, logger)
+    mapping.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
+    minimap_depth_sort(out_dir, threads)
+    contig_lengths = get_contig_lengths(out_dir)
+    depthsLong = get_depths_from_bam(out_dir, "long", contig_lengths)
+    circular_status = get_contig_circularity(out_dir)
+    summary_depth_df_long = collate_depths(depthsLong,"long",contig_lengths)
+    kmer_final_output(out_dir, summary_depth_df_long, prefix, circular_status)
 
 
 def concatenate_chrom_plasmids(out_dir, logger):
@@ -219,5 +238,21 @@ def combine_depth_dfs(out_dir, df_short, df_long, prefix, circular_status):
     with open(out_file, 'w') as f:
         combined_df.to_csv(f, sep="\t", index=False, header=True)
     
+def kmer_final_output(out_dir, df_long, prefix, circular_status):
+    """ final output for kmer mode
+    :param out_dir:  output directory
+    :param df_long: long depth summary df
+    :param: prefix: prefix - default plassembler
+    :param: circular_status: dictionary of contig header and circular status
+    """
+
+     # add in circularity info 
+
+    df_long['circularity'] = df_long['contig'].map(circular_status)
+    out_file = os.path.join(out_dir, prefix + "_copy_number_summary.tsv")
+    with open(out_file, 'w') as f:
+        df_long.to_csv(f, sep="\t", index=False, header=True)
+    
+
 
 

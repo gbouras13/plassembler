@@ -33,6 +33,27 @@ def rename_contigs(out_dir, prefix):
             record = SeqRecord(dna_record.seq, id=id_updated, description = "" )
             SeqIO.write(record, dna_fa, 'fasta')
 
+def rename_contigs_kmer(out_dir, prefix):
+    """
+    Renames the contigs of unicycler with the new plasmid copy numbers kmer mode
+    :param out_dir: output directory
+    :return: 
+    """
+
+    depth_df = pd.read_csv(os.path.join(out_dir, prefix + "_copy_number_summary.tsv"), delimiter= '\t', index_col=False, header=0 ) 
+    depth_df = depth_df.loc[depth_df['contig'] != 'chromosome'].reset_index(drop=True)
+    # get contigs only
+    plasmid_fasta = os.path.join(out_dir,"unicycler_output", "assembly.fasta")
+    i = 0
+    with open(os.path.join(out_dir, prefix + "_plasmids.fasta"), 'w') as dna_fa:
+        for dna_record in SeqIO.parse(plasmid_fasta, 'fasta'): 
+            if "circular" in dna_record.description:
+                id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(depth_df.plasmid_copy_number_long[i]) + "x " + dna_record.description.split(' ')[3]
+            else:
+                id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(depth_df.plasmid_copy_number_long[i]) + "x " 
+            i += 1
+            record = SeqRecord(dna_record.seq, id=id_updated, description = "" )
+            SeqIO.write(record, dna_fa, 'fasta')
 
 
 

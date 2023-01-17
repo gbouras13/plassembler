@@ -523,31 +523,16 @@ def update_copy_number_summary_plsdb(out_dir, prefix, mash_empty):
 
 
 
-
-
 def remove_intermediate_files(out_dir):
     """ removes intermediate files
     :param out_dir:  Output Directory
     :return: 
     """
+    sp.run(["rm -rf "+ os.path.join(out_dir,"input.fasta*") ], shell=True)
     sp.run(["rm -rf "+ os.path.join(out_dir,"*.fastq") ], shell=True)
     sp.run(["rm -rf "+ os.path.join(out_dir,"*.fastq.gz") ], shell=True)
     sp.run(["rm -rf "+ os.path.join(out_dir,"*.bam") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.sa") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.sam") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.amb") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.ann") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.pac") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.bwt") ], shell=True)
-    sp.run(["rm", "-rf", os.path.join(out_dir,"00-assembly") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"10-consensus") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"20-repeat") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"30-contigger") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"40-polishing") ])
     sp.run(["rm", "-rf", os.path.join(out_dir,"params.json") ])
-    # delete flye assemble files
-    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"combined.fasta") ])
-    # delete mash 
+
+    # delete ma
     sp.run(["rm", "-rf", os.path.join(out_dir,"mash.tsv") ])

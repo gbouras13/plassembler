@@ -7,7 +7,7 @@ import sys
 import cleanup
 
 
-def mash_sketch(out_dir, logger):
+def mash_sketch(out_dir,  logger):
     """
     Runs mash to output fastas
     :param out_dir: output directory
@@ -23,7 +23,7 @@ def mash_sketch(out_dir, logger):
         sys.exit("Error with mash sketch.\n")  
 
 
-def run_mash(out_dir, plassembler_db_dir, logger):
+def run_mash(out_dir, plasmid_sketch, plassembler_db_dir, logger):
     """
     Runs mash to output fastas
     :param out_dir: output directory
@@ -34,8 +34,6 @@ def run_mash(out_dir, plassembler_db_dir, logger):
 
     plsdb_sketch = os.path.join(plassembler_db_dir, "plsdb.msh")
 
-    plasmid_sketch = os.path.join(out_dir,"unicycler_output", "assembly.fasta.msh")
-
     mash_tsv = os.path.join(out_dir,"mash.tsv")
 
     outFile = open(mash_tsv, "w")
@@ -45,13 +43,12 @@ def run_mash(out_dir, plassembler_db_dir, logger):
     except:
         sys.exit("Error with mash dist.\n")  
 
-def get_contig_count(out_dir):
+def get_contig_count( plasmid_fasta):
     """
     Process mash output
     :param out_dir: output directory
     :return: i: int contig_count
     """
-    plasmid_fasta = os.path.join(out_dir,"unicycler_output", "assembly.fasta")
     i = 0
     for dna_record in SeqIO.parse(plasmid_fasta, 'fasta'): 
             i += 1
@@ -65,7 +62,7 @@ def process_mash_tsv(out_dir, plassembler_db_dir, prefix):
     :return: mash_empty: boolean whether there was a mash hit
     """
 
-    contig_count = get_contig_count(out_dir)
+    contig_count = get_contig_count( os.path.join(out_dir,"unicycler_output", "assembly.fasta"))
 
     mash_tsv = os.path.join(out_dir,"mash.tsv")
 
@@ -124,3 +121,6 @@ def is_file_empty(file):
     if os.stat(file).st_size == 0:
         empty = True
     return empty
+
+
+

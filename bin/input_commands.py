@@ -31,6 +31,8 @@ def get_input():
 	parser.add_argument('-p', '--prefix', action="store", help='Prefix for output files. This is not required',  default='Default')
 	parser.add_argument('-q', '--min_quality', action="store", help='minimum quality of long reads for nanofilt. Defaults to 9.',  default=str(9))
 	parser.add_argument('-k', '--kmer_mode',  help='Very high quality Nanopore R10.4 and above reads. No short reads required. Experimental for now.', action="store_true" )
+	parser.add_argument('-a', '--assembled_mode',  help='Activates assembled mode, where you can PLSDB type and get depth for already assembled plasmids using the -a flag.', action="store_true")
+	parser.add_argument('-i', '--input',  help='Input FASTA file consisting of already assembled plasmids. Requires FASTQ file input (long only or long + short) also.', action="store", default='nothing')
 	parser.add_argument('-V', '--version', action='version',help='show plassembler version and exit.', version=v)
 	args = parser.parse_args()
 
@@ -82,6 +84,19 @@ def validate_fastq(file):
 			else:
 				sys.exit("Error: Input file is not in the FASTQ format.\n") 
 	return zipped
+
+def validate_fasta(filename):
+	"""Checks the input insta is really a fasta
+	:param file: fasta file
+    :return: 
+    """
+	with open(filename, "r") as handle:
+		fasta = SeqIO.parse(handle, "fasta")
+		if any(fasta):
+			print("FASTA checked")
+		else:
+			sys.exit("Error: Input file is not in the FASTA format.\n")  
+
 
 def check_dependencies(logger):
 	"""Checks the version of Unicycler, spades and Flye
@@ -151,15 +166,6 @@ def check_dependencies(logger):
 		sys.exit("bwa not found.\n")  
 
 #bwa
-	try:
-		minimap2 = sp.Popen(["minimap2", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
-		print("minimap2 found.")
-		logger.info("minimap2 found.")
-		log.write_to_log(minimap2.stdout, logger)
-	except:
-		sys.exit("minimap2 not found.\n")  
-
-#minimap2
 	try:
 		minimap2 = sp.Popen(["minimap2", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
 		print("minimap2 found.")

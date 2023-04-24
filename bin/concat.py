@@ -10,20 +10,24 @@ def concatenate_all_fastqs(out_dir,logger):
     :return: 
     """
     # list all the inputs for concatenation
-    long_fastq_chrom = os.path.join(out_dir, "long_read_chromosome_unmapped.fastq")
-    long_fastq_non_chrom = os.path.join(out_dir, "long_read_non_chromosome_mapped.fastq")
-    chrom_fastq_one_short = os.path.join(out_dir, "unmapped_chromosome_R1.fastq.gz")
-    chrom_fastq_two_short = os.path.join(out_dir, "unmapped_chromosome_R2.fastq.gz")
-    non_chrom_fastq_one_short = os.path.join(out_dir, "mapped_non_chromosome_R1.fastq.gz")
-    non_chrom_fastq_two_short = os.path.join(out_dir, "mapped_non_chromosome_R2.fastq.gz")
+    unmapped_fastq_one_short = os.path.join(out_dir, "unmapped_R1.fastq")
+    unmapped_fastq_two_short = os.path.join(out_dir, "unmapped_R2.fastq")
+    non_chrom_fastq_one_short = os.path.join(out_dir, "mapped_non_chromosome_R1.fastq")
+    non_chrom_fastq_two_short = os.path.join(out_dir, "mapped_non_chromosome_R2.fastq")
+    chrom_fastq_one_short = os.path.join(out_dir, "mapped_chromosome_R1.fastq")
+    chrom_fastq_two_short = os.path.join(out_dir, "mapped_chromosome_R2.fastq")
     # final outputs
-    long_file = open(os.path.join(out_dir, "long_read_concat.fastq"), "w")
-    short_one_file = open(os.path.join(out_dir, "short_read_concat_R1.fastq.gz"), "w")
-    short_two_file = open(os.path.join(out_dir, "short_read_concat_R2.fastq.gz"), "w")
+    short_one_file = open(os.path.join(out_dir, "short_read_concat_R1.fastq"), "w")
+    short_two_file = open(os.path.join(out_dir, "short_read_concat_R2.fastq"), "w")
+    chrom_non_chrom_short_one_file = open(os.path.join(out_dir, "short_read_concat_chrom_non_chrom_R1.fastq"), "w")
+    chrom_non_chrom_short_one_two = open(os.path.join(out_dir, "short_read_concat_chrom_non_chrom_R2.fastq"), "w")
     try:
-        concatenate_single(long_fastq_chrom, long_fastq_non_chrom, long_file, logger)
-        concatenate_single(chrom_fastq_one_short, non_chrom_fastq_one_short, short_one_file, logger)
-        concatenate_single(chrom_fastq_two_short, non_chrom_fastq_two_short, short_two_file, logger)
+        concatenate_single(unmapped_fastq_one_short, non_chrom_fastq_one_short, short_one_file, logger)
+        concatenate_single(unmapped_fastq_two_short, non_chrom_fastq_two_short, short_two_file, logger)
+
+        # chrom and non_chrom
+        concatenate_single(chrom_fastq_one_short, non_chrom_fastq_one_short, chrom_non_chrom_short_one_file, logger)
+        concatenate_single(chrom_fastq_two_short, non_chrom_fastq_two_short, chrom_non_chrom_short_one_two, logger)
     except:
         sys.exit("Error with concatenate_fastqs\n")  
     
@@ -39,19 +43,5 @@ def concatenate_single(fastq_in1, fastq_in2, fastq_out, logger):
     concat_fastq = sp.Popen(["cat", fastq_in1, fastq_in2 ], stdout=fastq_out, stderr=sp.PIPE)
     log.write_to_log(concat_fastq.stderr, logger) 
 
-def concatenate_long_fastqs(out_dir,logger):
-    """ 
-    :param out_dir:  Output Directory
-    :param logger: logger
-    :return: 
-    """
-    # list all the inputs for concatenation
-    long_fastq_chrom = os.path.join(out_dir, "long_read_chromosome_unmapped.fastq")
-    long_fastq_non_chrom = os.path.join(out_dir, "long_read_non_chromosome_mapped.fastq")
-    # final outputs
-    long_file = open(os.path.join(out_dir, "long_read_concat.fastq"), "w")
-    try:
-        concatenate_single(long_fastq_chrom, long_fastq_non_chrom, long_file, logger)
-    except:
-        sys.exit("Error with concatenate_long_fastqs\n")  
+
     

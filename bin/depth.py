@@ -24,9 +24,8 @@ def get_depth(out_dir, logger,  threads, prefix):
     :return: 
     """
     concatenate_chrom_plasmids(out_dir, logger)
-    mapping.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
-    bwa_map_depth_sort(out_dir, threads)
-    minimap_depth_sort(out_dir, threads)
+    minimap_depth_sort_short(out_dir, threads)
+    minimap_depth_sort_long(out_dir, threads)
     contig_lengths = get_contig_lengths(out_dir)
     depthsShort = get_depths_from_bam(out_dir, "short", contig_lengths)
     depthsLong = get_depths_from_bam(out_dir, "long", contig_lengths)
@@ -34,6 +33,7 @@ def get_depth(out_dir, logger,  threads, prefix):
     summary_depth_df_short = collate_depths(depthsShort,"short",contig_lengths)
     summary_depth_df_long = collate_depths(depthsLong,"long",contig_lengths)
     combine_depth_dfs(out_dir, summary_depth_df_short, summary_depth_df_long, prefix, circular_status)
+
 
 def get_depth_kmer(out_dir, logger,  threads, prefix):
     """ wrapper function to get depth of each plasmid - kmer mode 
@@ -66,7 +66,6 @@ def concatenate_chrom_plasmids(out_dir, logger):
         concat.concatenate_single(chrom_fasta, plas_fasta, concat_fasta, logger)
     except:
         sys.exit("Error with concatenate_fastas\n")  
-
 
 # get lengths of contigs
 def get_contig_lengths(out_dir):
@@ -105,24 +104,9 @@ def get_contig_circularity(out_dir):
 
 
 
-def bwa_map_depth_sort(out_dir, threads):
-    """ maps short reads using bwa to combined fasta and sorts bam
-    :param out_dir:  Output Directory
-    :return: threads: threads
-    """
-    trim_one = os.path.join(out_dir, "trimmed_R1.fastq")
-    trim_two = os.path.join(out_dir, "trimmed_R2.fastq")
-    fasta = os.path.join(out_dir, "combined.fasta")
-    bam = os.path.join(out_dir, "combined_sorted.bam")
-    try:
-        bwa_map = sp.Popen(["bwa", "mem", "-t", threads, fasta, trim_one, trim_two ], stdout=sp.PIPE, stderr=sp.DEVNULL) 
-        samtools_sort = sp.Popen(["samtools", "sort", "-@", threads, "-o", bam, "-" ], stdin=bwa_map.stdout, stderr=sp.DEVNULL ) 
-        samtools_sort.communicate()[0]
-    except:
-        sys.exit("Error with bwa mem or samtools sort.\n")  
 
 
-def minimap_depth_sort(out_dir, threads):
+def minimap_depth_sort_long(out_dir, threads):
     """ maps long reads using minimap2 to combined fasta and sorts bam
     :param out_dir:  out_dir
     :param: threads: threads
@@ -138,6 +122,22 @@ def minimap_depth_sort(out_dir, threads):
         sys.exit("Error with mapping and sorting\n")  
 
 
+def minimap_depth_sort_short(out_dir, threads):
+    """ maps short reads using minimap2 to combined fasta and sorts bam
+    :param out_dir:  out_dir
+    :param: threads: threads
+    """
+    trim_one = os.path.join(out_dir, "trimmed_R1.fastq")
+    trim_two = os.path.join(out_dir, "trimmed_R2.fastq")
+    fasta = os.path.join(out_dir, "combined.fasta")
+    bam = os.path.join(out_dir, "combined_sorted_short.bam")
+    try:
+        minimap = sp.Popen(["minimap2", "-ax", "sr", "-t", threads, fasta, trim_one, trim_two ], stdout=sp.PIPE, stderr=sp.DEVNULL)
+        samtools_sort = sp.Popen(["samtools", "sort", "-@", threads, "-o", bam, "-" ], stdin=minimap.stdout, stderr=sp.DEVNULL ) 
+        samtools_sort.communicate()[0]
+    except:
+        sys.exit("Error with mapping and sorting\n")  
+
 def get_depths_from_bam(out_dir, shortFlag, contig_lengths):
     """ maps runs samtools depth on bam
     :param out_dir:  out_dir
@@ -147,7 +147,7 @@ def get_depths_from_bam(out_dir, shortFlag, contig_lengths):
     """
     depths = {}
     if shortFlag == "short":
-        filename = os.path.join(out_dir, "combined_sorted.bam")
+        filename = os.path.join(out_dir, "combined_sorted_short.bam")
     else: # long
         filename = os.path.join(out_dir, "combined_sorted_long.bam")
     for repName, repLength in contig_lengths.items():

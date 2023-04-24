@@ -48,10 +48,22 @@ class Plass:
         print(message)
         logger.info(message)
         self.contig_count = contig_count
-   
+
+    def make_chrom_bed(self, out_dir):
+        """ Creates simple bed file with chromosome, 1 and length
+        :param out_dir: output directory
+        :return:
+        """
+        info_file =  os.path.join(out_dir, "assembly_info.txt")
+        col_list = ["seq_name", "length", "cov", "circ", "repeat", "mult", "alt_group", "graph_path"] 
+        info_df = pd.read_csv(info_file, delimiter= '\t', index_col=False , names=col_list, skiprows=1) 
+        
+        contig_count = len(info_df['seq_name'])
+
+
     def identify_chromosome_process_flye(self, out_dir, chromosome_len):
         """Identified chromosome and processes Flye output - renames chromosome contig and the others as plasmid_1, plasmid_2 etc
-
+        Also makes the chromosome bed file for downstream samtools mapping
         :param out_dir: output directory
         :param chromosome_len: lower bound on length of chromosome from input command
         :return: chromosome_flag = a flag saying whether or not there was an identified chromosome
@@ -73,6 +85,9 @@ class Plass:
         if max_length < int(chromosome_len)*0.9:  # no chromosome identified -> don't bother with the renaming
             chromosome_flag = False
         else:
+            # make bed file with plasmid contigs to extract mapping reads
+            bed_file =  open(os.path.join(out_dir, "non_chromosome.bed"), 'w')
+            bed_chrom_file =  open(os.path.join(out_dir, "chromosome.bed"), 'w')
             with open(os.path.join(out_dir, "flye_renamed.fasta"), 'w') as rename_fa:
                 for dna_record in SeqIO.parse(os.path.join(out_dir, "assembly.fasta"), 'fasta'): 
                     i = 1
@@ -82,13 +97,29 @@ class Plass:
                         dna_description = ""
                         dna_record = SeqRecord(dna_record.seq, id=dna_header, description = dna_description)
                         SeqIO.write(dna_record, rename_fa, 'fasta')
+                        bed_chrom_file.write(f'chromosome\t1\t{max_length}\n')  # chromosome
                     # plasmids
                     else:
                         dna_header = "plasmid_" + str(i)
                         dna_description = ""
+                        # get length for bed file
+                        plas_len = int(info_df.loc[info_df['seq_name'] == dna_record.id, 'length'][0])
+                        # write the updated record
                         dna_record = SeqRecord(dna_record.seq, id=dna_header, description = dna_description)
                         SeqIO.write(dna_record, rename_fa, 'fasta')
+                        # get length for bed file
+                        # make bed file
+                        bed_file.write(f'{dna_header}\t1\t{plas_len}\n')  # Write read name
                         i += 1
+            # just the chromosome for the last step 
+            with open(os.path.join(out_dir, "chromosome.fasta"), 'w') as chrom_fa:
+                for dna_record in SeqIO.parse(os.path.join(out_dir, "assembly.fasta"), 'fasta'): 
+                    # chromosome
+                    if dna_record.id == chrom_contig:
+                        dna_header = "chromosome"
+                        dna_description = ""
+                        dna_record = SeqRecord(dna_record.seq, id=dna_header, description = dna_description)
+                        SeqIO.write(dna_record, chrom_fa, 'fasta')
 
         # add to object
         self.chromosome_flag = chromosome_flag

@@ -10,6 +10,7 @@ import extract
 import case_one
 import case_one_kmer
 import case_three
+import run_flye
 import case_three_kmer
 import depth
 import extract
@@ -21,6 +22,9 @@ import sys
 import bam
 from plass_class import Plass
 import sam_to_fastq
+import concat
+import deduplicate
+import run_unicycler
 
 from version import __version__
 
@@ -247,9 +251,6 @@ if __name__ == "__main__":
                 cleanup.move_and_copy_files(out_dir, prefix, successful_unicycler_recovery)
                 #cleanup.remove_intermediate_files(out_dir)
 
-
-
-
         # where more than 1 contig was assembled
         else:
             logger.info("More than one contig was assembled with Flye.")
@@ -297,28 +298,43 @@ if __name__ == "__main__":
                     logger.info(message)
                     #mapping.minimap_short_reads(out_dir, args.threads, logger)
 
-                    message = 'Processing Sam Files.'
+                    message = 'Processing Sam/Bam Files and extracting Fastqs.'
                     print(message)
                     logger.info(message)
                   
                     # for long, custom function
                     # for short, too slow so use samtools
-                    sam_to_fastq.extract_bin_long_fastqs(out_dir)
+                    # sam_to_fastq.extract_bin_long_fastqs(out_dir)
+
                     # short
-                    bam.sam_to_bam_short(out_dir, args.threads, logger)
-                    bam.bam_to_fastq_short()
+                    # for short, too slow so use samtools
+                    bam.split_bams(out_dir, args.threads, logger)
+                    bam.bam_to_fastq_short(out_dir, args.threads, logger)
                     
 
-                    #sam_to_fastq.extract_bin_short_fastqs(out_dir)
+                    print('Concatenating and Deduplicating Fastqs.')
+                    logger.info('Concatenating and Deduplicating Fastqs.')
 
+                    #concat.concatenate_all_fastqs(out_dir,logger)
+                    #deduplicate.deduplicate_fastqs(out_dir, args.threads, logger)
 
+                    # running unicycler
+                    message = 'Running Unicycler.'
+                    print(message)
+                    logger.info(message)
 
- 
+                    # short only flag False
+                    short_r1 = os.path.join(out_dir, "short_read_concat_R1.fastq")
+                    short_r2 = os.path.join(out_dir, "short_read_concat_R2.fastq")
+                    long_reads = os.path.join(out_dir, "plasmid_long.fastq")
 
-                    #case_three.case_three(out_dir, args.threads,logger)
-                    # get copy number 
-                    print('Calculating Plasmid Copy Numbers.')
-                    logger.info("Calculating Plasmid Copy Numbers.")
+                    # run_unicycler.run_unicycler(False, args.threads, logger, short_r1, short_r2, long_reads, 
+                    #                             os.path.join(out_dir, "unicycler_output"))
+
+                    # get copy number depths
+                    message = 'Calculating Plasmid Copy Numbers.'
+                    print(message)
+                    logger.info(message)
                     depth.get_depth(out_dir, logger,  args.threads, prefix)
 
                 # kmer_mode

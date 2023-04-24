@@ -7,12 +7,11 @@ dependencies:
   - python >=3.6
   - flye >=2.9
   - unicycler >=0.4.8
-  - bwa
   - biopython >=1.76
   - minimap2 >=2.11
   - pandas
   - fastp >=0.18.0
-  - nanofilt >=2.2.0
+  - chopper >=0.5.0
   - seqkit
   - mash >=2.2
   - samtools >=1.10

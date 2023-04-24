@@ -16,7 +16,7 @@ import depth
 from Bio.SeqRecord import SeqRecord
 
 
-def get_depth_assembly(input_fasta, out_dir, logger,  threads, prefix):
+def get_depth_assembly(input_chromosome,input_plasmids, out_dir, logger,  threads, prefix):
     """ wrapper function to get depth of each plasmid in assembly mode - short and long reads
     :param prefix: prefix (default plassembler)
     :param out_dir:  Output Directory
@@ -24,12 +24,20 @@ def get_depth_assembly(input_fasta, out_dir, logger,  threads, prefix):
     :param logger: logger
     :return: 
     """
-    # copy input fasta
-    sp.run(["cp", input_fasta, os.path.join(out_dir,"input.fasta") ])
+    # combine input fasta
+    f = open(os.path.join(out_dir,"input_tmp.fasta"), "w")
+
+    sp.run(["cat", input_chromosome, input_plasmids ], stdout=f, stderr=sp.PIPE)
+
+    # set input_fasta on the rest
     input_fasta = os.path.join(out_dir,"input.fasta")
+
+    # rename the first chromosome 
+    rename_first_contig_chromosome(os.path.join(out_dir,"input_tmp.fasta"), input_fasta)
+
     mapping.index_fasta(input_fasta,  logger)
-    bwa_map_depth_sort_assembly(input_fasta, out_dir, threads)
-    minimap_depth_sort_assembly(input_fasta, out_dir, threads)
+    minimap_short_depth_sort_assembly(input_fasta, out_dir, threads)
+    minimap_long_depth_sort_assembly(input_fasta, out_dir, threads)
     contig_lengths = get_contig_lengths_assembly(input_fasta)
     depthsShort = depth.get_depths_from_bam(out_dir, "short", contig_lengths)
     depthsLong = depth.get_depths_from_bam(out_dir, "long", contig_lengths)
@@ -38,7 +46,7 @@ def get_depth_assembly(input_fasta, out_dir, logger,  threads, prefix):
     summary_depth_df_long = depth.collate_depths(depthsLong,"long",contig_lengths)
     depth.combine_depth_dfs(out_dir, summary_depth_df_short, summary_depth_df_long, prefix, circular_status)
 
-def get_depth_assembly_long_only(input_fasta, out_dir, logger,  threads, prefix):
+def get_depth_assembly_long_only(input_chromosome, input_plasmids, out_dir, logger,  threads, prefix):
     """ wrapper function to get depth of each plasmid - long only
     :param prefix: prefix (default plassembler)
     :param out_dir:  Output Directory
@@ -46,11 +54,19 @@ def get_depth_assembly_long_only(input_fasta, out_dir, logger,  threads, prefix)
     :param logger: logger
     :return: 
     """
-    # copy input fasta
-    sp.run(["cp", input_fasta, os.path.join(out_dir,"input.fasta") ])
+    # combine input fasta
+    f = open(os.path.join(out_dir,"input_tmp.fasta"), "w")
+
+    sp.run(["cat", input_chromosome, input_plasmids ], stdout=f, stderr=sp.PIPE)
+
+    # set input_fasta on the rest
     input_fasta = os.path.join(out_dir,"input.fasta")
+
+    # rename the first chromosome 
+    rename_first_contig_chromosome(os.path.join(out_dir,"input_tmp.fasta"), input_fasta)
+
     mapping.index_fasta(input_fasta,  logger)
-    minimap_depth_sort_assembly(input_fasta, out_dir, threads)
+    minimap_long_depth_sort_assembly(input_fasta, out_dir, threads)
     contig_lengths = get_contig_lengths_assembly(input_fasta)
     depthsLong = depth.get_depths_from_bam(out_dir, "long", contig_lengths)
     circular_status = get_contig_circularity_assembly(input_fasta)
@@ -86,6 +102,18 @@ def get_contig_lengths_assembly(input_fasta):
         contig_lengths[dna_header] = plas_len
     return contig_lengths
 
+def rename_first_contig_chromosome(input_fasta, renamed_fasta):
+
+    # rename the first contig as chromosome 
+    with open(input_fasta, "r") as f_in, open(renamed_fasta, "w") as f_out:
+        # Parse the input FASTA file
+        records = list(SeqIO.parse(f_in, "fasta"))
+        # Rename the first record
+        records[0].id = "chromosome"
+        records[0].description = ""
+        # Write the modified records to the output FASTA file
+        SeqIO.write(records, f_out, "fasta")
+
 
 
 # get circular status of contigs
@@ -109,8 +137,7 @@ def get_contig_circularity_assembly(input_fasta):
     return circular_status
 
 
-
-def bwa_map_depth_sort_assembly(input_fasta, out_dir, threads):
+def minimap_short_depth_sort_assembly(input_fasta, out_dir, threads):
     """ maps short reads using bwa to combined fasta and sorts bam in assembly mode
     :param out_dir:  Output Directory
     :return: threads: threads
@@ -119,14 +146,14 @@ def bwa_map_depth_sort_assembly(input_fasta, out_dir, threads):
     trim_two = os.path.join(out_dir, "trimmed_R2.fastq")
     bam = os.path.join(out_dir, "combined_sorted.bam")
     try:
-        bwa_map = sp.Popen(["bwa", "mem", "-t", threads, input_fasta, trim_one, trim_two ], stdout=sp.PIPE, stderr=sp.DEVNULL) 
-        samtools_sort = sp.Popen(["samtools", "sort", "-@", threads, "-o", bam, "-" ], stdin=bwa_map.stdout, stderr=sp.DEVNULL ) 
+        minimap2_map = sp.Popen(["minimap2", "-ax", "sr", "-t", threads, input_fasta, trim_one, trim_two ], stdout=sp.PIPE, stderr=sp.DEVNULL) 
+        samtools_sort = sp.Popen(["samtools", "sort", "-@", threads, "-o", bam, "-" ], stdin=minimap2_map.stdout, stderr=sp.DEVNULL ) 
         samtools_sort.communicate()[0]
     except:
-        sys.exit("Error with bwa mem or samtools sort.\n")  
+        sys.exit("Error with minim2p or samtools sort.\n")  
 
 
-def minimap_depth_sort_assembly(input_fasta, out_dir, threads):
+def minimap_long_depth_sort_assembly(input_fasta, out_dir, threads):
     """ maps long reads using minimap2 to combined fasta and sorts bam in assembly mode
     :param out_dir:  out_dir
     :param: threads: threads
@@ -253,35 +280,17 @@ import sys
 import cleanup
 
 
-def mash_sketch(out_dir,  logger):
-    """
-    Runs mash to output fastas
-    :param out_dir: output directory
-    :param logger: logger
-    :return:
-    """
-    plasmid_fasta = os.path.join(out_dir,"unicycler_output", "assembly.fasta")
-
-    try:
-        mash_sketch = sp.Popen(["mash", "sketch",  plasmid_fasta, "-i" ], stdout=sp.PIPE, stderr=sp.PIPE) 
-        log.write_to_log(mash_sketch.stdout, logger)
-    except:
-        sys.exit("Error with mash sketch.\n")  
-
-
-def mash_sketch_assembly( out_dir,input_fasta,  logger):
+def mash_sketch_assembly( out_dir, input_fasta,  logger):
     """
     Runs mash on input fastas in assembly mode
-    :param input_fastaL in
+    :param input_fasta in
     :param out_dir: output directory
     :param logger: logger
     :return:
     """
-    plasmid_fasta = os.path.join(out_dir, "input.fasta")
     try:
         # copy fasta first
-        sp.run(["cp", input_fasta, plasmid_fasta ])
-        mash_sketch = sp.Popen(["mash", "sketch",  plasmid_fasta, "-i" ], stdout=sp.PIPE, stderr=sp.PIPE) 
+        mash_sketch = sp.Popen(["mash", "sketch",  input_fasta, "-i" ], stdout=sp.PIPE, stderr=sp.PIPE) 
         log.write_to_log(mash_sketch.stdout, logger)
     except:
         sys.exit("Error with mash sketch.\n")  
@@ -465,9 +474,9 @@ def rename_contigs_assembly(out_dir, input_fasta, prefix, short_reads):
             for dna_record in SeqIO.parse(plasmid_fasta, 'fasta'): 
                 if "chromosome" not in dna_record.description:
                     if "circular" in dna_record.description:
-                        id_updated = dna_record.description + " plasmid_copy_number_short=" + str(depth_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(depth_df.plasmid_copy_number_long[i]) + "x " + "circular=True"
+                        id_updated = dna_record.id + " plasmid_copy_number_short=" + str(depth_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(depth_df.plasmid_copy_number_long[i]) + "x " + "circular=True"
                     else:
-                        id_updated = dna_record.description + " plasmid_copy_number_short=" + str(depth_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(depth_df.plasmid_copy_number_long[i]) + "x "
+                        id_updated = dna_record.id + " plasmid_copy_number_short=" + str(depth_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(depth_df.plasmid_copy_number_long[i]) + "x "
                     i += 1
                     record = SeqRecord(dna_record.seq, id=id_updated, description = "" )
                     SeqIO.write(record, dna_fa, 'fasta')
@@ -476,9 +485,9 @@ def rename_contigs_assembly(out_dir, input_fasta, prefix, short_reads):
             for dna_record in SeqIO.parse(plasmid_fasta, 'fasta'): 
                 if "chromosome" not in dna_record.description:
                     if "circular" in dna_record.description:
-                        id_updated = dna_record.description + "x plasmid_copy_number_long=" + str(depth_df.plasmid_copy_number_long[i]) + "x " + "circular=True"
+                        id_updated = dna_record.id + "x plasmid_copy_number_long=" + str(depth_df.plasmid_copy_number_long[i]) + "x " + "circular=True"
                     else:
-                        id_updated = dna_record.description + "x plasmid_copy_number_long=" + str(depth_df.plasmid_copy_number_long[i]) + "x "
+                        id_updated = dna_record.id + "x plasmid_copy_number_long=" + str(depth_df.plasmid_copy_number_long[i]) + "x "
                     i += 1
                     record = SeqRecord(dna_record.seq, id=id_updated, description = "" )
                     SeqIO.write(record, dna_fa, 'fasta')
@@ -533,6 +542,7 @@ def remove_intermediate_files(out_dir):
     sp.run(["rm -rf "+ os.path.join(out_dir,"*.fastq.gz") ], shell=True)
     sp.run(["rm -rf "+ os.path.join(out_dir,"*.bam") ], shell=True)
     sp.run(["rm", "-rf", os.path.join(out_dir,"params.json") ])
+    sp.run(["rm", "-rf", os.path.join(out_dir,"input_tmp.fasta") ])
 
-    # delete ma
+    # delete mash
     sp.run(["rm", "-rf", os.path.join(out_dir,"mash.tsv") ])

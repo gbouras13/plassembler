@@ -32,7 +32,8 @@ def get_input():
 	parser.add_argument('-q', '--min_quality', action="store", help='minimum quality of long reads for nanofilt. Defaults to 9.',  default=str(9))
 	parser.add_argument('-k', '--kmer_mode',  help='Very high quality Nanopore R10.4 and above reads. No short reads required. Experimental for now.', action="store_true" )
 	parser.add_argument('-a', '--assembled_mode',  help='Activates assembled mode, where you can PLSDB type and get depth for already assembled plasmids using the -a flag.', action="store_true")
-	parser.add_argument('-i', '--input',  help='Input FASTA file consisting of already assembled plasmids. Requires FASTQ file input (long only or long + short) also.', action="store", default='nothing')
+	parser.add_argument('--input_chromosome',  help='Input FASTA file consisting of already assembled chromosome with assembled mode. Requires FASTQ file input (long only or long + short) also.', action="store", default='nothing')
+	parser.add_argument('--input_plasmids',  help='Input FASTA file consisting of already assembled plasmids with assembled mode. Requires FASTQ file input (long only or long + short) also.', action="store", default='nothing')
 	parser.add_argument('-V', '--version', action='version',help='show plassembler version and exit.', version=v)
 	args = parser.parse_args()
 
@@ -98,6 +99,38 @@ def validate_fasta(filename):
 			sys.exit("Error: Input file is not in the FASTA format.\n")  
 
 
+def validate_fastas_assembled_mode(input_chromosome, input_plasmids):
+	"""Checks the input insta is really a fasta
+	:param file: fasta file
+    :return: 
+    """
+    # chromosome
+	with open(input_chromosome, "r") as handle:
+		fasta = SeqIO.parse(handle, "fasta")
+		if any(fasta):
+			print("Chromosome FASTA checked")
+		else:
+			sys.exit("Error: Input file is not in the FASTA format.\n")  
+
+	with open(input_chromosome, "r") as fasta:
+		# count contigs
+		records = list(SeqIO.parse(fasta, "fasta"))
+		num_contigs = len(records)
+		if num_contigs > 1:
+			sys.exit("Error: There are multiple contigs in your chromosome FASTA. Please input a complete chromosome.\n") 
+
+	# chromosome
+	with open(input_plasmids, "r") as handle:
+		fasta = SeqIO.parse(handle, "fasta")
+		if any(fasta):
+			print("Plasmid FASTA checked")
+		else:
+			sys.exit("Error: Input file is not in the FASTA format.\n")  
+
+
+
+
+
 def check_dependencies(logger):
 	"""Checks the version of Unicycler, spades and Flye
     :return:
@@ -156,16 +189,7 @@ def check_dependencies(logger):
 	except:
 		sys.exit("Samtools not found.\n")  
 
-#bwa
-	try:
-		bwa = sp.Popen(["bwa"], stdout=sp.PIPE, stderr=sp.PIPE) 
-		print("bwa found.")
-		logger.info("bwa found.")
-		log.write_to_log(bwa.stderr, logger)
-	except:
-		sys.exit("bwa not found.\n")  
-
-#bwa
+#minimap2
 	try:
 		minimap2 = sp.Popen(["minimap2", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
 		print("minimap2 found.")
@@ -185,14 +209,14 @@ def check_dependencies(logger):
 
 #fastp
 	try:
-		nanofilt = sp.Popen(["nanofilt", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
-		print("nanofilt found.")
-		logger.info("nanofilt found.")
-		log.write_to_log(nanofilt.stdout, logger)
+		chopper = sp.Popen(["chopper", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		print("chopper found.")
+		logger.info("chopper found.")
+		log.write_to_log(chopper.stdout, logger)
 	except:
-		sys.exit("nanofilt not found.\n")  
+		sys.exit("chopper not found.\n")  
 
-	#mash
+	#seqkit
 	try:
 		seqkit = sp.Popen(["seqkit", "version"], stdout=sp.PIPE, stderr=sp.PIPE) 
 		print("seqkit found.")

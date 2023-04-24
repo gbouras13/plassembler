@@ -45,8 +45,8 @@ def minimap_long_reads(chromosome_flag, out_dir, threads, logger):
 
 # bwa for short reads 
 
-def bwa_map_short_reads(out_dir, chromosome_flag, threads, logger):
-    """ maps short reads using bwa
+def minimap_short_reads(out_dir, chromosome_flag, threads, logger):
+    """ maps short reads using minimap
     :param chromosome_flag: True if mapping to chromosome
 	:param out_dir: output directory path
     :param threads: threads
@@ -63,7 +63,7 @@ def bwa_map_short_reads(out_dir, chromosome_flag, threads, logger):
         sam = os.path.join(out_dir, "short_read_chromosome.sam") 
     f = open(sam, "w")
     try:
-        bwa_map = sp.Popen(["bwa", "mem", "-t", threads, fasta, trim_one, trim_two ], stdout=f, stderr=sp.PIPE) 
-        log.write_to_log(bwa_map.stderr, logger)
+        minimap2_map = sp.Popen(["minimap2", "-ax", "sr", "-t", threads, fasta, trim_one, trim_two ], stdout=f, stderr=sp.PIPE) 
+        log.write_to_log(minimap2_map.stderr, logger)
     except:
         sys.exit("Error with bwa mem\n")  

@@ -32,12 +32,12 @@ def case_three(out_dir, threads, logger):
     #### short reads mapping to plasmids
     print('Mapping Short Reads to Putative Plasmid Contigs')
     logger.info('Mapping Short Reads to Putative Plasmid Contigs')
-    mapping.bwa_map_short_reads( out_dir, False, threads,  logger)
+    mapping.minimap_map_short_reads( out_dir, False, threads,  logger)
 
     #### short reads mapping to chromosome
     print('Mapping Short Reads to Chromosome Contig')
     logger.info('Mapping Short Reads to Chromosome Contig')
-    mapping.bwa_map_short_reads( out_dir, True, threads,  logger)
+    mapping.minimap_map_short_reads( out_dir, True, threads,  logger)
 
     #### Processing bams ######
     print('Processing Bams.')

@@ -40,7 +40,6 @@ if __name__ == "__main__":
     else:
         prefix = args.prefix
 
-    
     # instiate the output directory
     out_dir = input_commands.instantiate_dirs(args.outdir, args.force) # incase there is already an out_dir
 
@@ -58,7 +57,6 @@ if __name__ == "__main__":
     print("Checking dependencies.")
     logger.info("Checking dependencies.")
     input_commands.check_dependencies(logger)
-
 
     # check the mash database is installed
     print("Checking database installation.")
@@ -82,13 +80,13 @@ if __name__ == "__main__":
         # validation
         print("Checking input FASTA.")
         logger.info("Checking input FASTA.")
-        input_commands.validate_fasta(args.input)
+        input_commands.validate_fastas_assembled_mode(args.input_chromosome, args.input_plasmids)
         print("Checking input long fastqs.")
         logger.info("Checking input long fastqs.")
         long_zipped = input_commands.validate_fastq(args.longreads)
         print("Filtering long reads.")
         logger.info("Filtering long reads.")
-        qc.nanofilt(args.longreads, out_dir, args.min_length, args.min_quality, long_zipped)
+        qc.chopper(args.longreads, out_dir, args.min_length, args.min_quality, long_zipped)
         # flag for whether there are short reads
         short_reads = False
         if args.short_one != "nothing" and args.short_two != "nothing":
@@ -108,23 +106,24 @@ if __name__ == "__main__":
         logger.info("Calculating Depths.")
 
         if short_reads == True:
-            assembly.get_depth_assembly(args.input, out_dir, logger,  args.threads, prefix)
+            assembly.get_depth_assembly(args.input_chromosome,args.input_plasmids, out_dir, logger,  args.threads, prefix)
         else:
-            assembly.get_depth_assembly_long_only(args.input, out_dir, logger,  args.threads, prefix)
+            assembly.get_depth_assembly_long_only(args.input_chromosome,args.input_plasmids, out_dir, logger,  args.threads, prefix)
 
+        input_fasta = os.path.join(out_dir,"input.fasta")
         # run mash
         print('Calculating mash distances to PLSDB.')
         logger.info('Calculating mash distances to PLSDB.')
-        assembly.mash_sketch_assembly(out_dir, args.input, logger)
+        assembly.mash_sketch_assembly(out_dir, input_fasta, logger)
         assembly.run_mash(out_dir, os.path.join(out_dir, "input.fasta.msh"), args.database, logger)
-        mash_empty = assembly.process_mash_tsv_assembly(out_dir, args.database, prefix, args.input)
-        # rename contigs and update copy bumber with plsdb
-        assembly.rename_contigs_assembly(out_dir, args.input, prefix, short_reads) 
+        mash_empty = assembly.process_mash_tsv_assembly(out_dir, args.database, prefix, input_fasta)
+        # rename contigs and update copy number with plsdb
+        assembly.rename_contigs_assembly(out_dir, input_fasta, prefix, short_reads) 
         cleanup.update_copy_number_summary_plsdb(out_dir, prefix, mash_empty)
         assembly.remove_intermediate_files(out_dir)
 
 #############################
-# not in assembled_mode#
+# not in assembled_mode #
 #############################
     else:
 
@@ -133,8 +132,8 @@ if __name__ == "__main__":
 
         if args.kmer_mode == False:
             if args.short_one == 'nothing':
-                logger.info("ERROR: You have running hybrid mode and have forgotten to specify short reads fastq files. Please try again and specify these with -1 and -2.")
-                sys.exit("ERROR: You have running hybrid mode and have forgotten to specify short reads fastq files. Please try again and specify these with -1 and -2.")
+                logger.info("ERROR: You have forgotten to specify short reads fastq files. Please try again and specify these with -1 and -2.")
+                sys.exit("ERROR: You have forgotten to specify short reads fastq files. Please try again and specify these with -1 and -2.")
         else:
             logger.info("You have chosen --kmer_mode with long reads only. Ignoring any short reads.")
             print("You have chosen --kmer_mode with long reads only. Ignoring any short reads.")
@@ -149,7 +148,7 @@ if __name__ == "__main__":
         # filtering long readfastq
         print("Filtering long reads.")
         logger.info("Filtering long reads.")
-        qc.nanofilt(args.longreads, out_dir, args.min_length, args.min_quality, long_zipped)
+        qc.chopper(args.longreads, out_dir, args.min_length, args.min_quality, long_zipped)
 
         # running Flye
         print("Running Flye.")

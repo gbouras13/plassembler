@@ -5,8 +5,8 @@ import log
 
 
 
-def nanofilt(input_long_reads, out_dir, min_length, min_quality, gzip_flag):
-    """Filters long reads using nanofilt
+def chopper(input_long_reads, out_dir, min_length, min_quality, gzip_flag):
+    """Filters long reads using chopper
 
     :param input_long_reads: input ONT reads file
     :param out_dir: output directory
@@ -20,19 +20,23 @@ def nanofilt(input_long_reads, out_dir, min_length, min_quality, gzip_flag):
     if gzip_flag == True:
         try:
             unzip = sp.Popen(["gunzip", "-c", input_long_reads ], stdout=sp.PIPE) 
-            nanofilt = sp.Popen(["NanoFilt", "-q", min_quality, "-l", min_length, "--headcrop", "50"  ], stdin=unzip.stdout, stdout=sp.PIPE ) 
-            gzip = sp.Popen(["gzip" ], stdin=nanofilt.stdout,stdout=f,stderr=sp.PIPE ) 
+            chopper = sp.Popen(["chopper", "-q", min_quality, "-l", min_length, "--headcrop", "25", "--tailcrop", "25"], 
+                                stdin=unzip.stdout, 
+                                stdout=sp.PIPE ) 
+            gzip = sp.Popen(["gzip" ], stdin=chopper.stdout,stdout=f,stderr=sp.PIPE ) 
             output = gzip.communicate()[0]
         except:
-            sys.exit("Error with nanofilt\n")  
+            sys.exit("Error with chopper\n")  
     else:
         try:
             cat = sp.Popen(["cat", input_long_reads ], stdout=sp.PIPE) 
-            nanofilt = sp.Popen(["NanoFilt", "-q", min_quality, "-l", min_length, "--headcrop", "50"  ], stdin=cat.stdout, stdout=sp.PIPE ) 
-            gzip = sp.Popen(["gzip" ], stdin=nanofilt.stdout,stdout=f,stderr=sp.PIPE ) 
+            chopper = sp.Popen(["chopper", "-q", min_quality, "-l", min_length,  "--headcrop", "25", "--tailcrop", "25"  ], 
+                                stdin=cat.stdout, 
+                                stdout=sp.PIPE ) 
+            gzip = sp.Popen(["gzip" ], stdin=chopper.stdout,stdout=f,stderr=sp.PIPE ) 
             output = gzip.communicate()[0]
         except:
-            sys.exit("Error with nanofilt\n")  
+            sys.exit("Error with chopper\n")  
 
 def trim_short_read(short_one, short_two, out_dir,  logger):
     """Trims short reads using fastp

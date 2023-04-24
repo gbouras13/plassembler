@@ -8,19 +8,7 @@ import log
 #################################
 
 
-def index_fasta(fasta,  logger):
-    """ indexes fasta for bwa
-	:param fasta: chromosome fasta
-    :param logger: logger
-    :return: 
-    """
-    try:
-        bwa_index = sp.Popen(["bwa", "index", fasta ], stdout=sp.PIPE, stderr=sp.PIPE) 
-        log.write_to_log(bwa_index.stdout, logger)
-    except:
-        sys.exit("Error with bwa index\n")  
-
-def minimap_long_reads(chromosome_flag, out_dir, threads, logger):
+def minimap_long_reads(out_dir, threads, logger):
     """ maps long reads using minimap2
     :param chromosome_flag: True if mapping to chromosome
 	:param out_dir: output directory path
@@ -29,13 +17,10 @@ def minimap_long_reads(chromosome_flag, out_dir, threads, logger):
     :return: 
     """
     input_long_reads = os.path.join(out_dir, "filtered_long_reads.fastq.gz")
-    # chromosome is a flag for mapping chromosome or not
-    if chromosome_flag == True:
-        fasta = os.path.join(out_dir, "chromosome.fasta")
-        sam = os.path.join(out_dir, "long_read_chromosome.sam")
-    else:
-        fasta = os.path.join(out_dir, "non_chromosome.fasta")
-        sam = os.path.join(out_dir, "long_read_non_chromosome.sam")
+
+    fasta = os.path.join(out_dir, "flye_renamed.fasta")
+    sam = os.path.join(out_dir, "long_read.sam")
+
     f = open(sam, "w")
     try:
         minimap = sp.Popen(["minimap2", "-ax", "map-ont", "-t", threads, fasta, input_long_reads ], stdout=f, stderr=sp.PIPE) 
@@ -45,9 +30,8 @@ def minimap_long_reads(chromosome_flag, out_dir, threads, logger):
 
 # bwa for short reads 
 
-def minimap_short_reads(out_dir, chromosome_flag, threads, logger):
+def minimap_short_reads(out_dir,  threads, logger):
     """ maps short reads using minimap
-    :param chromosome_flag: True if mapping to chromosome
 	:param out_dir: output directory path
     :param threads: threads
     :param logger: logger
@@ -55,12 +39,9 @@ def minimap_short_reads(out_dir, chromosome_flag, threads, logger):
     """
     trim_one = os.path.join(out_dir, "trimmed_R1.fastq")
     trim_two = os.path.join(out_dir, "trimmed_R2.fastq")
-    if chromosome_flag == False:
-        fasta = os.path.join(out_dir, "non_chromosome.fasta")
-        sam = os.path.join(out_dir, "short_read_non_chromosome.sam")
-    else:
-        fasta = os.path.join(out_dir, "chromosome.fasta")
-        sam = os.path.join(out_dir, "short_read_chromosome.sam") 
+    fasta = os.path.join(out_dir, "flye_renamed.fasta")
+    sam = os.path.join(out_dir, "short_read.sam")
+
     f = open(sam, "w")
     try:
         minimap2_map = sp.Popen(["minimap2", "-ax", "sr", "-t", threads, fasta, trim_one, trim_two ], stdout=f, stderr=sp.PIPE) 

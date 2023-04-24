@@ -13,11 +13,20 @@ import bam
 ####################################################################
 def case_three(out_dir, threads, logger):
 
-    #### indexing 
-    mapping.index_fasta( os.path.join(out_dir, "non_chromosome.fasta"),  logger)
-    mapping.index_fasta( os.path.join(out_dir, "chromosome.fasta"),  logger)
 
     ##### Mapping #######
+
+    #### long reads mapping
+    print('Mapping Long Reads.')
+    logger.info('Mapping Long Reads.')
+    mapping.minimap_long_reads( out_dir, threads, logger)
+
+    #### short reads mapping
+    print('Mapping Short Reads.')
+    logger.info('Mapping Short Reads.')
+    mapping.minimap_short_reads(out_dir, threads, logger)
+
+
 
     #### long reads mapping to plasmids
     print('Mapping Long Reads to Putative Plasmid Contigs.')

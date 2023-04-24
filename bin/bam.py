@@ -2,35 +2,52 @@ import os
 import sys
 import subprocess as sp
 import log
+import pysam
 
 # sam to bam
-def sam_to_bam(out_dir, combo, threads, logger):
+
+
+def sam_to_bam_short(out_dir, threads, logger):
     """ converts sam to bam using pysam
-    :param combo: combination of chromosome and read: chromosome_long, non_chromosome_long, non_chromosome_short or chromosome_short
+    :param long_short: "long" or "short"
 	:param out_dir: output directory path
     :param threads: threads
     :param logger: logger
     :return: 
     """
-    #  combo for what combination to index
-    if combo == "chromosome_long":
-        sam = os.path.join(out_dir, "long_read_chromosome.sam")
-        bam = os.path.join(out_dir, "long_read_chromosome.bam")
-    elif combo == "non_chromosome_long":
-        sam = os.path.join(out_dir, "long_read_non_chromosome.sam")
-        bam = os.path.join(out_dir, "long_read_non_chromosome.bam")
-    elif combo == "non_chromosome_short":
-        sam = os.path.join(out_dir, "short_read_non_chromosome.sam")
-        bam = os.path.join(out_dir, "short_read_non_chromosome.bam")
-    else: # chromosome_short
-        sam = os.path.join(out_dir, "short_read_chromosome.sam")
-        bam = os.path.join(out_dir, "short_read_chromosome.bam")
+    sam = os.path.join(out_dir, "short_read.sam")
+    bam = os.path.join(out_dir, "short_read.bam")
     outFile = open(bam, "w")
     try:
         sam_to_bam = sp.Popen(["samtools", "view", "-h", "-@", threads, "-b", sam], stdout=outFile, stderr=sp.PIPE) 
         log.write_to_log(sam_to_bam.stderr, logger)
     except:
         sys.exit("Error with samtools view.\n")  
+
+
+def bam_to_fastq_short(out_dir, threads, logger):
+    """ gets all relevant fastqs from bams
+    :param long_short: "long" or "short"
+	:param out_dir: output directory path
+    :param threads: threads
+    :param logger: logger
+    :return: 
+    """
+
+    # reads that don't map to chromosome
+    
+
+    try:
+        extract_short_fastq= sp.Popen(["samtools", "fastq", "-@", threads, map_flag, "4", bam, "-1", fastq_one, "-2", fastq_two, "-0", "/dev/null", "-s", "/dev/null", "-n"], stdout=sp.PIPE, stderr=sp.PIPE) 
+        log.write_to_log(extract_short_fastq.stdout, logger)
+    except:
+        sys.exit("Error with samtools fastq.\n")  
+
+
+
+
+samtools fastq -F 4 -F 8 -F 256 -f 2 -R 'chromosome' -1 unmapped_to_chromosome_read1.fastq -2 unmapped_to_chromosome_read2.fastq input.bam
+
 
 
 #### extract mapped or unmapped bams ######

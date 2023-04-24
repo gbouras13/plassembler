@@ -5,7 +5,7 @@ import time
 import datetime
 import input_commands
 import qc
-import run_flye
+import mapping
 import extract
 import case_one
 import case_one_kmer
@@ -18,6 +18,9 @@ import run_mash
 import install_database
 import assembly
 import sys
+import bam
+from plass_class import Plass
+import sam_to_fastq
 
 from version import __version__
 
@@ -29,9 +32,9 @@ if __name__ == "__main__":
     start_time = time.time()
 
     # getting time for log file 
-
     time_for_log = datetime.datetime.now().strftime("%m%d%Y_%H%M%S")
 
+    # get inputs
     args = input_commands.get_input()
 
     # set the prefix
@@ -77,6 +80,7 @@ if __name__ == "__main__":
         logger.info("You have chosen to specify an input assembly FASTA file containing plasmids to calculate depth and PLSDB type. No assembly will be conducted.")
         print("###########################\nAssembled Mode Activated\n###########################")
         logger.info("###########################\nAssembled Mode Activated\n###########################")
+
         # validation
         print("Checking input FASTA.")
         logger.info("Checking input FASTA.")
@@ -125,11 +129,13 @@ if __name__ == "__main__":
 #############################
 # not in assembled_mode #
 #############################
+
     else:
 
         print("Checking input fastqs.")
         logger.info("Checking input fastqs")
 
+        # experimental kmer mode - high quality long read only
         if args.kmer_mode == False:
             if args.short_one == 'nothing':
                 logger.info("ERROR: You have forgotten to specify short reads fastq files. Please try again and specify these with -1 and -2.")
@@ -138,7 +144,7 @@ if __name__ == "__main__":
             logger.info("You have chosen --kmer_mode with long reads only. Ignoring any short reads.")
             print("You have chosen --kmer_mode with long reads only. Ignoring any short reads.")
 
-
+        
         # checking fastq 
         long_zipped = input_commands.validate_fastq(args.longreads)
         if args.kmer_mode == False:
@@ -148,42 +154,53 @@ if __name__ == "__main__":
         # filtering long readfastq
         print("Filtering long reads.")
         logger.info("Filtering long reads.")
-        qc.chopper(args.longreads, out_dir, args.min_length, args.min_quality, long_zipped)
+        #qc.chopper(args.longreads, out_dir, args.min_length, args.min_quality, long_zipped)
 
         # running Flye
         print("Running Flye.")
         logger.info("Running Flye")
-        run_flye.run_flye( out_dir, args.threads,args.raw_flag, logger)
+        #run_flye.run_flye( out_dir, args.threads,args.raw_flag, logger)
 
-        # count contigs
+        # instanatiate the class
+
+        plass = Plass()
+
+        # count contigs and add to the object
         print("Counting Contigs.")
         logger.info("Counting Contigs")
-        contig_count = run_flye.contig_count(out_dir)
-
-        # flag for extracting the plasmid chromosomes
-        # no_plasmids_flag = false means there are plasmids
-        no_plasmids_flag = False
+        plass.get_contig_count(out_dir, logger)
 
         ####################################################################
         # Case 1: where there is only 1 contig -> no plasmids in the long read only assembly
         ####################################################################
 
-        if contig_count == 1:
+        if plass.contig_count == 1:
             logger.info("Only one contig was assembled with Flye.")
             print("Only one contig was assembled with Flye.")
 
-            if args.kmer_mode == False:
-                print('Plassembler will now try to use short reads to find possible plasmids.')
-                logger.info("Plassembler will now try to use short reads to find possible plasmids.")
-            else:
-                print('Plassembler will now try to use Unicycler to find possible plasmids that Flye may have missed in the long reads.')
-                logger.info('Plassembler will now try to use Unicycler to find possible plasmids that Flye may have missed in the long reads.')
-
-
             # no_plasmids_flag = True as no plasmids
-            no_plasmids_flag = True
-            chromosome_flag = extract.extract_chromosome(out_dir, args.chromosome, no_plasmids_flag)
-            
+            plass.no_plasmids_flag = True
+
+            # identifies chromosome and renames contigs
+            plass.identify_chromosome_process_flye(out_dir, args.chromosome)
+
+            # no chromosome identified - cleanup and exit
+            if plass.chromosome_flag == False:
+                message = 'No chromosome was identified. Likely, there was insufficient long read depth for Flye to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. '
+                print(message)
+                logger.info(message)
+                cleanup.move_and_copy_files(out_dir, prefix, plass.chromosome_flag)
+            else: # chromosome identified -> move on 
+                if args.kmer_mode == False:
+                    message = 'Plassembler will now try to use short reads to find possible plasmids.'
+                    print(message)
+                    logger.info(message)
+                else:
+                    message = 'Plassembler will now try to use Unicycler to find possible plasmids that Flye may have missed in the long reads.'
+                    print(message)
+                    logger.info(message)
+
+            # trim short reads then assemble
             if args.kmer_mode == False:
                 print('Trimming short reads.')
                 logger.info("Trimming short reads.")
@@ -193,6 +210,7 @@ if __name__ == "__main__":
                 logger.info("Recovering possible plasmids from short reads.")
                 successful_unicycler_recovery = case_one.case_one(out_dir, args.threads, logger)
             else:
+                # maybe spades? test it out
                 print('Recovering possible plasmids using Unicycler.')
                 logger.info("Recovering possible plasmids using Unicycler.")
                 successful_unicycler_recovery = case_one_kmer.case_one_kmer(out_dir, args.threads, logger)
@@ -219,7 +237,7 @@ if __name__ == "__main__":
                 cleanup.update_copy_number_summary_plsdb(out_dir, prefix, mash_empty)
 
                 cleanup.move_and_copy_files(out_dir, prefix, successful_unicycler_recovery)
-                cleanup.remove_intermediate_files(out_dir)
+                #cleanup.remove_intermediate_files(out_dir)
             ####################################################################
             # Case 4: where there are truly no plasmids
             ####################################################################
@@ -227,7 +245,10 @@ if __name__ == "__main__":
                 print('No plasmids found.')
                 logger.info("No plasmids found.")
                 cleanup.move_and_copy_files(out_dir, prefix, successful_unicycler_recovery)
-                cleanup.remove_intermediate_files(out_dir)
+                #cleanup.remove_intermediate_files(out_dir)
+
+
+
 
         # where more than 1 contig was assembled
         else:
@@ -235,29 +256,66 @@ if __name__ == "__main__":
             print("More than one contig was assembled with Flye.")
             print("Extracting Chromosome.")
             logger.info("Extracting Chromosome.")
-            chromosome_flag = extract.extract_chromosome(out_dir, args.chromosome, no_plasmids_flag)
+
+            # no_plasmids_flag = False as no plasmids
+            plass.no_plasmids_flag = False
+
+            # identifies chromosome and renames contigs
+            plass.identify_chromosome_process_flye(out_dir, args.chromosome)
+
             ####################################################################
             # Case 2 - where no chromosome was identified (likely below required depth) - need more long reads or user got chromosome parameter wrong - exit plassembler
             ####################################################################
-            if chromosome_flag == False:
-                print('No chromosome was idenfitied. Likely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended. Also please check your -c or --chromosome parameter, it may be too high. ')
-                logger.info("No chromosome was idenfitied. Likely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended. Also please check your -c or --chromosome parameter, it may be too high.")
+            if plass.chromosome_flag == False:
+                message = 'No chromosome was idenfitied. please check your -c or --chromosome parameter, it may be too high. \nLikely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended.'
+                print(message)
+                logger.info(message)
                 cleanup.move_and_copy_files(out_dir, prefix, chromosome_flag)
-                cleanup.remove_intermediate_files(out_dir)
+                #cleanup.remove_intermediate_files(out_dir)
             ####################################################################
             # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> mappeed to plasmids, unmapped to chromosome and assembly
             ####################################################################
             else:
                 if args.kmer_mode == False:
-                    print('Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.')
-                    logger.info("Chromosome Identified. Plassembler will now use both long and short reads to assemble plasmids accurately.")
+                    message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
+                    print(message)
+                    logger.info(message)
+
+                    message = 'Trimming short reads.'
+                    print(message)
+                    logger.info(message)
+                    #qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+
+                    message = 'Mapping Long Reads.'
+                    print(message)
+                    logger.info(message)
+                    #mapping.minimap_long_reads( out_dir, args.threads, logger)
+
+                    #### short reads mapping
+                    message = 'Mapping Short Reads.'
+                    print(message)
+                    logger.info(message)
+                    #mapping.minimap_short_reads(out_dir, args.threads, logger)
+
+                    message = 'Processing Sam Files.'
+                    print(message)
+                    logger.info(message)
+                  
+                    # for long, custom function
+                    # for short, too slow so use samtools
+                    sam_to_fastq.extract_bin_long_fastqs(out_dir)
+                    # short
+                    bam.sam_to_bam_short(out_dir, args.threads, logger)
+                    bam.bam_to_fastq_short()
                     
-                    print('Trimming short reads.')
-                    logger.info("Trimming short reads.")
-                    qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
-                    ##### modules
-                    # assembly plasmids
-                    case_three.case_three(out_dir, args.threads,logger)
+
+                    #sam_to_fastq.extract_bin_short_fastqs(out_dir)
+
+
+
+ 
+
+                    #case_three.case_three(out_dir, args.threads,logger)
                     # get copy number 
                     print('Calculating Plasmid Copy Numbers.')
                     logger.info("Calculating Plasmid Copy Numbers.")
@@ -287,7 +345,7 @@ if __name__ == "__main__":
                 cleanup.update_copy_number_summary_plsdb(out_dir, prefix, mash_empty)
 
                 cleanup.move_and_copy_files(out_dir, prefix, chromosome_flag)
-                cleanup.remove_intermediate_files(out_dir)
+                #cleanup.remove_intermediate_files(out_dir)
 
 
     # Determine elapsed time

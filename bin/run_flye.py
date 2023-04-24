@@ -3,6 +3,7 @@ import sys
 import subprocess as sp
 import pandas as pd
 import log
+from plass_class import Plass 
 
 
 
@@ -25,16 +26,5 @@ def run_flye(out_dir, threads, raw_flag, logger):
     except:
         sys.exit("Error with Flye\n")  
 
-def contig_count(out_dir):
-    """ Counts the number of contigs assembled by flye
-    :param out_dir: output directory
-    :param logger: logger
-    :return:
-    """
-    info_file =  os.path.join(out_dir, "assembly_info.txt")
-    col_list = ["seq_name", "length", "cov", "circ", "repeat", "mult", "alt_group", "graph_path"] 
-    info_df = pd.read_csv(info_file, delimiter= '\t', index_col=False , names=col_list, skiprows=1) 
-    contig_count = len(info_df['seq_name'])
-    print("Flye assembled " + str(contig_count) + " contigs.")
-    return contig_count
+
 

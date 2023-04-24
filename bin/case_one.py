@@ -6,32 +6,28 @@ import bam
 
 def case_one(out_dir, threads, logger):
 
-    #### indexing chromosome
-    print('Indexing Chromosome.')
-    logger.info("Indexing Chromosome.")
-    mapping.index_fasta(os.path.join(out_dir, "chromosome.fasta"),  logger)
-
     ######################
     ##### Mapping #######
     ######################
 
-    #### long reads mapping to chromosome
-    print('Mapping Long Reads to Chromosome.')
-    logger.info('Mapping Long Reads to Chromosome.')
-    mapping.minimap_long_reads(True, out_dir, threads, logger)
+    #### long reads mapping
+    print('Mapping Long Reads.')
+    logger.info('Mapping Long Reads.')
+    mapping.minimap_long_reads( out_dir, threads, logger)
 
-    #### short reads mapping to chromosome
-    print('Mapping Short Reads to Chromosome.')
-    logger.info('Mapping Short Reads to Chromosome.')
-    mapping.bwa_map_short_reads( out_dir, True, threads,  logger)
+    #### short reads mapping
+    print('Mapping Short Reads.')
+    logger.info('Mapping Short Reads.')
+    mapping.minimap_short_reads(out_dir, threads, logger)
 
     #### Processing bams ######
     print('Processing Bams.')
     logger.info('Processing Bams.')
 
-    # convert sam to bam
-    bam.sam_to_bam(out_dir, "chromosome_long", threads,  logger)
-    bam.sam_to_bam(out_dir, "chromosome_short", threads,  logger)
+    # convert sam to bam for long and short read sets
+    bam.sam_to_bam(out_dir, "long", threads,  logger)
+    bam.sam_to_bam(out_dir, "short", threads,  logger)
+
 
     ### extractng unmapped bams ###
     bam.bam_to_mapped_or_unmapped(out_dir, "chromosome_long", threads, logger)

@@ -168,6 +168,8 @@ if __name__ == "__main__":
         # instanatiate the class
 
         plass = Plass()
+        plass.threads = args.threads
+        plass.kmer = args.kmer
 
         # count contigs and add to the object
         print("Counting Contigs.")
@@ -331,11 +333,7 @@ if __name__ == "__main__":
                     # run_unicycler.run_unicycler(False, args.threads, logger, short_r1, short_r2, long_reads, 
                     #                             os.path.join(out_dir, "unicycler_output"))
 
-                    # get copy number depths
-                    message = 'Calculating Plasmid Copy Numbers.'
-                    print(message)
-                    logger.info(message)
-                    depth.get_depth(out_dir, logger,  args.threads, prefix)
+
 
                 # kmer_mode
                 else:
@@ -345,6 +343,17 @@ if __name__ == "__main__":
                     print('Calculating Plasmid Copy Numbers.')
                     logger.info("Calculating Plasmid Copy Numbers.")
                     depth.get_depth_kmer(out_dir, logger,  args.threads, prefix)
+
+                
+                ##################################
+                ##### get copy number depths
+                ##################################
+                message = 'Calculating Plasmid Copy Numbers.'
+                print(message)
+                logger.info(message)
+                
+                # as class so saves the depth dataframe nicely
+                plass.get_depth(out_dir, logger,  args.threads, prefix)
 
                 # run mash
                 print('Calculating mash distances to PLSDB.')

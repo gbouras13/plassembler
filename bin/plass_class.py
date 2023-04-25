@@ -13,8 +13,10 @@ class Plass:
         contig_count: int = 1,
         successful_unicycler_recovery: bool = True,
         no_plasmids_flag: bool = False,
-        chromosome_flag: bool = True
-
+        chromosome_flag: bool = True,
+        threads: int = 1,
+        depth_df:  pd.DataFrame() =  pd.DataFrame({'col1': [1, 2, 3], 'col2': [4, 5, 6]}),
+        kmer_mode: bool = False,
         ) -> None:
         """
         Parameters
@@ -27,13 +29,17 @@ class Plass:
             flag determining whether there are plasmids at some point in the pipeline. If False means there are plasmids
         chromosome_flag: bool, required
             flag saying whether or not there was an identified chromosome in the Flye output. 
-        case: int, required
-            integer giving what case the plassembler scenario is - needs to be 1,2,3 or 4. 
+        threads: int, required
+            integer giving args.threads - defaults to 1.
+        kmer_mode: bool, required
+            whether plassembler is in kmer mode
         """
         self.contig_count = contig_count
         self.successful_unicycler_recovery = successful_unicycler_recovery
         self.no_plasmids_flag = no_plasmids_flag
         self.chromosome_flag = chromosome_flag
+        self.threads = threads
+        self.depth_df = depth_df
 
     def get_contig_count(self, out_dir, logger):
         """ Counts the number of contigs assembled by flye and prints to log
@@ -103,7 +109,8 @@ class Plass:
                         dna_header = "plasmid_" + str(i)
                         dna_description = ""
                         # get length for bed file
-                        plas_len = int(info_df.loc[info_df['seq_name'] == dna_record.id, 'length'][0])
+                        l = info_df.length.loc[info_df['seq_name'] == dna_record.id]
+                        plas_len =  int(l.iloc[0])
                         # write the updated record
                         dna_record = SeqRecord(dna_record.seq, id=dna_header, description = dna_description)
                         SeqIO.write(dna_record, rename_fa, 'fasta')
@@ -124,7 +131,7 @@ class Plass:
         # add to object
         self.chromosome_flag = chromosome_flag
 
-    def get_depth(out_dir, logger,  threads, prefix):
+    def get_depth(self, out_dir, logger, threads, prefix):
         """ wrapper function to get depth of each plasmid in kmer mode
         :param prefix: prefix (default plassembler)
         :param out_dir:  Output Directory
@@ -133,13 +140,22 @@ class Plass:
         :return: 
         """
         depth.concatenate_chrom_plasmids(out_dir, logger)
-        mapping.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
-        depth.bwa_map_depth_sort(out_dir, threads)
-        depth.minimap_depth_sort(out_dir, threads)
+        depth.minimap_depth_sort_long(out_dir, threads)
+        if self.kmer == False:
+            depth.minimap_depth_sort_short(out_dir, threads)
+
         contig_lengths = depth.get_contig_lengths(out_dir)
-        depthsShort = depth.get_depths_from_bam(out_dir, "short", contig_lengths)
+        if self.kmer == False:
+            depthsShort = depth.get_depths_from_bam(out_dir, "short", contig_lengths)
         depthsLong = depth.get_depths_from_bam(out_dir, "long", contig_lengths)
         circular_status = depth.get_contig_circularity(out_dir)
-        summary_depth_df_short = depth.collate_depths(depthsShort,"short",contig_lengths)
+        if self.kmer == False:
+            summary_depth_df_short = depth.collate_depths(depthsShort,"short",contig_lengths)
         summary_depth_df_long = depth.collate_depths(depthsLong,"long",contig_lengths)
-        depth.combine_depth_dfs(out_dir, summary_depth_df_short, summary_depth_df_long, prefix, circular_status)
+        # save the depth df in the class
+        if self.kmer == False:
+            self.depth_df = depth.combine_depth_dfs(out_dir, summary_depth_df_short, summary_depth_df_long, prefix, circular_status)
+        else:
+            self.depth_df = depth.kmer_final_output(out_dir, summary_depth_df_long, prefix, circular_status)
+
+

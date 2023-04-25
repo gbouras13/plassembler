@@ -79,8 +79,8 @@ def bam_to_fastq_short(out_dir, threads, logger):
         non_chrom_fastq_one = os.path.join(out_dir, "mapped_non_chromosome_R1.fastq")
         non_chrom_fastq_two = os.path.join(out_dir, "mapped_non_chromosome_R2.fastq")
 
-        chrom_fastq_one = os.path.join(out_dir, "mapped_chromosome_R1.fastq")
-        chrom_fastq_two = os.path.join(out_dir, "mapped_chromosome_R2.fastq")
+        #chrom_fastq_one = os.path.join(out_dir, "mapped_chromosome_R1.fastq")
+        #chrom_fastq_two = os.path.join(out_dir, "mapped_chromosome_R2.fastq")
 
         extract_unmap_short_fastq = sp.Popen(["samtools", "fastq", "-@", threads, unmapped_bam_file, "-1", unmap_fastq_one, "-2", unmap_fastq_two, "-0", "/dev/null", "-s", "/dev/null", "-n"], stdout=sp.PIPE, stderr=sp.PIPE) 
         log.write_to_log(extract_unmap_short_fastq.stdout, logger)
@@ -88,8 +88,8 @@ def bam_to_fastq_short(out_dir, threads, logger):
         extract_non_chrom_short_fastq = sp.Popen(["samtools", "fastq", "-@", threads, '-F', "4", '-f', '1', non_chrom_bam_file, "-1", non_chrom_fastq_one, "-2", non_chrom_fastq_two, "-0", "/dev/null", "-s", "/dev/null", "-n"], stdout=sp.PIPE, stderr=sp.PIPE)
         log.write_to_log(extract_non_chrom_short_fastq.stdout, logger)
 
-        extract_chrom_short_fastq = sp.Popen(["samtools", "fastq", "-@", threads, '-F', "4", '-f', '1', chrom_bam_file, "-1", chrom_fastq_one, "-2", chrom_fastq_two, "-0", "/dev/null", "-s", "/dev/null", "-n"], stdout=sp.PIPE, stderr=sp.PIPE) 
-        log.write_to_log(extract_chrom_short_fastq.stdout, logger)
+        #extract_chrom_short_fastq = sp.Popen(["samtools", "fastq", "-@", threads, '-F', "4", '-f', '1', chrom_bam_file, "-1", chrom_fastq_one, "-2", chrom_fastq_two, "-0", "/dev/null", "-s", "/dev/null", "-n"], stdout=sp.PIPE, stderr=sp.PIPE) 
+        #log.write_to_log(extract_chrom_short_fastq.stdout, logger)
 
     except:
         sys.exit("Error with samtools fastq.\n")  

@@ -31,6 +31,7 @@ def get_input():
 	parser.add_argument('-p', '--prefix', action="store", help='Prefix for output files. This is not required',  default='Default')
 	parser.add_argument('-q', '--min_quality', action="store", help='minimum quality of long reads for nanofilt. Defaults to 9.',  default=str(9))
 	parser.add_argument('-k', '--kmer_mode',  help='Very high quality Nanopore R10.4 and above reads. No short reads required. Experimental for now.', action="store_true" )
+	parser.add_argument('--multi_map',  help='whether you want to save multi-map (chromosome and plasmid) reads for downstream analysis. Will make plassembler slower.', action="store_true" )
 	parser.add_argument('-a', '--assembled_mode',  help='Activates assembled mode, where you can PLSDB type and get depth for already assembled plasmids using the -a flag.', action="store_true")
 	parser.add_argument('--input_chromosome',  help='Input FASTA file consisting of already assembled chromosome with assembled mode. Requires FASTQ file input (long only or long + short) also.', action="store", default='nothing')
 	parser.add_argument('--input_plasmids',  help='Input FASTA file consisting of already assembled plasmids with assembled mode. Requires FASTQ file input (long only or long + short) also.', action="store", default='nothing')
@@ -137,46 +138,52 @@ def check_dependencies(logger):
     :return:
     """
 	# Flye
-	process = sp.Popen(["flye", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT) 
-	flye_out, _ = process.communicate()
-	flye_out = flye_out.decode().strip()
-	flye_major_version = int(flye_out.split('.')[0])
-	flye_minor_version = int(flye_out.split('.')[1])
-	flye_minorest_version = flye_out.split('.')[2]
+	try:
+		process = sp.Popen(["flye", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT) 
+		flye_out, _ = process.communicate()
+		flye_out = flye_out.decode().strip()
+		flye_major_version = int(flye_out.split('.')[0])
+		flye_minor_version = int(flye_out.split('.')[1])
+		flye_minorest_version = flye_out.split('.')[2]
+	except:
+		sys.exit("Flye not found. Please reinstall Plassembler.")
 
 	print("Flye version found is v" + str(flye_major_version) +"." + str(flye_minor_version) +"."+flye_minorest_version + ".")
 	logger.info("Flye version found is v" + str(flye_major_version) +"." + str(flye_minor_version) +"."+flye_minorest_version +".")
 
 	if flye_major_version != 2:
-		sys.exit("Flye is too old - please reinstall plassembler.")
-	if flye_minor_version != 9:
-		sys.exit("Flye is too old - please reinstall plassembler.")
+		sys.exit("Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
+	if flye_minor_version < 9:
+		sys.exit("Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
 
 	print("Flye version is ok.")
 	logger.info("Flye version is ok.")
 
 	# unicycler
-	process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT) 
-	unicycler_out, _ = process.communicate()
-	unicycler_out = unicycler_out.decode()
-	unicycler_version = unicycler_out.split(' ')[1]
-	# get rid of the "v"
-	unicycler_version = unicycler_version[1:]
+	try:
+		process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT) 
+		unicycler_out, _ = process.communicate()
+		unicycler_out = unicycler_out.decode()
+		unicycler_version = unicycler_out.split(' ')[1]
+		# get rid of the "v"
+		unicycler_version = unicycler_version[1:]
 
-	unicycler_major_version = int(unicycler_version.split('.')[0])
-	unicycler_minor_version = int(unicycler_version.split('.')[1])
-	unicycler_minorest_version = int(unicycler_version.split('.')[2])
+		unicycler_major_version = int(unicycler_version.split('.')[0])
+		unicycler_minor_version = int(unicycler_version.split('.')[1])
+		unicycler_minorest_version = int(unicycler_version.split('.')[2])
+	except:
+		sys.exit("Unicycler not found. Please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler.")
 
 	print("Unicycler version found is v" + str(unicycler_major_version) +"." + str(unicycler_minor_version) +"."+str(unicycler_minorest_version)+".")
 	logger.info("Unicycler version found is v" + str(unicycler_major_version) +"." + str(unicycler_minor_version) +"."+str(unicycler_minorest_version)+".")
 
 	if unicycler_minor_version < 4 :
-		sys.exit("Unicycler is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
+		sys.exit("Unicycler is too old - please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler.")
 	elif unicycler_minor_version == 4 and unicycler_minorest_version < 8:
-		sys.exit("Unicycler is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
+		sys.exit("Unicycler is too old - please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler.")
 	elif unicycler_minor_version == 4 and unicycler_minorest_version >= 8:
-		print("Unicycler version is older than v0.5.0 - plassembler will continue but please consider installing Unicycler v0.5.0. See instructions at https://github.com/gbouras13/plassembler.")
-		logger.info("Unicycler version is older than v0.5.0 - plassembler will continue but please consider installing Unicycler v0.5.0. See instructions at https://github.com/gbouras13/plassembler.")
+		print("Unicycler version is older than v0.5.0 - Plassembler will continue but please consider installing Unicycler v0.5.0. See instructions at https://github.com/gbouras13/plassembler.")
+		logger.info("Unicycler version is older than v0.5.0 - Plassembler will continue but please consider installing Unicycler v0.5.0. See instructions at https://github.com/gbouras13/plassembler.")
 	else:
 		print("Unicycler version is ok.")
 		logger.info("Unicycler version is ok.")

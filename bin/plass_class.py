@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import depth
 import mapping
+import cleanup
+import run_mash
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 
@@ -16,7 +18,8 @@ class Plass:
         chromosome_flag: bool = True,
         threads: int = 1,
         depth_df:  pd.DataFrame() =  pd.DataFrame({'col1': [1, 2, 3], 'col2': [4, 5, 6]}),
-        kmer_mode: bool = False,
+        mash_df:  pd.DataFrame() =  pd.DataFrame({'col1': [1, 2, 3], 'col2': [4, 5, 6]}),
+        kmer_mode: bool = False
         ) -> None:
         """
         Parameters
@@ -29,10 +32,16 @@ class Plass:
             flag determining whether there are plasmids at some point in the pipeline. If False means there are plasmids
         chromosome_flag: bool, required
             flag saying whether or not there was an identified chromosome in the Flye output. 
+        depth_df: Pandas df, required
+            dataframe with depth output
+        mash_df: Pandas df, required
+            dataframe with mash output
         threads: int, required
             integer giving args.threads - defaults to 1.
         kmer_mode: bool, required
             whether plassembler is in kmer mode
+        mash_empty: bool, required
+            whether mash output is empty (True) or not
         """
         self.contig_count = contig_count
         self.successful_unicycler_recovery = successful_unicycler_recovery
@@ -157,5 +166,76 @@ class Plass:
             self.depth_df = depth.combine_depth_dfs(out_dir, summary_depth_df_short, summary_depth_df_long, prefix, circular_status)
         else:
             self.depth_df = depth.kmer_final_output(out_dir, summary_depth_df_long, prefix, circular_status)
+
+
+
+    def process_mash_tsv(self, out_dir, plassembler_db_dir):
+        """
+        Process mash output
+        :param out_dir: output directory
+        :return: mash_empty: boolean whether there was a mash hit
+        """
+
+        # contig count of the unicycler assembly
+        contig_count = run_mash.get_contig_count( os.path.join(out_dir,"unicycler_output", "assembly.fasta"))
+        # update with final plasmid count number 
+        self.contig_count = contig_count
+        # get mash tsv output contig 
+        mash_tsv = os.path.join(out_dir,"mash.tsv")
+        col_list = ["contig", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"]
+
+        # check if mash tsv file is empty -> no hits
+        mash_empty = run_mash.is_file_empty(mash_tsv)
+        # instantiate tophits list
+        tophits_mash_df = []
+
+        if mash_empty == False:   
+            mash_df = pd.read_csv(mash_tsv, delimiter= '\t', index_col=False, names=col_list ) 
+            # get list of contigs from unicycler: 1 -> total number of contigs
+            contigs = range(1, contig_count+1)
+
+            # instantiate tophits list
+            tophits = []
+
+            for contig in contigs:
+                hit_df = mash_df.loc[mash_df['contig'] == contig].sort_values('mash_distance').reset_index(drop=True)
+                hits = len(hit_df['mash_distance'])
+                # add only if there is a hit
+                if hits > 0:
+                    tmp_df = mash_df.loc[mash_df['contig'] == contig].sort_values('mash_distance').reset_index(drop=True).loc[0]
+                    tophits.append([tmp_df.contig, 'Yes', tmp_df.ACC_NUCCORE, tmp_df.mash_distance, tmp_df.mash_pval, tmp_df.mash_matching_hashes])
+                else: # no hits append no it
+                    tophits.append([contig, 'No_hit', 'No_hit', 'No_hit', 'No_hit', 'No_hit'])
+                # create tophits df
+            tophits_mash_df = pd.DataFrame(tophits, columns=["contig", "PLSDB_hit", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
+
+        else: # empty mash file
+            contigs = range(1, contig_count+1)
+            # create empty df
+            tophits_mash_df = pd.DataFrame(columns=["contig", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
+            for contig in contigs:
+                tophits_mash_df.loc[contig-1] = [contig, 'No_hit', 'No_hit', 'No_hit', 'No_hit']
+
+        # read in the plasdb tsv to get the description
+        plsdb_tsv_file = os.path.join(plassembler_db_dir, "plsdb.tsv")
+        cols = ["UID_NUCCORE","ACC_NUCCORE","Description_NUCCORE","CreateDate_NUCCORE","Topology_NUCCORE","Completeness_NUCCORE","TaxonID_NUCCORE","Genome_NUCCORE","Length_NUCCORE","Source_NUCCORE","UID_ASSEMBLY","Status_ASSEMBLY","SeqReleaseDate_ASSEMBLY","SubmissionDate_ASSEMBLY","Latest_ASSEMBLY","UID_BIOSAMPLE","ACC_BIOSAMPLE","Location_BIOSAMPLE","Coordinates_BIOSAMPLE","IsolationSource_BIOSAMPLE","Host_BIOSAMPLE","CollectionDate_BIOSAMPLE","Host_DISEASE","SamplType_BIOSAMPLE","taxon_name","taxon_rank","lineage","taxon_species_id","taxon_species_name","taxon_genus_id","taxon_genus_name","taxon_family_id","taxon_family_name","taxon_order_id","taxon_order_name","taxon_class_id","taxon_class_name","taxon_phylum_id","taxon_phylum_name","taxon_superkingdom_id","taxon_superkingdom_name","loc_lat","loc_lng","loc_parsed","GC_NUCCORE","Identical","OldVersion","hits_rMLST","hitscount_rMLST","inclusions","Host_BIOSAMPLE_processed","Host_DISEASE_processed","D1","D2","plasmidfinder","pmlst","relaxase_type(s)","mpf_type"]
+        plsdb_tsv = pd.read_csv(plsdb_tsv_file, delimiter= '\t', index_col=False, names=cols, skiprows=1,low_memory=False) 
+        combined_mash_df = tophits_mash_df.merge(plsdb_tsv, on='ACC_NUCCORE', how='left')
+
+
+        self.mash_df = combined_mash_df
+
+
+    def combine_depth_mash_tsvs(self, out_dir, prefix):
+        """
+        Combine depth and mash dataframes
+        :param out_dir: output directory
+        :return: mash_empty: boolean whether there was a mash hit
+        """
+
+        self.depth_df['contig'] = self.depth_df['contig'].astype('str')
+        self.mash_df['contig'] = self.mash_df['contig'].astype('str')
+        combined_depth_mash_df = self.depth_df.merge(self.mash_df, on='contig', how='left')
+        combined_depth_mash_df.to_csv(os.path.join(out_dir, prefix + "_plassembler_summary.tsv"), sep="\t", index=False) 
 
 

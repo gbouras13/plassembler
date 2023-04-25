@@ -14,20 +14,14 @@ def concatenate_all_fastqs(out_dir,logger):
     unmapped_fastq_two_short = os.path.join(out_dir, "unmapped_R2.fastq")
     non_chrom_fastq_one_short = os.path.join(out_dir, "mapped_non_chromosome_R1.fastq")
     non_chrom_fastq_two_short = os.path.join(out_dir, "mapped_non_chromosome_R2.fastq")
-    chrom_fastq_one_short = os.path.join(out_dir, "mapped_chromosome_R1.fastq")
-    chrom_fastq_two_short = os.path.join(out_dir, "mapped_chromosome_R2.fastq")
+
     # final outputs
     short_one_file = open(os.path.join(out_dir, "short_read_concat_R1.fastq"), "w")
     short_two_file = open(os.path.join(out_dir, "short_read_concat_R2.fastq"), "w")
-    chrom_non_chrom_short_one_file = open(os.path.join(out_dir, "short_read_concat_chrom_non_chrom_R1.fastq"), "w")
-    chrom_non_chrom_short_one_two = open(os.path.join(out_dir, "short_read_concat_chrom_non_chrom_R2.fastq"), "w")
+
     try:
         concatenate_single(unmapped_fastq_one_short, non_chrom_fastq_one_short, short_one_file, logger)
         concatenate_single(unmapped_fastq_two_short, non_chrom_fastq_two_short, short_two_file, logger)
-
-        # chrom and non_chrom
-        concatenate_single(chrom_fastq_one_short, non_chrom_fastq_one_short, chrom_non_chrom_short_one_file, logger)
-        concatenate_single(chrom_fastq_two_short, non_chrom_fastq_two_short, chrom_non_chrom_short_one_two, logger)
     except:
         sys.exit("Error with concatenate_fastqs\n")  
     

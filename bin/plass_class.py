@@ -165,7 +165,7 @@ class Plass:
         self.unicycler_success = unicycler_success
 
 
-    def get_depth(self,  logger, threads, prefix):
+    def get_depth(self, logger, threads, prefix):
         """ wrapper function to get depth of each plasmid in kmer mode
         :param prefix: prefix (default plassembler)
         :param out_dir:  Output Directory

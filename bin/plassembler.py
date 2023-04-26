@@ -68,9 +68,6 @@ if __name__ == "__main__":
         message = "\nPlease run install_database.py \n"
         log.print_and_exit(message, logger)
 
-
-    # set subset flag 
-
 #############################
 ######### assembled_mode == true 
 #############################
@@ -167,7 +164,7 @@ if __name__ == "__main__":
         # running Flye
         message = "Running Flye."
         log.write_message(message, logger)
-        run_flye.run_flye( out_dir, args.threads,args.raw_flag, logger)
+        run_flye.run_flye(out_dir, args.threads,args.raw_flag, logger)
 
         # instanatiate the class with some of the commands
         plass = Plass()
@@ -382,7 +379,7 @@ if __name__ == "__main__":
                 log.write_message(message, logger)
                 
                 # as class so saves the depth dataframe nicely
-                plass.get_depth(out_dir, logger,  args.threads, prefix)
+                plass.get_depth( logger,  args.threads, prefix)
 
                 # run mash
                 message = 'Calculating mash distances to PLSDB.'
@@ -394,16 +391,15 @@ if __name__ == "__main__":
                 run_mash.run_mash(out_dir, args.database, logger)
 
                 # processes output
-                plass.process_mash_tsv(out_dir, args.database)
+                plass.process_mash_tsv(args.database)
                 # combine depth and mash tsvs
-                plass.combine_depth_mash_tsvs(out_dir, prefix)
+                plass.combine_depth_mash_tsvs(prefix)
 
                 # rename contigs and update copy bumber with plsdb
-                plass.finalise_contigs(out_dir, prefix)
+                plass.finalise_contigs(prefix)
 
                 cleanup.move_and_copy_files(out_dir, prefix, True)
                 cleanup.remove_intermediate_files(out_dir)
-
 
     # Determine elapsed time
     elapsed_time = time.time() - start_time

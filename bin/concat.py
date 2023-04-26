@@ -3,7 +3,7 @@ import sys
 import subprocess as sp
 import log
 
-def concatenate_all_fastqs(out_dir,logger):
+def concatenate_short_fastqs(out_dir,logger):
     """ moves and copies files
     :param out_dir:  Output Directory
     :param logger: logger

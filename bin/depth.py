@@ -15,44 +15,6 @@ import concat
 
 
 
-# def get_depth(out_dir, logger,  threads, prefix):
-#     """ wrapper function to get depth of each plasmid in kmer mode
-#     :param prefix: prefix (default plassembler)
-#     :param out_dir:  Output Directory
-#     :param threads: threads
-#     :param logger: logger
-#     :return: 
-#     """
-#     concatenate_chrom_plasmids(out_dir, logger)
-#     minimap_depth_sort_short(out_dir, threads)
-#     minimap_depth_sort_long(out_dir, threads)
-#     contig_lengths = get_contig_lengths(out_dir)
-#     depthsShort = get_depths_from_bam(out_dir, "short", contig_lengths)
-#     depthsLong = get_depths_from_bam(out_dir, "long", contig_lengths)
-#     circular_status = get_contig_circularity(out_dir)
-#     summary_depth_df_short = collate_depths(depthsShort,"short",contig_lengths)
-#     summary_depth_df_long = collate_depths(depthsLong,"long",contig_lengths)
-#     combine_depth_dfs(out_dir, summary_depth_df_short, summary_depth_df_long, prefix, circular_status)
-
-
-# def get_depth_kmer(out_dir, logger,  threads, prefix):
-#     """ wrapper function to get depth of each plasmid - kmer mode 
-#     :param prefix: prefix (default plassembler)
-#     :param out_dir:  Output Directory
-#     :param threads: threads
-#     :param logger: logger
-#     :return: 
-#     """
-#     concatenate_chrom_plasmids(out_dir, logger)
-#     mapping.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
-#     minimap_depth_sort_short(out_dir, threads)
-#     contig_lengths = get_contig_lengths(out_dir)
-#     depthsLong = get_depths_from_bam(out_dir, "long", contig_lengths)
-#     circular_status = get_contig_circularity(out_dir)
-#     summary_depth_df_long = collate_depths(depthsLong,"long",contig_lengths)
-#     kmer_final_output(out_dir, summary_depth_df_long, prefix, circular_status)
-
-
 def concatenate_chrom_plasmids(out_dir, logger):
     """ concatenates chromosome and plasmids
     :param out_dir:  Output Directory
@@ -101,8 +63,6 @@ def get_contig_circularity(out_dir):
         else:
             circular_status[dna_header] = "not_circular"
     return circular_status
-
-
 
 
 

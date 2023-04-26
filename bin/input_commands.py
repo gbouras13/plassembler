@@ -19,9 +19,9 @@ def get_input():
     """
 	parser = argparse.ArgumentParser(description='plassembler: accurate extra-chromosomal plasmid assembler pipeline for haploid bacterial genomes.', formatter_class=RawTextHelpFormatter)
 	parser.add_argument('-d', '--database', action="store", help='Directory of PLSDB database downloaded using install_database.py.',  required=True)
-	parser.add_argument('-l', '--longreads', action="store", help='Fastq File of ONT Long Reads. Required',  required=True)
-	parser.add_argument('-1', '--short_one', action="store", help='R1 short read fastq file. Required.',  default='nothing')
-	parser.add_argument('-2', '--short_two', action="store", help='R2 short read fastq file. Required.',  default='nothing')
+	parser.add_argument('-l', '--longreads', action="store", help='Fastq File of ONT Long Reads.',  default='nothing')
+	parser.add_argument('-1', '--short_one', action="store", help='R1 short read fastq file.',  default='nothing')
+	parser.add_argument('-2', '--short_two', action="store", help='R2 short read fastq file.',  default='nothing')
 	parser.add_argument('-c', '--chromosome', action="store", help='Approximate chromosome length of bacteria. Defaults to 2500000.',  default=2500000)
 	parser.add_argument('-o', '--outdir', action="store", help='Directory to write the output to. Defaults to output/', default=os.path.join(os.getcwd(), "output/") )
 	parser.add_argument('-m', '--min_length', action="store", help='minimum length for long reads for nanofilt. Defaults to 500.',  default='500')
@@ -31,9 +31,12 @@ def get_input():
 	parser.add_argument('-p', '--prefix', action="store", help='Prefix for output files. This is not required',  default='Default')
 	parser.add_argument('-q', '--min_quality', action="store", help='minimum quality of long reads for nanofilt. Defaults to 9.',  default=str(9))
 	parser.add_argument('-k', '--kmer_mode',  help='Very high quality Nanopore R10.4 and above reads. No short reads required. Experimental for now.', action="store_true" )
+	parser.add_argument('-s', '--subsample_depth',  help='Subsample long-read depth as an integer. Used combined with the coverage of the chromosome length provided with -c. \nDefaults to 30.',  default=str(30) )
+	parser.add_argument('--no_subsample',  help='Turns off long-read sub-sampling. \nRecommended if long-read sets have low N50s/N90s, or are of a difficult species with lots of repeats.', action="store_true" )
+	parser.add_argument('--keep_chromosome',  help='Keeps unpolished flye assembled chromosome as chromosome.fasta.', action="store_true")
 	parser.add_argument('--multi_map',  help='whether you want to save multi-map (chromosome and plasmid) reads for downstream analysis. Will make plassembler slower.', action="store_true" )
 	parser.add_argument('-a', '--assembled_mode',  help='Activates assembled mode, where you can PLSDB type and get depth for already assembled plasmids using the -a flag.', action="store_true")
-	parser.add_argument('--input_chromosome',  help='Input FASTA file consisting of already assembled chromosome with assembled mode. Requires FASTQ file input (long only or long + short) also.', action="store", default='nothing')
+	parser.add_argument('--input_chromosome',  help='Input FASTA file consisting of already assembled chromosome with assembled mode. Must be 1 complete contig.', action="store", default='nothing')
 	parser.add_argument('--input_plasmids',  help='Input FASTA file consisting of already assembled plasmids with assembled mode. Requires FASTQ file input (long only or long + short) also.', action="store", default='nothing')
 	parser.add_argument('-V', '--version', action='version',help='show plassembler version and exit.', version=v)
 	args = parser.parse_args()
@@ -77,7 +80,7 @@ def validate_fastq(file):
 			if any(fastq):
 				print("FASTQ " + file + " checked")
 			else:
-				sys.exit("Error: Input file is not in the FASTQ format.\n")  
+				sys.exit("Error: Input " + file + "is not in the FASTQ format.\n")  
 	else:
 		zipped = False
 		with open(file, "r") as handle:
@@ -85,7 +88,7 @@ def validate_fastq(file):
 			if any(fastq):
 				print("FASTQ " +file + " checked")
 			else:
-				sys.exit("Error: Input file is not in the FASTQ format.\n") 
+				sys.exit("Error: Input " + file + "is not in the FASTQ format.\n") 
 	return zipped
 
 def validate_fasta(filename):
@@ -107,28 +110,50 @@ def validate_fastas_assembled_mode(input_chromosome, input_plasmids):
     :return: 
     """
     # chromosome
-	with open(input_chromosome, "r") as handle:
-		fasta = SeqIO.parse(handle, "fasta")
-		if any(fasta):
-			print("Chromosome FASTA checked")
-		else:
-			sys.exit("Error: Input file is not in the FASTA format.\n")  
+	validate_fasta(input_chromosome)
 
 	with open(input_chromosome, "r") as fasta:
 		# count contigs
 		records = list(SeqIO.parse(fasta, "fasta"))
 		num_contigs = len(records)
 		if num_contigs > 1:
-			sys.exit("Error: There are multiple contigs in your chromosome FASTA. Please input a complete chromosome.\n") 
+			sys.exit("Error: There are multiple contigs in your chromosome FASTA. Please input a completed chromosome.\n") 
 
-	# chromosome
-	with open(input_plasmids, "r") as handle:
-		fasta = SeqIO.parse(handle, "fasta")
-		if any(fasta):
-			print("Plasmid FASTA checked")
-		else:
-			sys.exit("Error: Input file is not in the FASTA format.\n")  
+	# plasmids
+	validate_fasta(input_plasmids)
 
+
+
+def validate_fastqs_assembled_mode(longreads, short_one, short_two):
+	"""Checks the input instq are really fastqs
+	:param longreads: long read file
+	:param short_one: short_one read file
+	:param short_two: short_two read file
+    :return: 
+    """
+
+
+    # long
+	long_flag = False
+	if longreads != "nothing":
+		print("You have input long read FASTQs for depth calculation.")
+		long_gzipped = validate_fastq(longreads)
+		long_flag = True
+	
+	# short
+	short_flag = False
+	if short_one != "nothing" and short_two != "nothing":
+		print("You have input paired short read FASTQs for depth calculation.")
+		s1_gzipped = validate_fastq(short_one)
+		s2_gzipped = validate_fastq(short_two)
+		if s1_gzipped != s2_gzipped:
+			sys.exit("R1 and R2 files are inconsistenly compressed. Please check the compression format and try again.")
+		short_flag = True
+	
+	if short_flag == False and long_flag == False:
+		sys.exit("No valid long read or paired short read FASTQs were input. Please check your input and try again.")
+
+	return (short_flag, long_flag, long_gzipped)
 
 
 

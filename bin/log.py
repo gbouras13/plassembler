@@ -1,4 +1,5 @@
 import logging
+import sys
 
 def write_to_log(s, logger):
            while True:
@@ -7,3 +8,12 @@ def write_to_log(s, logger):
                     logger.log(logging.INFO, output)
                 else:
                     break
+
+
+def write_message(message, logger):
+    print(message)
+    logger.info(message)
+
+def print_and_exit(message, logger):
+    logger.info(message)
+    sys.exit(message)

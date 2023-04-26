@@ -16,7 +16,7 @@ def run_flye(out_dir, threads, raw_flag, logger):
     :param logger: logger
     :return:
     """
-    trim_long = os.path.join(out_dir, "filtered_long_reads.fastq.gz")
+    trim_long = os.path.join(out_dir, "final_filtered_long_reads.fastq.gz")
     nanopore_flye_model = "--nano-hq"
     if raw_flag == True:
         nanopore_flye_model = "--nano-raw"

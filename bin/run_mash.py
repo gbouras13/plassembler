@@ -56,8 +56,6 @@ def get_contig_count( plasmid_fasta):
             i += 1
     return i
 
-       
-
 
 # check if a file has more than 1 line (not empty)
 def is_file_empty(file):

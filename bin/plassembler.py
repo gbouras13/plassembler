@@ -380,8 +380,7 @@ if __name__ == "__main__":
                 else: # long only flag
                     run_unicycler.run_unicycler(True, args.threads, logger, long_reads, long_reads, long_reads, 
                                                  os.path.join(out_dir, "unicycler_output"))
-
-                
+        
 ####################################################################
 ##### get copy number depths
 ####################################################################
@@ -405,7 +404,7 @@ if __name__ == "__main__":
                 plass.process_mash_tsv(args.database)
                 # combine depth and mash tsvs
                 plass.combine_depth_mash_tsvs(prefix)
-                
+
                 # rename contigs and update copy bumber with plsdb
                 plass.finalise_contigs(prefix)
 

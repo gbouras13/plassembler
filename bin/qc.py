@@ -4,7 +4,6 @@ import subprocess as sp
 import log
 import logging
 
-
 def chopper(input_long_reads, out_dir, min_length, min_quality, gzip_flag, threads):
     """Filters long reads using chopper
 
@@ -52,7 +51,6 @@ def rasusa(out_dir, no_subset_flag, subsample_depth, chromosome_length, logger )
 
     chopper_long_reads = os.path.join(out_dir, "chopper_long_reads.fastq.gz")
     subset_long_reads = os.path.join(out_dir, "final_filtered_long_reads.fastq.gz")
-
 
     # if chosen not to subset then just take chopper output
     if no_subset_flag == True:

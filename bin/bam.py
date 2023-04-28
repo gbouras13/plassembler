@@ -2,10 +2,8 @@ import os
 import sys
 import subprocess as sp
 import log
-import pysam
 
 # sam to bam
-
 
 def sam_to_bam_short(out_dir, threads, logger):
     """ converts sam to bam using pysam
@@ -23,7 +21,6 @@ def sam_to_bam_short(out_dir, threads, logger):
         log.write_to_log(sam_to_bam.stderr, logger)
     except:
         sys.exit("Error with samtools view.\n")  
-
 
 
 def split_bams(out_dir, threads, logger):

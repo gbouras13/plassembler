@@ -78,9 +78,11 @@ if __name__ == "__main__":
         assembly.out_dir = out_dir
         assembly.threads = args.threads
 
-        message ="You have chosen to specify an input assembly FASTA file containing plasmids to calculate depth and PLSDB type. No assembly will be conducted."
+        message = "\n###########################"
         log.write_message(message, logger)
-        message = "###########################\nAssembled Mode Activated\n###########################"
+        message ="You have chosen to specify an input assembly FASTA file containing plasmids to calculate depth and PLSDB type. \nNo assembly will be conducted."
+        log.write_message(message, logger)
+        message = "###########################\nAssembled Mode Activated\n###########################\n"
         log.write_message(message, logger)
 
         # validation
@@ -99,9 +101,9 @@ if __name__ == "__main__":
         if long_flag == True:
             message = "Filtering long reads."
             log.write_message(message, logger)
-            qc.chopper(args.longreads, out_dir, args.min_length, args.min_quality, long_gzipped)
+            qc.chopper(args.longreads, out_dir, args.min_length, args.min_quality, long_gzipped, args.threads)
             # doesn't subsample by default for assembled mode
-            qc.rasusa(out_dir, False, args.subsample_depth, args.chromosome, logger )
+            qc.rasusa(out_dir, False, args.subsample_depth, args.chromosome, logger)
         if short_flag == True:
             message = "Trimming short reads."
             log.write_message(message, logger)
@@ -111,7 +113,7 @@ if __name__ == "__main__":
         log.write_message(message, logger)
 
         assembly.combine_input_fastas(args.input_chromosome, args.input_plasmids)
-        assembly.get_depth()
+        assembly.get_depth(args.threads, prefix)
 
         # runs mash 
         message = 'Calculating mash distances to PLSDB.'
@@ -120,9 +122,9 @@ if __name__ == "__main__":
         run_mash.run_mash(out_dir, args.database, logger)
 
         # processes output
-        assembly.process_mash_tsv(out_dir, args.database, args.input_plasmids)
+        assembly.process_mash_tsv(args.database, args.input_plasmids)
         # combine depth and mash tsvs
-        assembly.combine_depth_mash_tsvs(out_dir, prefix, )
+        assembly.combine_depth_mash_tsvs(prefix)
 
         # rename contigs and update copy number with plsdb
         cleanup.move_and_copy_files(out_dir, prefix, False)
@@ -155,7 +157,13 @@ if __name__ == "__main__":
         # filtering long readfastq
         message ="Filtering long reads with chopper."
         log.write_message(message, logger)
-        qc.chopper(args.longreads, out_dir, args.min_length, args.min_quality, long_zipped)
+        min_quality = args.min_quality
+        if args.kmer_mode == True:
+            if int(min_quality) < 15:
+                message = "Increasing min quality to 15 in kmer mode."
+                log.write_message(message, logger)
+                min_quality = str(15)
+        qc.chopper(args.longreads, out_dir, args.min_length, min_quality, long_zipped, args.threads)
         if args.no_subsample == False:
             message ="Subsampling long reads with rasusa."
             log.write_message(message, logger)
@@ -211,7 +219,7 @@ if __name__ == "__main__":
                 mapping.minimap_long_reads(out_dir, args.threads, logger)
 
                 #### short reads mapping
-                message = 'Mapping Short Reads.'
+                message = 'Mapping short Reads.'
                 log.write_message(message, logger)
                 mapping.minimap_short_reads(out_dir, args.threads, logger)
 
@@ -275,6 +283,9 @@ if __name__ == "__main__":
                     plass.process_mash_tsv( args.database)
                     # combine depth and mash tsvs
                     plass.combine_depth_mash_tsvs(prefix)
+
+                    # rename contigs and update copy bumber with plsdb
+                    plass.finalise_contigs(prefix)
 
                     # cleanup files 
                     #cleanup.move_and_copy_files(out_dir, prefix, True)
@@ -379,7 +390,7 @@ if __name__ == "__main__":
                 log.write_message(message, logger)
                 
                 # as class so saves the depth dataframe nicely
-                plass.get_depth( logger,  args.threads, prefix)
+                plass.get_depth(logger,  args.threads, prefix)
 
                 # run mash
                 message = 'Calculating mash distances to PLSDB.'
@@ -394,12 +405,12 @@ if __name__ == "__main__":
                 plass.process_mash_tsv(args.database)
                 # combine depth and mash tsvs
                 plass.combine_depth_mash_tsvs(prefix)
-
+                
                 # rename contigs and update copy bumber with plsdb
                 plass.finalise_contigs(prefix)
 
-                cleanup.move_and_copy_files(out_dir, prefix, True)
-                cleanup.remove_intermediate_files(out_dir)
+                #cleanup.move_and_copy_files(out_dir, prefix, True)
+                #cleanup.remove_intermediate_files(out_dir)
 
     # Determine elapsed time
     elapsed_time = time.time() - start_time

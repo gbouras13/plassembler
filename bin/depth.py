@@ -71,7 +71,8 @@ def minimap_depth_sort_long(out_dir, threads):
     :param out_dir:  out_dir
     :param: threads: threads
     """
-    input_long_reads = os.path.join(out_dir, "filtered_long_reads.fastq.gz")
+    # use chopper reads - no subsetting
+    input_long_reads = os.path.join(out_dir, "chopper_long_reads.fastq.gz")
     fasta = os.path.join(out_dir, "combined.fasta")
     bam = os.path.join(out_dir, "combined_sorted_long.bam")
     try:
@@ -173,13 +174,14 @@ def collate_depths(depths, shortFlag, contig_lengths):
     else: # long
         summary_df = pd.DataFrame(
         {'contig': contig_names,
+        'length': contig_length,
         'mean_depth_long': mean_depth_col,
         'sd_depth_long': sd_depth_col, 
         'q25_depth_long': q25_depth,
         'q75_depth_long': q75_depth
         })
         summary_df['plasmid_copy_number_long'] = round(summary_df['mean_depth_long'] / chromosome_depth,2)
-    # return df         
+    # return df    
     return(summary_df)
 
 def combine_depth_dfs(out_dir, df_short, df_long, prefix, circular_status):
@@ -190,6 +192,8 @@ def combine_depth_dfs(out_dir, df_short, df_long, prefix, circular_status):
     :param: prefix: prefix - default plassembler
     :param: circular_status: dictionary of contig header and circular status
     """
+    # drop double up len
+    df_long = df_long.drop(['length'], axis=1)
     combined_df = pd.merge(df_short, df_long, on='contig', how='outer')
     # add in circularity info 
     combined_df['circularity'] = combined_df['contig'].map(circular_status)
@@ -198,20 +202,21 @@ def combine_depth_dfs(out_dir, df_short, df_long, prefix, circular_status):
         combined_df.to_csv(f, sep="\t", index=False, header=True)
     return combined_df
     
-def kmer_final_output(out_dir, df_long, prefix, circular_status):
+def depth_df_single(out_dir, df, prefix, circular_status):
     """ final output for kmer mode
     :param out_dir:  output directory
-    :param df_long: long depth summary df
+    :param df: short or long depth summary df
     :param: prefix: prefix - default plassembler
     :param: circular_status: dictionary of contig header and circular status
     """
 
-     # add in circularity info 
+    # add in circularity info 
 
-    df_long['circularity'] = df_long['contig'].map(circular_status)
+    df['circularity'] = df['contig'].map(circular_status)
     out_file = os.path.join(out_dir, prefix + "_copy_number_summary.tsv")
     with open(out_file, 'w') as f:
-        df_long.to_csv(f, sep="\t", index=False, header=True)
+        df.to_csv(f, sep="\t", index=False, header=True)
+    return df
     
 
 

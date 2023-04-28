@@ -5,7 +5,7 @@ import log
 import logging
 
 
-def chopper(input_long_reads, out_dir, min_length, min_quality, gzip_flag):
+def chopper(input_long_reads, out_dir, min_length, min_quality, gzip_flag, threads):
     """Filters long reads using chopper
 
     :param input_long_reads: input ONT reads file
@@ -20,7 +20,7 @@ def chopper(input_long_reads, out_dir, min_length, min_quality, gzip_flag):
     if gzip_flag == True:
         try:
             unzip = sp.Popen(["gunzip", "-c", input_long_reads ], stdout=sp.PIPE) 
-            chopper = sp.Popen(["chopper", "-q", min_quality, "-l", min_length, "--headcrop", "25", "--tailcrop", "25"], 
+            chopper = sp.Popen(["chopper", "-q", min_quality, "--threads", threads, "-l", min_length, "--headcrop", "25", "--tailcrop", "25"], 
                                 stdin=unzip.stdout, 
                                 stdout=sp.PIPE ) 
             gzip = sp.Popen(["gzip" ], stdin=chopper.stdout,stdout=f,stderr=sp.PIPE ) 
@@ -30,7 +30,7 @@ def chopper(input_long_reads, out_dir, min_length, min_quality, gzip_flag):
     else:
         try:
             cat = sp.Popen(["cat", input_long_reads ], stdout=sp.PIPE) 
-            chopper = sp.Popen(["chopper", "-q", min_quality, "-l", min_length,  "--headcrop", "25", "--tailcrop", "25"  ], 
+            chopper = sp.Popen(["chopper", "-q", min_quality, "--threads", threads, "-l", min_length,  "--headcrop", "25", "--tailcrop", "25"  ], 
                                 stdin=cat.stdout, 
                                 stdout=sp.PIPE ) 
             gzip = sp.Popen(["gzip" ], stdin=chopper.stdout,stdout=f,stderr=sp.PIPE ) 
@@ -61,7 +61,7 @@ def rasusa(out_dir, no_subset_flag, subsample_depth, chromosome_length, logger )
     else:
         f = open(subset_long_reads, "w")
         try:
-            rasusa = sp.run(["rasusa", "-i", chopper_long_reads, "--coverage", subsample_depth, "--genome-size", chromosome_length, "-O", "g"], stdout=f, stderr=sp.PIPE )
+            rasusa = sp.run(["rasusa", "-i", chopper_long_reads, "--coverage", str(subsample_depth), "--genome-size", str(chromosome_length), "-O", "g"], stdout=f, stderr=sp.PIPE )
             logger.log(logging.INFO, rasusa.stderr)
         except:
             sys.exit("Error with Rasusa\n")  

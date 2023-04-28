@@ -9,6 +9,7 @@ import subprocess as sp
 from version import __version__
 import log
 
+
 v = __version__
 
 ### GLOBAL VARIABLES
@@ -132,9 +133,9 @@ def validate_fastqs_assembled_mode(longreads, short_one, short_two):
     :return: 
     """
 
-
     # long
 	long_flag = False
+	long_gzipped = False
 	if longreads != "nothing":
 		print("You have input long read FASTQs for depth calculation.")
 		long_gzipped = validate_fastq(longreads)
@@ -152,6 +153,9 @@ def validate_fastqs_assembled_mode(longreads, short_one, short_two):
 	
 	if short_flag == False and long_flag == False:
 		sys.exit("No valid long read or paired short read FASTQs were input. Please check your input and try again.")
+
+	if (short_one != "nothing" and short_two == "nothing") or (short_one == "nothing" and short_two != "nothing") :
+		sys.exit("Only 1 short read file was found. Please check your input and try again.")
 
 	return (short_flag, long_flag, long_gzipped)
 
@@ -173,16 +177,16 @@ def check_dependencies(logger):
 	except:
 		sys.exit("Flye not found. Please reinstall Plassembler.")
 
-	print("Flye version found is v" + str(flye_major_version) +"." + str(flye_minor_version) +"."+flye_minorest_version + ".")
-	logger.info("Flye version found is v" + str(flye_major_version) +"." + str(flye_minor_version) +"."+flye_minorest_version +".")
+	message = "Flye version found is v" + str(flye_major_version) +"." + str(flye_minor_version) +"."+flye_minorest_version + "."
+	log.write_message(message, logger)
 
 	if flye_major_version != 2:
 		sys.exit("Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
 	if flye_minor_version < 9:
 		sys.exit("Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
 
-	print("Flye version is ok.")
-	logger.info("Flye version is ok.")
+	message = "Flye version is ok."
+	log.write_message(message, logger)
 
 	# unicycler
 	try:
@@ -199,73 +203,100 @@ def check_dependencies(logger):
 	except:
 		sys.exit("Unicycler not found. Please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler.")
 
-	print("Unicycler version found is v" + str(unicycler_major_version) +"." + str(unicycler_minor_version) +"."+str(unicycler_minorest_version)+".")
-	logger.info("Unicycler version found is v" + str(unicycler_major_version) +"." + str(unicycler_minor_version) +"."+str(unicycler_minorest_version)+".")
+	message = "Unicycler version found is v" + str(unicycler_major_version) +"." + str(unicycler_minor_version) +"."+str(unicycler_minorest_version)+"."
+	log.write_message(message, logger)
 
 	if unicycler_minor_version < 4 :
 		sys.exit("Unicycler is too old - please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler.")
 	elif unicycler_minor_version == 4 and unicycler_minorest_version < 8:
 		sys.exit("Unicycler is too old - please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler.")
 	elif unicycler_minor_version == 4 and unicycler_minorest_version >= 8:
-		print("Unicycler version is older than v0.5.0 - Plassembler will continue but please consider installing Unicycler v0.5.0. See instructions at https://github.com/gbouras13/plassembler.")
-		logger.info("Unicycler version is older than v0.5.0 - Plassembler will continue but please consider installing Unicycler v0.5.0. See instructions at https://github.com/gbouras13/plassembler.")
+		message = "Unicycler version is older than v0.5.0 - Plassembler will continue but please consider installing Unicycler v0.5.0. See instructions at https://github.com/gbouras13/plassembler."
+		log.write_message(message, logger)
 	else:
-		print("Unicycler version is ok.")
-		logger.info("Unicycler version is ok.")
+		message = "Unicycler version is ok."
+		log.write_message(message, logger)
 
 #samtools
 	try:
-		samtools = sp.Popen(["samtools"], stdout=sp.PIPE, stderr=sp.PIPE) 
-		print("Samtools found.")
-		logger.info("Samtools found.")
-		log.write_to_log(samtools.stderr, logger)
+		process = sp.Popen(["samtools", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		samtools_out, _ = process.communicate()
+		samtools_out = samtools_out.decode()
+		samtools_version = samtools_out.split("\n")[0].split(' ')[1] # get second line, and then second component of line
+		message ="Samtools v" + str(samtools_version) + " found."
+		log.write_message(message, logger)
 	except:
 		sys.exit("Samtools not found.\n")  
 
 #minimap2
 	try:
-		minimap2 = sp.Popen(["minimap2", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
-		print("minimap2 found.")
-		logger.info("minimap2 found.")
-		log.write_to_log(minimap2.stdout, logger)
+		process = sp.Popen(["minimap2", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		minimap2_out, _ = process.communicate()
+		minimap2_version = minimap2_out.decode()
+		minimap2_version = minimap2_version.split("\n")[0]
+		message ="minimap2 v" + str(minimap2_version) + " found."
+		log.write_message(message, logger)
 	except:
 		sys.exit("minimap2 not found.\n")  
 
 #fastp
 	try:
-		fastp = sp.Popen(["fastp", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
-		print("fastp found.")
-		logger.info("fastp found.")
-		log.write_to_log(fastp.stdout, logger)
+		process = sp.Popen(["fastp", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		_, fastp_out = process.communicate()
+		fastp_version = fastp_out.decode()
+		fastp_version = fastp_version.split("\n")[0].split(' ')[1]
+		message ="fastp v" + str(fastp_version) + " found."
+		log.write_message(message, logger)
 	except:
 		sys.exit("fastp not found.\n")  
 
-#fastp
+#chopper
 	try:
-		chopper = sp.Popen(["chopper", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
-		print("chopper found.")
-		logger.info("chopper found.")
-		log.write_to_log(chopper.stdout, logger)
+		process = sp.Popen(["chopper", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		chopper_out, _ = process.communicate()
+		chopper_version = chopper_out.decode()
+		chopper_version = chopper_version.split("\n")[0].split(' ')[1]
+		message ="chopper v" + str(chopper_version) + " found."
+		log.write_message(message, logger)
 	except:
 		sys.exit("chopper not found.\n")  
 
-	#seqkit
+#seqkit
 	try:
-		seqkit = sp.Popen(["seqkit", "version"], stdout=sp.PIPE, stderr=sp.PIPE) 
-		print("seqkit found.")
-		logger.info("seqkit found.")
-		log.write_to_log(seqkit.stdout, logger)
+		process = sp.Popen(["seqkit", "version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		seqkit_out, _ = process.communicate()
+		seqkit_version = seqkit_out.decode()
+		seqkit_version = seqkit_version.split("\n")[0].split(' ')[1]
+		message ="seqkit " + str(seqkit_version) + " found."
+		log.write_message(message, logger)
 	except:
 		sys.exit("seqkit not found.\n")  
 
 #mash
 	try:
-		mash = sp.Popen(["mash"], stdout=sp.PIPE, stderr=sp.PIPE) 
-		print("mash found.")
-		logger.info("mash found.")
-		log.write_to_log(mash.stdout, logger)
+		process = sp.Popen(["mash", "version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		mash_out, _ = process.communicate()
+		mash_out = mash_out.decode()
+		version_line = []
+		for line in mash_out.split("\n"):
+			if "version" in line:
+				version_line.append(line)
+		mash_version = version_line[0].split(' ')[2]
+		message = "mash v" + str(mash_version) + " found." 
+		log.write_message(message, logger)
 	except:
 		sys.exit("mash not found.\n")  
+
+#rasusa
+	try:
+		process = sp.Popen(["rasusa", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 
+		rasusa_out, _ = process.communicate()
+		rasusa_version = rasusa_out.decode()
+		rasusa_version = rasusa_version.split("\n")[0].split(' ')[1]
+		message ="rasusa v" + str(rasusa_version) + " found."
+		log.write_message(message, logger)
+	except:
+		sys.exit("rasusa not found.\n")  
 	
 	# all dependencies found
 	print("All dependencies found.")

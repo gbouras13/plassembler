@@ -141,15 +141,14 @@ class Plass:
                         bed_file.write(f'{dna_header}\t1\t{plas_len}\n')  # Write read name
                         i += 1
             # keep the chromosome if specified
-            if keep_chromosome == True:
-                with open(os.path.join(out_dir, "chromosome.fasta"), 'w') as chrom_fa:
-                    for dna_record in SeqIO.parse(os.path.join(out_dir, "assembly.fasta"), 'fasta'): 
-                        # chromosome
-                        if dna_record.id == chrom_contig:
-                            dna_header = "chromosome"
-                            dna_description = ""
-                            dna_record = SeqRecord(dna_record.seq, id=dna_header, description = dna_description)
-                            SeqIO.write(dna_record, chrom_fa, 'fasta')
+            with open(os.path.join(out_dir, "chromosome.fasta"), 'w') as chrom_fa:
+                for dna_record in SeqIO.parse(os.path.join(out_dir, "assembly.fasta"), 'fasta'): 
+                    # chromosome
+                    if dna_record.id == chrom_contig:
+                        dna_header = "chromosome"
+                        dna_description = ""
+                        dna_record = SeqRecord(dna_record.seq, id=dna_header, description = dna_description)
+                        SeqIO.write(dna_record, chrom_fa, 'fasta')
 
         # add to object
         self.chromosome_flag = chromosome_flag
@@ -191,8 +190,7 @@ class Plass:
         if self.kmer_mode == False:
             self.depth_df = depth.combine_depth_dfs(out_dir, summary_depth_df_short, summary_depth_df_long, prefix, circular_status)
         else:
-            self.depth_df = depth.kmer_final_output(out_dir, summary_depth_df_long, prefix, circular_status)
-
+            self.depth_df = depth.depth_df_single(out_dir, summary_depth_df_long, prefix, circular_status)
 
 
     def process_mash_tsv(self,  plassembler_db_dir):
@@ -231,17 +229,17 @@ class Plass:
                     tmp_df = mash_df.loc[mash_df['contig'] == contig].sort_values('mash_distance').reset_index(drop=True).loc[0]
                     tophits.append([tmp_df.contig, 'Yes', tmp_df.ACC_NUCCORE, tmp_df.mash_distance, tmp_df.mash_pval, tmp_df.mash_matching_hashes])
                 else: # no hits append no it
-                    tophits.append([contig, 'No_hit', 'No_hit', 'No_hit', 'No_hit', 'No_hit'])
+                    tophits.append([contig, '', '', '', '', ''])
                 # create tophits df
             tophits_mash_df = pd.DataFrame(tophits, columns=["contig", "PLSDB_hit", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
 
         else: # empty mash file
             contigs = range(1, contig_count+1)
             # create empty df
-            tophits_mash_df = pd.DataFrame(columns=["contig", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
+            tophits_mash_df = pd.DataFrame(columns=["contig","PLSDB_hit", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
             for contig in contigs:
-                tophits_mash_df.loc[contig-1] = [contig, 'No_hit', 'No_hit', 'No_hit', 'No_hit']
-
+                tophits_mash_df.loc[contig-1] = [contig,'No_hit', '', '', '', '']
+        
         # read in the plasdb tsv to get the description
         plsdb_tsv_file = os.path.join(plassembler_db_dir, "plsdb.tsv")
         cols = ["UID_NUCCORE","ACC_NUCCORE","Description_NUCCORE","CreateDate_NUCCORE","Topology_NUCCORE","Completeness_NUCCORE","TaxonID_NUCCORE","Genome_NUCCORE","Length_NUCCORE","Source_NUCCORE","UID_ASSEMBLY","Status_ASSEMBLY","SeqReleaseDate_ASSEMBLY","SubmissionDate_ASSEMBLY","Latest_ASSEMBLY","UID_BIOSAMPLE","ACC_BIOSAMPLE","Location_BIOSAMPLE","Coordinates_BIOSAMPLE","IsolationSource_BIOSAMPLE","Host_BIOSAMPLE","CollectionDate_BIOSAMPLE","Host_DISEASE","SamplType_BIOSAMPLE","taxon_name","taxon_rank","lineage","taxon_species_id","taxon_species_name","taxon_genus_id","taxon_genus_name","taxon_family_id","taxon_family_name","taxon_order_id","taxon_order_name","taxon_class_id","taxon_class_name","taxon_phylum_id","taxon_phylum_name","taxon_superkingdom_id","taxon_superkingdom_name","loc_lat","loc_lng","loc_parsed","GC_NUCCORE","Identical","OldVersion","hits_rMLST","hitscount_rMLST","inclusions","Host_BIOSAMPLE_processed","Host_DISEASE_processed","D1","D2","plasmidfinder","pmlst","relaxase_type(s)","mpf_type"]
@@ -261,16 +259,19 @@ class Plass:
         self.depth_df['contig'] = self.depth_df['contig'].astype('str')
         self.mash_df['contig'] = self.mash_df['contig'].astype('str')
         combined_depth_mash_df = self.depth_df.merge(self.mash_df, on='contig', how='left')
+        # no hit for chromosome
+        combined_depth_mash_df.loc[combined_depth_mash_df['contig'] == 'chromosome', 'PLSDB_hit'] = 'No_hit'
         combined_depth_mash_df.to_csv(os.path.join(out_dir, prefix + "_summary.tsv"), sep="\t", index=False) 
         self.combined_depth_mash_df = combined_depth_mash_df
 
 
-    def finalise_contigs(self, out_dir, prefix ):
+    def finalise_contigs(self, prefix ):
         """
         Renames the contigs of unicycler with the new plasmid copy numbers and outputs finalised file
         :param out_dir: output directory
         :return: 
         """
+        out_dir = self.out_dir
 
         combined_depth_mash_df = self.combined_depth_mash_df
         combined_depth_mash_df = combined_depth_mash_df.loc[combined_depth_mash_df['contig'] != 'chromosome'].reset_index(drop=True)
@@ -317,18 +318,12 @@ class Assembly:
             output directory
         contig_count: int, required
             the number of contigs assembled by flye assembly
-        no_plasmids_flag: bool, required
-            flag determining whether there are plasmids at some point in the pipeline. If False means there are plasmids
-        chromosome_flag: bool, required
-            flag saying whether or not there was an identified chromosome in the Flye output. 
         depth_df: Pandas df, required
             dataframe with depth output
         mash_df: Pandas df, required
             dataframe with mash output
         threads: int, required
             integer giving args.threads - defaults to 1.
-        kmer_mode: bool, required
-            whether plassembler is in kmer mode
         long_flag: bool, required
             whether there's long read FASTQs
         short_flag: bool, required
@@ -336,13 +331,10 @@ class Assembly:
         """
         self.out_dir = out_dir
         self.contig_count = contig_count
-        self.no_plasmids_flag = no_plasmids_flag
-        self.chromosome_flag = chromosome_flag
         self.threads = threads
         self.depth_df = depth_df
         self.mash_df = mash_df
         self.combined_depth_mash_df = combined_depth_mash_df
-        self.kmer_mode = kmer_mode
         self.long_flag = long_flag
         self.short_flag = short_flag
 
@@ -381,7 +373,7 @@ class Assembly:
                 i +=1
                 # keep plasmid name
                 plasmid_names.append(record.id)
-                record.id = i
+                record.id = str(i)
                 records[0].description = ""
             # Write the  records to the output FASTA file
                 SeqIO.write(record, f_out, "fasta")
@@ -419,10 +411,9 @@ class Assembly:
         if self.long_flag == True and self.short_flag == True:
             self.depth_df = depth.combine_depth_dfs(out_dir, summary_depth_df_short, summary_depth_df_long, prefix, circular_status)
         elif self.long_flag == True and self.short_flag == False:
-            self.depth_df = depth.kmer_final_output(out_dir, summary_depth_df_long, prefix, circular_status)
+            self.depth_df = depth.depth_df_single(out_dir, summary_depth_df_long, prefix, circular_status)
         elif self.long_flag == False and self.short_flag == True:
-            self.depth_df = depth.kmer_final_output(out_dir, summary_depth_df_short, prefix, circular_status)
-
+            self.depth_df = depth.depth_df_single(out_dir, summary_depth_df_short, prefix, circular_status)
 
     
     def process_mash_tsv(self,  plassembler_db_dir, plasmid_fasta):
@@ -462,16 +453,16 @@ class Assembly:
                     tmp_df = mash_df.loc[mash_df['contig'] == contig].sort_values('mash_distance').reset_index(drop=True).loc[0]
                     tophits.append([tmp_df.contig, 'Yes', tmp_df.ACC_NUCCORE, tmp_df.mash_distance, tmp_df.mash_pval, tmp_df.mash_matching_hashes])
                 else: # no hits append no it
-                    tophits.append([contig, 'No_hit', 'No_hit', 'No_hit', 'No_hit', 'No_hit'])
+                    tophits.append([contig, 'No_hit', '', '', '', ''])
                 # create tophits df
             tophits_mash_df = pd.DataFrame(tophits, columns=["contig", "PLSDB_hit", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
 
         else: # empty mash file
             contigs = range(1, contig_count+1)
             # create empty df
-            tophits_mash_df = pd.DataFrame(columns=["contig", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
+            tophits_mash_df = pd.DataFrame(columns=["contig","PLSDB_hit", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
             for contig in contigs:
-                tophits_mash_df.loc[contig-1] = [contig, 'No_hit', 'No_hit', 'No_hit', 'No_hit']
+                tophits_mash_df.loc[contig-1] = [contig,'No_hit', '', '', '', '']
 
         # read in the plasdb tsv to get the description
         plsdb_tsv_file = os.path.join(plassembler_db_dir, "plsdb.tsv")
@@ -492,6 +483,8 @@ class Assembly:
         self.depth_df['contig'] = self.depth_df['contig'].astype('str')
         self.mash_df['contig'] = self.mash_df['contig'].astype('str')
         combined_depth_mash_df = self.depth_df.merge(self.mash_df, on='contig', how='left')
+        # no hit for chromosome
+        combined_depth_mash_df.loc[combined_depth_mash_df['contig'] == 'chromosome', 'PLSDB_hit'] = 'No_hit'
         combined_depth_mash_df.to_csv(os.path.join(out_dir, prefix + "_summary.tsv"), sep="\t", index=False) 
         self.combined_depth_mash_df = combined_depth_mash_df
 

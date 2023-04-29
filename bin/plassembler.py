@@ -16,6 +16,7 @@ from plass_class import Plass
 from plass_class import Assembly
 import sam_to_fastq
 import concat
+import test_incompatibility
 import run_unicycler
 
 from version import __version__
@@ -126,8 +127,11 @@ if __name__ == "__main__":
         # combine depth and mash tsvs
         assembly.combine_depth_mash_tsvs(prefix)
 
+        # heuristic check forQC
+        test_incompatibility.incompatbility(assembly.combined_depth_mash_df, logger)
+
         # rename contigs and update copy number with plsdb
-        cleanup.move_and_copy_files(out_dir, prefix, False)
+        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs)
         cleanup.remove_intermediate_files(out_dir)
 
 
@@ -197,7 +201,7 @@ if __name__ == "__main__":
             plass.no_plasmids_flag = True
 
             # identifies chromosome and renames contigs
-            plass.identify_chromosome_process_flye( args.chromosome, args.keep_chromosome)
+            plass.identify_chromosome_process_flye( args.chromosome)
 
             # no chromosome identified - cleanup and exit
             if plass.chromosome_flag == False:
@@ -253,6 +257,7 @@ if __name__ == "__main__":
 
 
                 if args.kmer_mode == False:
+                    print('l')
                     run_unicycler.run_unicycler(False, args.threads, logger, short_r1, short_r2, long_reads, 
                                                 os.path.join(out_dir, "unicycler_output"))
                 else:
@@ -287,9 +292,12 @@ if __name__ == "__main__":
                     # rename contigs and update copy bumber with plsdb
                     plass.finalise_contigs(prefix)
 
+                    # heuristic check 
+                    test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
+
                     # cleanup files 
-                    #cleanup.move_and_copy_files(out_dir, prefix, True)
-                    #cleanup.remove_intermediate_files(out_dir)
+                    cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs)
+                    cleanup.remove_intermediate_files(out_dir)
 
                 ####################################################################
                 # Case 4: where there are truly no plasmids even after unicycler runs
@@ -297,8 +305,8 @@ if __name__ == "__main__":
                 else: # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
                     message = "No plasmids found."
                     log.write_message(message, logger)
-                    #cleanup.move_and_copy_files(out_dir, prefix, False)
-                    #cleanup.remove_intermediate_files(out_dir)
+                    cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs)
+                    cleanup.remove_intermediate_files(out_dir)
 
 ####################################################################
         # where more than 1 contig was assembled
@@ -314,7 +322,7 @@ if __name__ == "__main__":
             plass.no_plasmids_flag = False
 
             # identifies chromosome and renames contigs
-            plass.identify_chromosome_process_flye(args.chromosome, args.keep_chromosome)
+            plass.identify_chromosome_process_flye(args.chromosome)
 
             ####################################################################
             # Case 2 - where no chromosome was identified (likely below required depth) - need more long reads or user got chromosome parameter wrong - exit plassembler
@@ -322,7 +330,7 @@ if __name__ == "__main__":
             if plass.chromosome_flag == False:
                 message = 'No chromosome was idenfitied. please check your -c or --chromosome parameter, it may be too high. \nLikely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended.'
                 log.write_message(message, logger)
-                cleanup.move_and_copy_files(out_dir, prefix, False)
+                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs)
                 cleanup.remove_intermediate_files(out_dir)
 
             ####################################################################
@@ -408,8 +416,11 @@ if __name__ == "__main__":
                 # rename contigs and update copy bumber with plsdb
                 plass.finalise_contigs(prefix)
 
-                #cleanup.move_and_copy_files(out_dir, prefix, True)
-                #cleanup.remove_intermediate_files(out_dir)
+                # heuristic check 
+                test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
+
+                cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs)
+                cleanup.remove_intermediate_files(out_dir)
 
     # Determine elapsed time
     elapsed_time = time.time() - start_time

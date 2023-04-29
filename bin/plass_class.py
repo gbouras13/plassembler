@@ -86,7 +86,7 @@ class Plass:
         contig_count = len(info_df['seq_name'])
 
 
-    def identify_chromosome_process_flye(self,  chromosome_len, keep_chromosome):
+    def identify_chromosome_process_flye(self,  chromosome_len):
         """Identified chromosome and processes Flye output - renames chromosome contig and the others as plasmid_1, plasmid_2 etc
         Also makes the chromosome bed file for downstream samtools mapping
         :param out_dir: output directory
@@ -248,7 +248,6 @@ class Plass:
 
         self.mash_df = combined_mash_df
 
-
     def combine_depth_mash_tsvs(self,  prefix):
         """
         Combine depth and mash dataframes
@@ -293,6 +292,8 @@ class Plass:
                 i += 1
                 record = SeqRecord(dna_record.seq, id=id_updated, description = "" )
                 SeqIO.write(record, dna_fa, 'fasta')
+
+
 
 class Assembly:
     """Plassembler Assembly Mode Output Class"""

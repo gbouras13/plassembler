@@ -3,7 +3,9 @@ import subprocess as sp
 from Bio import SeqIO
 import pandas as pd
 import sys
+import glob
 from Bio.SeqRecord import SeqRecord
+import shutil
 
 
 ####################################################
@@ -15,50 +17,75 @@ def remove_intermediate_files(out_dir):
     :param out_dir:  Output Directory
     :return: 
     """
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.fastq") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.fastq.gz") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.bam") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.sa") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.sam") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.amb") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.ann") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.pac") ], shell=True)
-    sp.run(["rm -rf "+ os.path.join(out_dir,"*.bwt") ], shell=True)
-    sp.run(["rm", "-rf", os.path.join(out_dir,"00-assembly") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"10-consensus") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"20-repeat") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"30-contigger") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"40-polishing") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"params.json") ])
-    # delete flye assemble files
-    sp.run(["rm", "-rf", os.path.join(out_dir,"chromosome.fasta") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"non_chromosome.fasta") ])
-    sp.run(["rm", "-rf", os.path.join(out_dir,"combined.fasta") ])
-    # delete mash 
-    sp.run(["rm", "-rf", os.path.join(out_dir,"mash.tsv") ])
+
+    # find all files with the suffix "fastq"
+    # find all files with the specified suffixes
+    suffixes = ['fastq', 'bam', 'sa', 'sam', 'json', 'bed', 'msh' ]
+    files = []
+    for suffix in suffixes:
+        files.extend(glob.glob(os.path.join(out_dir, "*." + suffix)))
+
+    # loop through the files and remove them
+    for file in files:
+        remove_file(file)
+
+    shutil.rmtree(os.path.join(out_dir,"00-assembly"))
+    shutil.rmtree(os.path.join(out_dir,"10-consensus"))
+    shutil.rmtree(os.path.join(out_dir,"20-repeat"))
+    shutil.rmtree(os.path.join(out_dir,"30-contigger"))
+    shutil.rmtree(os.path.join(out_dir,"40-polishing"))
+
+    # delete intermediate mash file
+    remove_file(os.path.join(out_dir,"mash.tsv") )
+
+    # delete intermediate fasta assemble files
+    remove_file((out_dir,"combined.fasta"))
+    remove_file((out_dir,"flye_renamed.fasta"))
+
+    # delete fastq intermediate files
+    remove_file(os.path.join(out_dir,"final_filtered_long_reads.fastq.gz"))
+    remove_file(os.path.join(out_dir,"chopper_long_reads.fastq.gz"))
 
 
 
-def move_and_copy_files(out_dir, prefix, unicycler_success_flag):
+
+def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs):
     """ moves and copies files
     :param out_dir:  Output Directory
     :param prefix: prefix
     :param unicycler_success_flag: whether or not unicycler worked
     :return: 
     """
-    # move flye output into dir
-    sp.run(["mkdir", "-p", os.path.join(out_dir,"flye_output") ])
-    sp.run(["mv",  os.path.join(out_dir,"assembly.fasta"), os.path.join(out_dir,"flye_output") ])
-    sp.run(["mv",  os.path.join(out_dir,"assembly_info.txt"), os.path.join(out_dir,"flye_output") ])
-    sp.run(["mv",  os.path.join(out_dir,"flye.log"), os.path.join(out_dir,"flye_output") ])
-    sp.run(["mv", os.path.join(out_dir,"assembly_graph.gfa"), os.path.join(out_dir,"flye_output") ])
-    sp.run(["mv", os.path.join(out_dir,"assembly_graph.gv"), os.path.join(out_dir,"flye_output") ])
+    # make flye dir 
+    flye_dir = os.path.join(out_dir,"flye_output")
+    if not os.path.exists(flye_dir):
+        os.mkdir(flye_dir)
+
+    # move flye files
+    shutil.move(os.path.join(out_dir,"assembly.fasta"), flye_dir) 
+    shutil.move(os.path.join(out_dir,"assembly_info.txt"), flye_dir)
+    shutil.move(os.path.join(out_dir,"flye.log"), flye_dir)
+    shutil.move(os.path.join(out_dir,"assembly_graph.gfa"), flye_dir)
+    shutil.move(os.path.join(out_dir,"assembly_graph.gv"), flye_dir)
+
     if unicycler_success_flag == True:
-         # move unicycler output to main directory
-        sp.run(["cp", os.path.join(out_dir,"unicycler_output", "assembly.gfa"), os.path.join(out_dir, prefix + "_plasmids.gfa") ])
+         # move unicycler graph output to main directory
+        shutil.copy2( os.path.join(out_dir,"unicycler_output", "assembly.gfa"), os.path.join(out_dir, prefix + "_plasmids.gfa"))
     else:
         # to touch empty versions of the output files if no plasmids 
         touch_output_fail_files(out_dir, prefix)
+
+    # put kept fastqs into separate directory
+    # make fastqs dir 
+    if keep_fastqs == True:
+        fastqs_dir = os.path.join(out_dir,"plasmid_fastqs")
+        if not os.path.exists(fastqs_dir):
+            os.mkdir(fastqs_dir)
+
+        # move flye files
+        shutil.move(os.path.join(out_dir,"short_read_concat_R1.fastq"), os.path.join(fastqs_dir,"plasmids_R1.fastq")) 
+        shutil.move(os.path.join(out_dir,"short_read_concat_R2.fastq"), os.path.join(fastqs_dir,"plasmids_R2.fastq")) 
+        shutil.move(os.path.join(out_dir,"plasmid_long.fastq"), os.path.join(fastqs_dir,"plasmids_long.fastq")) 
 
 
 # function to touch create a file 
@@ -73,3 +100,7 @@ def touch_output_fail_files(out_dir, prefix):
     touch_file(os.path.join(out_dir, prefix + "_plasmids.gfa"))
     touch_file(os.path.join(out_dir, prefix + "_summary.tsv"))
 
+
+def remove_file(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)

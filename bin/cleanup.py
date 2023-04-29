@@ -39,8 +39,8 @@ def remove_intermediate_files(out_dir):
     remove_file(os.path.join(out_dir,"mash.tsv") )
 
     # delete intermediate fasta assemble files
-    remove_file((out_dir,"combined.fasta"))
-    remove_file((out_dir,"flye_renamed.fasta"))
+    remove_file(os.path.join(out_dir,"combined.fasta"))
+    remove_file(os.path.join(out_dir,"flye_renamed.fasta"))
 
     # delete fastq intermediate files
     remove_file(os.path.join(out_dir,"final_filtered_long_reads.fastq.gz"))

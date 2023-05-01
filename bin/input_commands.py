@@ -23,7 +23,7 @@ def get_input():
 	parser.add_argument('-l', '--longreads', action="store", help='Fastq File of ONT Long Reads.',  default='nothing')
 	parser.add_argument('-1', '--short_one', action="store", help='R1 short read fastq file.',  default='nothing')
 	parser.add_argument('-2', '--short_two', action="store", help='R2 short read fastq file.',  default='nothing')
-	parser.add_argument('-c', '--chromosome', action="store", help='Approximate chromosome length of bacteria. Defaults to 2500000.',  default=2500000)
+	parser.add_argument('-c', '--chromosome', action="store", help='Approximate lower-bound chromosome length of bacteria. Defaults to 2500000.',  default=2500000)
 	parser.add_argument('-o', '--outdir', action="store", help='Directory to write the output to. Defaults to output/', default=os.path.join(os.getcwd(), "output/") )
 	parser.add_argument('-m', '--min_length', action="store", help='minimum length for long reads for nanofilt. Defaults to 500.',  default='500')
 	parser.add_argument('-t', '--threads', help="Number of threads for flye and unicycler. Defaults to 1.", action="store", default = str(1))
@@ -40,7 +40,7 @@ def get_input():
 	parser.add_argument('-a', '--assembled_mode',  help='Activates assembled mode, where you can PLSDB type and get depth for already assembled plasmids using the -a flag.', action="store_true")
 	parser.add_argument('--input_chromosome',  help='Input FASTA file consisting of already assembled chromosome with assembled mode. Must be 1 complete contig.', action="store", default='nothing')
 	parser.add_argument('--input_plasmids',  help='Input FASTA file consisting of already assembled plasmids with assembled mode. Requires FASTQ file input (long only or long + short) also.', action="store", default='nothing')
-	parser.add_argument('--pacbio_model',  help='Pacbio Flye model. Use pacbio-raw for PacBio regular CLR reads (<20% error), \npacbio-corr for PacBio reads that were corrected with other methods (<3% error) \nor pacbio-hifi for PacBio HiFi reads (<1% error).', action="store", default='nothing')
+	parser.add_argument('--pacbio_model',  help='Pacbio Flye model. Use pacbio-raw for PacBio regular CLR reads (<20 percent error), \npacbio-corr for PacBio reads that were corrected with other methods (<3 percent error) \nor pacbio-hifi for PacBio HiFi reads (<1 percent error).', action="store", default='nothing')
 	parser.add_argument('-V', '--version', action='version',help='show plassembler version and exit.', version=v)
 	args = parser.parse_args()
 

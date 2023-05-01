@@ -68,7 +68,6 @@ def bam_to_fastq_short(out_dir, threads, logger):
     try:
         unmapped_bam_file = os.path.join(out_dir, "unmapped_bam_file.bam")
         non_chrom_bam_file = os.path.join(out_dir, "non_chromosome.bam")
-        chrom_bam_file = os.path.join(out_dir, "chromosome.bam")
 
         unmap_fastq_one = os.path.join(out_dir, "unmapped_R1.fastq")
         unmap_fastq_two = os.path.join(out_dir, "unmapped_R2.fastq")
@@ -76,6 +75,7 @@ def bam_to_fastq_short(out_dir, threads, logger):
         non_chrom_fastq_one = os.path.join(out_dir, "mapped_non_chromosome_R1.fastq")
         non_chrom_fastq_two = os.path.join(out_dir, "mapped_non_chromosome_R2.fastq")
 
+        #chrom_bam_file = os.path.join(out_dir, "chromosome.bam")
         #chrom_fastq_one = os.path.join(out_dir, "mapped_chromosome_R1.fastq")
         #chrom_fastq_two = os.path.join(out_dir, "mapped_chromosome_R2.fastq")
 

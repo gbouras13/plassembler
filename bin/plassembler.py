@@ -176,6 +176,8 @@ if __name__ == "__main__":
         # pacbio model check that the string is valid
         if args.pacbio_model != "nothing":
             pacbio_model = input_commands.validate_pacbio_model(args.pacbio_model, logger)
+        else:
+            pacbio_model = args.pacbio_model
 
 
         # running Flye
@@ -192,7 +194,7 @@ if __name__ == "__main__":
         # count contigs and add to the object
         message = "Counting Contigs."
         log.write_message(message, logger)
-        plass.get_contig_count( logger)
+        plass.get_contig_count(logger)
 
         ####################################################################
         # Case 1: where there is only 1 contig -> means that chromosome was assembled, no plasmids in the long read only assembly, and  attempt recovery with short reads
@@ -206,7 +208,7 @@ if __name__ == "__main__":
             plass.no_plasmids_flag = True
 
             # identifies chromosome and renames contigs
-            plass.identify_chromosome_process_flye( args.chromosome)
+            plass.identify_chromosome_process_flye( args.chromosome, logger)
 
             # no chromosome identified - cleanup and exit
             if plass.chromosome_flag == False:
@@ -326,7 +328,7 @@ if __name__ == "__main__":
             plass.no_plasmids_flag = False
 
             # identifies chromosome and renames contigs
-            plass.identify_chromosome_process_flye(args.chromosome)
+            plass.identify_chromosome_process_flye(args.chromosome, logger)
 
             ####################################################################
             # Case 2 - where no chromosome was identified (likely below required depth) - need more long reads or user got chromosome parameter wrong - exit plassembler

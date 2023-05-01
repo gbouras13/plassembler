@@ -7,7 +7,7 @@ from plass_class import Plass
 
 
 
-def run_flye(out_dir, threads, raw_flag,pacbio_model, logger):
+def run_flye(out_dir, threads, raw_flag, pacbio_model, logger):
     """Runs flye on trimmed long reads
 
     :param out_dir: output directory

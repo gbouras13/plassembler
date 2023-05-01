@@ -124,7 +124,7 @@ def extract_bin_long_fastqs(out_dir, multi_map):
                         multimap_plasmid_chromosome_fastqfile.write(f'{sequence}\n')    # Write sequence
                         multimap_plasmid_chromosome_fastqfile.write('+{0}\n'.format(read_name))  # Write quality header
                         multimap_plasmid_chromosome_fastqfile.write(''.join(chr(q + 33) for q in quality) + '\n')  # Write quality scores in ASCII format
-                    # write all that map to plasmid to the plasmid file 
+            # write all that map to plasmid to the plasmid file 
             elif plasmid_mm_dict[read_name] > 0: # multimap plasmid 
                 if quality is not None and (flag == 0 or flag == 16): # get only the primary
                     plasmidfile.write(f'@{read_name}\n')  # Write read name

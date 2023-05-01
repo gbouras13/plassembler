@@ -35,6 +35,7 @@ def get_input():
 	parser.add_argument('-s', '--subsample_depth',  help='Subsample long-read depth as an integer. Used combined with the coverage of the chromosome length provided with -c. \nDefaults to 30.',  default=str(30) )
 	parser.add_argument('--no_subsample',  help='Turns off long-read sub-sampling. \nRecommended if long-read sets have low N50s/N90s, or are of a difficult species with lots of repeats.', action="store_true" )
 	parser.add_argument('--keep_fastqs',  help='Whether you want to keep fastq files containing putative plasmid reads.', action="store_true")
+	parser.add_argument('--keep_chromosome',  help='Whether you want to keep the unpolished Flye chromosome assembly.', action="store_true")
 	parser.add_argument('--multi_map',  help='Whether you want to find and save all multi-map (chromosome and plasmid) reads for downstream analysis. Will make plassembler slower.', action="store_true" )
 	parser.add_argument('-a', '--assembled_mode',  help='Activates assembled mode, where you can PLSDB type and get depth for already assembled plasmids using the -a flag.', action="store_true")
 	parser.add_argument('--input_chromosome',  help='Input FASTA file consisting of already assembled chromosome with assembled mode. Must be 1 complete contig.', action="store", default='nothing')
@@ -53,8 +54,7 @@ def instantiate_dirs(output_dir, force):
 	# remove outdir on force
 	if force == True:
 		if os.path.isdir(output_dir) == True:
-			#shutil.rmtree(output_dir)
-			print('f')
+			shutil.rmtree(output_dir)
 		else:
 			print("\n--force was specified even though the outdir does not already exist. Continuing \n")
 	else:

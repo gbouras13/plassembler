@@ -12,7 +12,7 @@ import shutil
 # cleanup
 ##########################################################
 
-def remove_intermediate_files(out_dir):
+def remove_intermediate_files(out_dir, keep_chromosome):
     """ removes intermediate files
     :param out_dir:  Output Directory
     :return: 
@@ -41,10 +41,16 @@ def remove_intermediate_files(out_dir):
     # delete intermediate fasta assemble files
     remove_file(os.path.join(out_dir,"combined.fasta"))
     remove_file(os.path.join(out_dir,"flye_renamed.fasta"))
+    remove_file(os.path.join(out_dir,"plasmids.fasta"))
 
     # delete fastq intermediate files
     remove_file(os.path.join(out_dir,"final_filtered_long_reads.fastq.gz"))
     remove_file(os.path.join(out_dir,"chopper_long_reads.fastq.gz"))
+
+    # chromosome
+    if keep_chromosome == False:
+        remove_file(os.path.join(out_dir,"chromosome.fasta"))
+
 
 
 

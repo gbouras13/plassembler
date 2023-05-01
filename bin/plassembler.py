@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
         # rename contigs and update copy number with plsdb
         cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs)
-        cleanup.remove_intermediate_files(out_dir)
+        cleanup.remove_intermediate_files(out_dir, args.keep_chromosome)
 
 
 #############################
@@ -257,7 +257,6 @@ if __name__ == "__main__":
 
 
                 if args.kmer_mode == False:
-                    print('l')
                     run_unicycler.run_unicycler(False, args.threads, logger, short_r1, short_r2, long_reads, 
                                                 os.path.join(out_dir, "unicycler_output"))
                 else:
@@ -297,7 +296,7 @@ if __name__ == "__main__":
 
                     # cleanup files 
                     cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs)
-                    cleanup.remove_intermediate_files(out_dir)
+                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome)
 
                 ####################################################################
                 # Case 4: where there are truly no plasmids even after unicycler runs
@@ -306,7 +305,7 @@ if __name__ == "__main__":
                     message = "No plasmids found."
                     log.write_message(message, logger)
                     cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs)
-                    cleanup.remove_intermediate_files(out_dir)
+                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome)
 
 ####################################################################
         # where more than 1 contig was assembled
@@ -331,7 +330,7 @@ if __name__ == "__main__":
                 message = 'No chromosome was idenfitied. please check your -c or --chromosome parameter, it may be too high. \nLikely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended.'
                 log.write_message(message, logger)
                 cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs)
-                cleanup.remove_intermediate_files(out_dir)
+                cleanup.remove_intermediate_files(out_dir, args.keep_chromosome)
 
             ####################################################################
             # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> get reads mappeed to plasmids, unmapped to chromosome and assemble
@@ -420,7 +419,7 @@ if __name__ == "__main__":
                 test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
 
                 cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs)
-                cleanup.remove_intermediate_files(out_dir)
+                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome)
 
     # Determine elapsed time
     elapsed_time = time.time() - start_time

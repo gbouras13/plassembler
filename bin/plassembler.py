@@ -173,10 +173,15 @@ if __name__ == "__main__":
             log.write_message(message, logger)
         qc.rasusa(out_dir, args.no_subsample, args.subsample_depth, args.chromosome, logger )
 
+        # pacbio model check that the string is valid
+        if args.pacbio_model != "nothing":
+            pacbio_model = input_commands.validate_pacbio_model(args.pacbio_model, logger)
+
+
         # running Flye
         message = "Running Flye."
         log.write_message(message, logger)
-        run_flye.run_flye(out_dir, args.threads,args.raw_flag, logger)
+        run_flye.run_flye(out_dir, args.threads,args.raw_flag, pacbio_model, logger)
 
         # instanatiate the class with some of the commands
         plass = Plass()

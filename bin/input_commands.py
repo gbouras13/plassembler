@@ -40,6 +40,7 @@ def get_input():
 	parser.add_argument('-a', '--assembled_mode',  help='Activates assembled mode, where you can PLSDB type and get depth for already assembled plasmids using the -a flag.', action="store_true")
 	parser.add_argument('--input_chromosome',  help='Input FASTA file consisting of already assembled chromosome with assembled mode. Must be 1 complete contig.', action="store", default='nothing')
 	parser.add_argument('--input_plasmids',  help='Input FASTA file consisting of already assembled plasmids with assembled mode. Requires FASTQ file input (long only or long + short) also.', action="store", default='nothing')
+	parser.add_argument('--pacbio_model',  help='Pacbio Flye model. Use pacbio-raw for PacBio regular CLR reads (<20% error), \npacbio-corr for PacBio reads that were corrected with other methods (<3% error) \nor pacbio-hifi for PacBio HiFi reads (<1% error).', action="store", default='nothing')
 	parser.add_argument('-V', '--version', action='version',help='show plassembler version and exit.', version=v)
 	args = parser.parse_args()
 
@@ -304,6 +305,29 @@ def check_dependencies(logger):
 
 
 
+def validate_pacbio_model(pacbio_model, logger):
+	"""Checks the input insta is really a fasta
+	:param file: fasta file
+    :return: 
+    """
+	
+	message = "You have specified using a pacbio model for Flye with --pacbio_model. Checking the input."
+	log.write_message(message, logger)
 
-
-
+	if pacbio_model == "pacbio-raw":
+		message = "You have selected pacbio-raw designed for PacBio regular CLR reads (<20% error)."
+		log.write_message(message, logger)
+		pacbio_model = "--pacbio-raw"
+	elif pacbio_model == "pacbio-corr":
+		message = "You have selected pacbio-corr designed for PacBio reads that were corrected with other methods (<3% error)."
+		log.write_message(message, logger)
+		pacbio_model = "--pacbio-corr"
+	elif pacbio_model == "pacbio-hifi":
+		message = "You have selected pacbio-hifi designed for PacBio HiFi reads (<1% error)."
+		log.write_message(message, logger)
+		pacbio_model = "--pacbio-hifi"
+	else:
+		sys.exit('You pacbio model was not pacbio-raw, pacbio-corr or pacbio-hifi. Please check your input and run plassembler again.')
+	
+	return pacbio_model
+	

@@ -33,7 +33,6 @@ def remove_intermediate_files(out_dir, keep_chromosome):
     shutil.rmtree(os.path.join(out_dir,"10-consensus"))
     shutil.rmtree(os.path.join(out_dir,"20-repeat"))
     shutil.rmtree(os.path.join(out_dir,"30-contigger"))
-    shutil.rmtree(os.path.join(out_dir,"40-polishing"))
 
     # delete intermediate mash file
     remove_file(os.path.join(out_dir,"mash.tsv") )

@@ -12,7 +12,8 @@ dependencies:
   - pandas
   - fastp >=0.18.0
   - chopper >=0.5.0
-  - seqkit
   - mash >=2.2
   - samtools >=1.10
   - rasusa >=0.5.0
+  - curl
+  - tar

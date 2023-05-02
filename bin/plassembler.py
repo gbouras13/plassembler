@@ -215,7 +215,7 @@ if __name__ == "__main__":
                 message = 'No chromosome was identified. Likely, there was insufficient long read depth for Flye to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. '
                 print(message)
                 logger.info(message)
-                cleanup.move_and_copy_files(out_dir, prefix, plass.chromosome_flag)
+                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs)
             else: # chromosome identified -> move on 
 
                 message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'

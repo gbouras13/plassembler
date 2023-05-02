@@ -184,7 +184,7 @@ def collate_depths(depths, shortFlag, contig_lengths):
     # return df    
     return(summary_df)
 
-def combine_depth_dfs(out_dir, df_short, df_long, prefix, circular_status):
+def combine_depth_dfs( df_short, df_long,  circular_status):
     """ combines long and short depths
     :param out_dir:  output directory
     :param df_short: short depth summary df
@@ -197,12 +197,9 @@ def combine_depth_dfs(out_dir, df_short, df_long, prefix, circular_status):
     combined_df = pd.merge(df_short, df_long, on='contig', how='outer')
     # add in circularity info 
     combined_df['circularity'] = combined_df['contig'].map(circular_status)
-    out_file = os.path.join(out_dir, prefix + "_copy_number_summary.tsv")
-    with open(out_file, 'w') as f:
-        combined_df.to_csv(f, sep="\t", index=False, header=True)
     return combined_df
     
-def depth_df_single(out_dir, df, prefix, circular_status):
+def depth_df_single( df,  circular_status):
     """ final output for kmer mode
     :param out_dir:  output directory
     :param df: short or long depth summary df
@@ -213,9 +210,6 @@ def depth_df_single(out_dir, df, prefix, circular_status):
     # add in circularity info 
 
     df['circularity'] = df['contig'].map(circular_status)
-    out_file = os.path.join(out_dir, prefix + "_copy_number_summary.tsv")
-    with open(out_file, 'w') as f:
-        df.to_csv(f, sep="\t", index=False, header=True)
     return df
     
 

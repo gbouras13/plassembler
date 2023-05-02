@@ -294,7 +294,7 @@ plassembler will also output a log file, a `flye_output` directory, which contai
 
 # Benchmarking
 
-Plassembler was benchmarked using 6 pathogen isolates from this [study](https://doi.org/10.1099/mgen.0.000631)  available [here](https://bridges.monash.edu/articles/dataset/Small_plasmid_Nanopore_data/13543754) o along with one Staphylococcus aureus isolate (SAMN32360844 in BioProject [PRJNA914892]() https://www.ncbi.nlm.nih.gov/bioproject/PRJNA803313 ) .
+Plassembler was benchmarked using 6 pathogen isolates from this [study](https://doi.org/10.1099/mgen.0.000631)  available [here](https://bridges.monash.edu/articles/dataset/Small_plasmid_Nanopore_data/13543754) o along with one Staphylococcus aureus isolate (SAMN32360844 in BioProject [PRJNA914892]() https://www.ncbi.nlm.nih.gov/bioproject/PRJNA914892 ) .
 
 Plassembler v0.1.4 was compared against Unicycler v0.5.0 in terms of speed and accuracy. All circularised contigs were denoted as plasmids, along with the known linear plasmid in Klebsiella Variicola.  Benchmarking was conducted on an Intel® Xeon® CPU E5-2698 v3 @ 2.30GHz specifying 16 threads. The full methodology can be found [here](https://plassembler.readthedocs.io/en/latest/benchmarking/) and all output can be found at the Zenodo repository ___. 
 

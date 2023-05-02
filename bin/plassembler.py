@@ -225,12 +225,12 @@ if __name__ == "__main__":
                 log.write_message(message, logger)
                 qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
 
-                message = 'Mapping Long Reads.'
+                message = 'Mapping long reads.'
                 log.write_message(message, logger)
                 mapping.minimap_long_reads(out_dir, args.threads, logger)
 
                 #### short reads mapping
-                message = 'Mapping short Reads.'
+                message = 'Mapping short reads.'
                 log.write_message(message, logger)
                 mapping.minimap_short_reads(out_dir, args.threads, logger)
 
@@ -356,7 +356,7 @@ if __name__ == "__main__":
                     log.write_message(message, logger)
                     qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
 
-                    message = 'Mapping Short Reads.'
+                    message = 'Mapping short reads.'
                     log.write_message(message, logger)
                     mapping.minimap_short_reads(out_dir, args.threads, logger)
 

@@ -342,7 +342,7 @@ Small Plasmid Duplication
 
 # Acknowledgements
 
-Many thanks are owed to Ryan Wick (https://github.com/rrwick), who not only wrote Unicycler and some other code used in Plassembler, but also gave me  ideas about how to approach the plasmid assembly problem. If you are doing any bacterial genome assembly, you should read all of his work.
+Many thanks are owed to Ryan Wick (https://github.com/rrwick), who not only wrote Unicycler and some other code used in Plassembler, but also gave me ideas about how to approach the plasmid assembly problem. If you are doing any bacterial genome assembly, you should read all of his work.
 
 # Version Log
 
@@ -354,13 +354,13 @@ If you come across bugs with plassembler, or would like to make any suggestions 
 
 # Other Future Directions
 
-At the moment, plassembler is designed for users with hybrid ONT long read and matching short read data. However, with the new Kit 14 chemistry, ONT long reads may be accurate enough that short read sequencing is not required to polish bacterial assemblies. However, I am not aware of any studies regarding the recovery of small plasmids - it is possible that Kit 14 chemistries may miss these, much like R9.4.1 chemistries, therefore necessitating short reads for plasmid recovery.
+At the moment, plassembler is designed for users with hybrid  long read and matching short read data. However, with the new Kit 14 chemistry, ONT long reads may be accurate enough that short read sequencing is not required to polish bacterial assemblies - it may already be there for Pacbio! However, I am not aware of any studies regarding the recovery of small plasmids - it is possible that Kit 14 chemistries may miss these, much like R9.4.1 chemistries, therefore necessitating short reads for plasmid recovery.
 
 Further, other approaches may be more appropriate for Kit 14 long read only assemblies - see this [tweet](https://twitter.com/rrwick/status/1548926644085108738?cxt=HHwWhMClvfCk8v4qAAAA). 
 
-In theory, plassembler could be applied to Pacbio reads not just ONT reads - it would only take a small tweak to change Flye parameters. If you would like this functionality, please let me know, I just haven't had the usecase for it.
-
 # Citations
+
+Plassembler manuscript is in preparation :).
 
 If you use plassembler, please cite:
 
@@ -373,3 +373,5 @@ If you use plassembler, please cite:
 * Shen W, Le S, Li Y, Hu F (2016) SeqKit: A Cross-Platform and Ultrafast Toolkit for FASTA/Q File Manipulation. PLoS ONE 11(10): e0163962. https://doi.org/10.1371/journal.pone.0163962.
 * Schmartz GP, Hartung A, Hirsch P, Kern F, Fehlmann T, Müller R, Keller A, PLSDB: advancing a comprehensive database of bacterial plasmids, Nucleic Acids Research, Volume 50, Issue D1, 7 January 2022, Pages D273–D278, https://doi.org/10.1093/nar/gkab1111.
 * Ondov, B.D., Treangen, T.J., Melsted, P. et al. Mash: fast genome and metagenome distance estimation using MinHash. Genome Biol 17, 132 (2016). https://doi.org/10.1186/s13059-016-0997-x.
+* Hall, M. B., (2022). Rasusa: Randomly subsample sequencing reads to a specified coverage. Journal of Open Source Software, 7(69), 3941, https://doi.org/10.21105/joss.03941.
+* Wouter De Coster, Svenn D’Hert, Darrin T Schultz, Marc Cruts, Christine Van Broeckhoven, NanoPack: visualizing and processing long-read sequencing data, Bioinformatics, Volume 34, Issue 15, August 2018, Pages 2666–2669, https://doi.org/10.1093/bioinformatics/bty149.

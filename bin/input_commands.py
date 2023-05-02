@@ -55,8 +55,7 @@ def instantiate_dirs(output_dir, force):
 	# remove outdir on force
 	if force == True:
 		if os.path.isdir(output_dir) == True:
-			#shutil.rmtree(output_dir)
-			print('f')
+			shutil.rmtree(output_dir)
 		else:
 			print("\n--force was specified even though the outdir does not already exist. Continuing \n")
 	else:

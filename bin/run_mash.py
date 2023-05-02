@@ -35,7 +35,7 @@ def run_mash(out_dir,  plassembler_db_dir, logger):
     """
 
     plsdb_sketch = os.path.join(plassembler_db_dir, "plsdb.msh")
-    plasmid_sketch = os.path.join(out_dir, "plasmids.msh")
+    plasmid_sketch = os.path.join(out_dir, "plasmids.fasta.msh")
     mash_tsv = os.path.join(out_dir,"mash.tsv")
     outFile = open(mash_tsv, "w")
 

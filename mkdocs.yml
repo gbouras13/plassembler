@@ -21,4 +21,6 @@ nav:
       - Output: output.md
     - BENCHMARKING:
       - Benchmarking: benchmarking.md
+    - QUALITY CONTROL:
+      - Quality Control: quality_control.md
 

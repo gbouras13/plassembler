@@ -292,6 +292,13 @@ If plassembler fails to assemble any plasmids at all in `_plasmids.fasta`, all t
 
 plassembler will also output a log file, a `flye_output` directory, which contains the output from Flye (it may be useful to decide whether you need more sequencing reads, or some strange assembly artifact occured) and a `unicycler_output` directory containing the output from Unicycler.
 
+# Quality Control
+
+Plassembler can also be used as for quality control to test whether your long and short read sets come from the same isolate, even within the same species.
+
+Please see [here](docs/quality_control.md) for more details and some examples. 
+
+
 # Benchmarking
 
 Plassembler was benchmarked using 6 pathogen isolates from this [study](https://doi.org/10.1099/mgen.0.000631)  available [here](https://bridges.monash.edu/articles/dataset/Small_plasmid_Nanopore_data/13543754) o along with one Staphylococcus aureus isolate (SAMN32360844 in BioProject [PRJNA914892]() https://www.ncbi.nlm.nih.gov/bioproject/PRJNA914892 ) .

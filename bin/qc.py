@@ -59,7 +59,7 @@ def rasusa(out_dir, no_subset_flag, subsample_depth, chromosome_length, logger )
     else:
         f = open(subset_long_reads, "w")
         try:
-            rasusa = sp.run(["rasusa", "-i", chopper_long_reads, "--coverage", str(subsample_depth), "--genome-size", str(chromosome_length), "-O", "g"], stdout=f, stderr=sp.PIPE )
+            rasusa = sp.run(["rasusa", "-i", chopper_long_reads, "-s" , "13", "--coverage", str(subsample_depth), "--genome-size", str(chromosome_length), "-O", "g"], stdout=f, stderr=sp.PIPE )
             logger.log(logging.INFO, rasusa.stderr)
         except:
             sys.exit("Error with Rasusa\n")  

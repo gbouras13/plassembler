@@ -1,10 +1,9 @@
 from Bio import SeqIO
-import pandas as pd
 import os
 import subprocess as sp
 import log
 import sys
-import cleanup
+import shutil
 
 
 
@@ -16,8 +15,9 @@ def mash_sketch(out_dir, fasta_file,  logger):
     :return:
     """
     plasmid_fasta = os.path.join(out_dir, "plasmids.fasta")
-    sp.run(["cp", fasta_file, plasmid_fasta ])
-
+    shutil.copy2(fasta_file, plasmid_fasta)
+    mash_sketch = sp.Popen(["mash", "sketch",  plasmid_fasta, "-i" ], stdout=sp.PIPE, stderr=sp.PIPE) 
+    log.write_to_log(mash_sketch.stdout, logger)
     try:
         mash_sketch = sp.Popen(["mash", "sketch",  plasmid_fasta, "-i" ], stdout=sp.PIPE, stderr=sp.PIPE) 
         log.write_to_log(mash_sketch.stdout, logger)

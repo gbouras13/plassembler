@@ -227,7 +227,7 @@ if __name__ == "__main__":
 
                 message = 'Mapping long reads.'
                 log.write_message(message, logger)
-                mapping.minimap_long_reads(out_dir, args.threads, logger)
+                mapping.minimap_long_reads(out_dir, args.threads, pacbio_model, logger)
 
                 #### short reads mapping
                 message = 'Mapping short reads.'
@@ -348,7 +348,7 @@ if __name__ == "__main__":
 
                 message = 'Mapping Long Reads.'
                 log.write_message(message, logger)
-                mapping.minimap_long_reads( out_dir, args.threads, logger)
+                mapping.minimap_long_reads( out_dir, args.threads, pacbio_model, logger)
 
                  #### short reads trimming and  mapping
                 if args.kmer_mode == False:

@@ -21,7 +21,7 @@ def run_flye(out_dir, threads, raw_flag, pacbio_model, logger):
     if raw_flag == True:
         flye_model = "--nano-raw"
     if pacbio_model != 'nothing':
-        flye_model = "--nano-raw"
+        flye_model = pacbio_model
     try:
         flye = sp.Popen(["flye", flye_model, trim_long, "--out-dir", out_dir, "--threads", threads, "--iterations", "0"], stdout=sp.PIPE, stderr=sp.PIPE) 
         log.write_to_log(flye.stdout, logger)

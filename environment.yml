@@ -15,5 +15,6 @@ dependencies:
   - mash >=2.2
   - samtools >=1.10
   - rasusa >=0.5.0
+  - pysam
   - curl
   - tar

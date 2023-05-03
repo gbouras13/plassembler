@@ -218,6 +218,18 @@ def check_dependencies(logger):
 		message = "Unicycler version is ok."
 		log.write_message(message, logger)
 
+#spades
+	try:
+		process = sp.Popen(["spades.py", "--version"], stdout=sp.PIPE, stderr=sp.PIPE)  
+		spades_out, _ = process.communicate()
+		spades_out = spades_out.decode()
+		spades_version = spades_out.split(' ')[3]
+		spades_version = spades_version.split("\n")[0]
+		message ="SPAdes " + str(spades_version) + " found."
+		log.write_message(message, logger)
+	except:
+		sys.exit("SPAdes not found.\n")  
+
 #samtools
 	try:
 		process = sp.Popen(["samtools", "--version"], stdout=sp.PIPE, stderr=sp.PIPE) 

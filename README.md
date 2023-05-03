@@ -27,6 +27,8 @@ Table of Contents
   - [Unicycler v0.5.0 Installation Issues](#unicycler-v050-installation-issues)
 - [Running plassembler](#running-plassembler)
 - [Outputs](#outputs)
+- [Quality Control](#qc)
+- [Bacteria with Multiple Chromosomes/Megaplasmids/Chromids](#multiple-chromosomes)
 - [Benchmarking](#benchmarking)
   - [Time \& Accuracy](#time--accuracy)
   - [Small Plasmid Duplication](#small-plasmid-duplication)
@@ -294,9 +296,19 @@ plassembler will also output a log file, a `flye_output` directory, which contai
 
 # Quality Control
 
-Plassembler can also be used as for quality control to test whether your long and short read sets come from the same isolate, even within the same species.
+Plassembler can also be used for quality control to test whether your long and short read sets come from the same isolate, even within the same species.
 
 Please see [here](docs/quality_control.md) for more details and some examples. 
+
+# Bacteria with Multiple Chromosomes/Megaplasmids/Chromids
+
+Plassembler can be used to recover small plasmids in more complicated scenarios assemblies multiple chromosomes, megaplasmids or chromids. 
+
+I would recommend that for the chromosome size replicons (i.e. >1 Mbp), you should treat them as chromosomes and assemble them following the prodedure in Wick et al ([here](https://doi.org/10.1371/journal.pcbi.1010905)) or by using [dragonflye](https://github.com/rpetit3/dragonflye).
+
+But for the smaller plasmids, plassembler works great! It just requires tweaking the `-c` and `-s` parameters a bit to make sure you don't subsample away too many long reads. 
+
+Please see [here](docs/multiple_chromosomes.md) for more details and some examples. 
 
 
 # Benchmarking

@@ -19,6 +19,7 @@ import concat
 import test_incompatibility
 import run_unicycler
 
+
 from version import __version__
 
 v = __version__
@@ -26,7 +27,9 @@ v = __version__
 if __name__ == "__main__":
 
     # get start time
-    start_time = time.time()
+    start_time = time.perf_counter()
+
+    start_cpu_time = time.process_time()
 
     # getting time for log file 
     time_for_log = datetime.datetime.now().strftime("%m%d%Y_%H%M%S")
@@ -429,12 +432,18 @@ if __name__ == "__main__":
                 cleanup.remove_intermediate_files(out_dir,args.keep_chromosome)
 
     # Determine elapsed time
-    elapsed_time = time.time() - start_time
-    elapsed_time = round(elapsed_time, 2)
+    elapsed_wallclock_time = time.perf_counter() - start_time
+    elapsed_wallclock_time = round(elapsed_wallclock_time, 2)
 
     # Show elapsed time for the process
-    logger.info("plassembler has finished")
-    logger.info("Elapsed time: "+str(elapsed_time)+" seconds")
+    message = "Plassembler has finished."
+    log.write_message(message, logger)
 
-    print("plassembler has finished")
-    print("Elapsed time: "+str(elapsed_time)+" seconds")
+    message = "Elapsed Wall-clock time: "+str(elapsed_wallclock_time)+" seconds."
+    log.write_message(message, logger)
+
+
+
+
+
+

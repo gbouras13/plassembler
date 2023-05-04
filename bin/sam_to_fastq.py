@@ -174,7 +174,7 @@ def extract_bin_short_fastqs(out_dir):
      chrom_fastqfile_r2 = open(os.path.join(out_dir, "chromosome_mapped_R2.fastq"), 'w')
 
      # singltones 
-     singletons_fastqfile = open("singletons_short.fastq", "w")
+     singletons_fastqfile = open(os.path.join(out_dir,"singletons_short.fastq"), "w")
 
 
      #################################################
@@ -216,7 +216,6 @@ def extract_bin_short_fastqs(out_dir):
          else:
              multi_read_names.append(key)
 
-     print(multi_read_names)
      samfile.close()
 
      #################################################

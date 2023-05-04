@@ -172,7 +172,7 @@ class Plass:
         self.unicycler_success = unicycler_success
 
 
-    def get_depth(self, logger, threads, prefix):
+    def get_depth(self, logger, threads):
         """ wrapper function to get depth of each plasmid in kmer mode
         :param prefix: prefix (default plassembler)
         :param out_dir:  Output Directory
@@ -392,7 +392,7 @@ class Assembly:
 
 
 
-    def get_depth(self, threads, prefix):
+    def get_depth(self, threads):
 
         out_dir = self.out_dir
 
@@ -418,11 +418,11 @@ class Assembly:
 
         # save the depth df in the class
         if self.long_flag == True and self.short_flag == True:
-            self.depth_df = depth.combine_depth_dfs(out_dir, summary_depth_df_short, summary_depth_df_long, prefix, circular_status)
+            self.depth_df = depth.combine_depth_dfs(summary_depth_df_short, summary_depth_df_long,  circular_status)
         elif self.long_flag == True and self.short_flag == False:
-            self.depth_df = depth.depth_df_single(out_dir, summary_depth_df_long, prefix, circular_status)
+            self.depth_df = depth.depth_df_single( summary_depth_df_long, circular_status)
         elif self.long_flag == False and self.short_flag == True:
-            self.depth_df = depth.depth_df_single(out_dir, summary_depth_df_short, prefix, circular_status)
+            self.depth_df = depth.depth_df_single( summary_depth_df_short, circular_status)
 
     
     def process_mash_tsv(self,  plassembler_db_dir, plasmid_fasta):

@@ -117,7 +117,7 @@ if __name__ == "__main__":
         log.write_message(message, logger)
 
         assembly.combine_input_fastas(args.input_chromosome, args.input_plasmids)
-        assembly.get_depth(args.threads, prefix)
+        assembly.get_depth(args.threads)
 
         # runs mash 
         message = 'Calculating mash distances to PLSDB.'
@@ -134,8 +134,8 @@ if __name__ == "__main__":
         test_incompatibility.incompatbility(assembly.combined_depth_mash_df, logger)
 
         # rename contigs and update copy number with plsdb
-        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs)
-        cleanup.remove_intermediate_files(out_dir, args.keep_chromosome)
+        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, True)
+        cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, True)
 
 
 #############################
@@ -218,7 +218,7 @@ if __name__ == "__main__":
                 message = 'No chromosome was identified. Likely, there was insufficient long read depth for Flye to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. '
                 print(message)
                 logger.info(message)
-                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs)
+                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
             else: # chromosome identified -> move on 
 
                 message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
@@ -283,7 +283,7 @@ if __name__ == "__main__":
                     log.write_message(message, logger)
 
                     # as class so saves the depth dataframe nicely
-                    plass.get_depth( logger,  args.threads, prefix)
+                    plass.get_depth( logger, args.threads)
 
                     # run mash
                     message ='Calculating mash distances to PLSDB.'
@@ -305,8 +305,8 @@ if __name__ == "__main__":
                     test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
 
                     # cleanup files 
-                    cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs)
-                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome)
+                    cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False)
+                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
 
                 ####################################################################
                 # Case 4: where there are truly no plasmids even after unicycler runs
@@ -314,8 +314,8 @@ if __name__ == "__main__":
                 else: # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
                     message = "No plasmids found."
                     log.write_message(message, logger)
-                    cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs)
-                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome)
+                    cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
+                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
 
 ####################################################################
         # where more than 1 contig was assembled
@@ -339,8 +339,8 @@ if __name__ == "__main__":
             if plass.chromosome_flag == False:
                 message = 'No chromosome was idenfitied. please check your -c or --chromosome parameter, it may be too high. \nLikely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended.'
                 log.write_message(message, logger)
-                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs)
-                cleanup.remove_intermediate_files(out_dir, args.keep_chromosome)
+                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
+                cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, False)
 
             ####################################################################
             # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> get reads mappeed to plasmids, unmapped to chromosome and assemble
@@ -406,7 +406,7 @@ if __name__ == "__main__":
                 log.write_message(message, logger)
                 
                 # as class so saves the depth dataframe nicely
-                plass.get_depth(logger,  args.threads, prefix)
+                plass.get_depth( logger, args.threads)
 
                 # run mash
                 message = 'Calculating mash distances to PLSDB.'
@@ -428,8 +428,8 @@ if __name__ == "__main__":
                 # heuristic check 
                 test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
 
-                cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs)
-                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome)
+                cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False)
+                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
 
     # Determine elapsed time
     elapsed_wallclock_time = time.perf_counter() - start_time
@@ -439,7 +439,7 @@ if __name__ == "__main__":
     message = "Plassembler has finished."
     log.write_message(message, logger)
 
-    message = "Elapsed Wall-clock time: "+str(elapsed_wallclock_time)+" seconds."
+    message = "Elapsed time: "+str(elapsed_wallclock_time)+" seconds."
     log.write_message(message, logger)
 
 

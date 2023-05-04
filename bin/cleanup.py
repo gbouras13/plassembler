@@ -12,7 +12,7 @@ import shutil
 # cleanup
 ##########################################################
 
-def remove_intermediate_files(out_dir, keep_chromosome):
+def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode):
     """ removes intermediate files
     :param out_dir:  Output Directory
     :return: 
@@ -28,11 +28,12 @@ def remove_intermediate_files(out_dir, keep_chromosome):
     # loop through the files and remove them
     for file in files:
         remove_file(file)
-
-    shutil.rmtree(os.path.join(out_dir,"00-assembly"))
-    shutil.rmtree(os.path.join(out_dir,"10-consensus"))
-    shutil.rmtree(os.path.join(out_dir,"20-repeat"))
-    shutil.rmtree(os.path.join(out_dir,"30-contigger"))
+    
+    if assembled_mode == False:
+        shutil.rmtree(os.path.join(out_dir,"00-assembly"))
+        shutil.rmtree(os.path.join(out_dir,"10-consensus"))
+        shutil.rmtree(os.path.join(out_dir,"20-repeat"))
+        shutil.rmtree(os.path.join(out_dir,"30-contigger"))
 
     # delete intermediate mash file
     remove_file(os.path.join(out_dir,"mash.tsv") )
@@ -54,7 +55,7 @@ def remove_intermediate_files(out_dir, keep_chromosome):
 
 
 
-def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs):
+def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, assembled_mode):
     """ moves and copies files
     :param out_dir:  Output Directory
     :param prefix: prefix
@@ -67,11 +68,12 @@ def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs):
         os.mkdir(flye_dir)
 
     # move flye files
-    shutil.move(os.path.join(out_dir,"assembly.fasta"), flye_dir) 
-    shutil.move(os.path.join(out_dir,"assembly_info.txt"), flye_dir)
-    shutil.move(os.path.join(out_dir,"flye.log"), flye_dir)
-    shutil.move(os.path.join(out_dir,"assembly_graph.gfa"), flye_dir)
-    shutil.move(os.path.join(out_dir,"assembly_graph.gv"), flye_dir)
+    if assembled_mode == False:
+        shutil.move(os.path.join(out_dir,"assembly.fasta"), flye_dir) 
+        shutil.move(os.path.join(out_dir,"assembly_info.txt"), flye_dir)
+        shutil.move(os.path.join(out_dir,"flye.log"), flye_dir)
+        shutil.move(os.path.join(out_dir,"assembly_graph.gfa"), flye_dir)
+        shutil.move(os.path.join(out_dir,"assembly_graph.gv"), flye_dir)
 
     if unicycler_success_flag == True:
          # move unicycler graph output to main directory

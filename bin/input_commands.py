@@ -71,6 +71,8 @@ def validate_fastq(file):
 	:param file: fastq file
     :return: zipped - Boolean whether the input fastq is gzipped.
     """
+
+
 	# to get extension
 	filename, file_extension = os.path.splitext(file)
 	# flag for whether file is zipped

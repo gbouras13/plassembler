@@ -20,6 +20,7 @@ import test_incompatibility
 import run_unicycler
 
 
+
 from version import __version__
 
 v = __version__
@@ -146,17 +147,26 @@ if __name__ == "__main__":
         message = 'Checking input fastqs.'
         log.write_message(message, logger)
 
+        if args.longreads == 'nothing':
+            message = 'ERROR:You have not input a long read FASTQ file with -l. Please check your input.'
+            log.print_and_exit(message, logger)
+
         # experimental kmer mode - high quality long read only
         if args.kmer_mode == False:
             if args.short_one == 'nothing':
-                message = "ERROR: You have forgotten to specify short reads FASTQ files. Please try again and specify these with -1 and -2."
-                log.print_and_exit(message)
+                message = "ERROR: You have not input a short read R1 FASTQ file with -1. Please check your input."
+                log.print_and_exit(message, logger)
+            if args.short_two == 'nothing':
+                message = "ERROR: You have not input a short read R2 FASTQ file with -2. Please check your input."
+                log.print_and_exit(message, logger)
         else:
             message = "You have chosen --kmer_mode with long reads only. Ignoring any short reads."
             log.write_message(message, logger)
         
         # checking fastq 
+        # if long reads
         long_zipped = input_commands.validate_fastq(args.longreads)
+
         if args.kmer_mode == False:
             s1_zipped = input_commands.validate_fastq(args.short_one)
             s2_zipped = input_commands.validate_fastq(args.short_two)
@@ -219,6 +229,7 @@ if __name__ == "__main__":
                 print(message)
                 logger.info(message)
                 cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
+                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
             else: # chromosome identified -> move on 
 
                 message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
@@ -419,6 +430,7 @@ if __name__ == "__main__":
 
                 # processes output
                 plass.process_mash_tsv(args.database)
+
                 # combine depth and mash tsvs
                 plass.combine_depth_mash_tsvs(prefix)
 

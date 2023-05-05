@@ -42,8 +42,6 @@ class Plass:
             integer giving args.threads - defaults to 1.
         kmer_mode: bool, required
             whether plassembler is in kmer mode
-        mash_empty: bool, required
-            whether mash output is empty (True) or not
         unicycler_success: bool, required
             whether unicycler succeeded
         """
@@ -275,8 +273,6 @@ class Plass:
     def finalise_contigs(self, prefix ):
         """
         Renames the contigs of unicycler with the new plasmid copy numbers and outputs finalised file
-        :param out_dir: output directory
-        :return: 
         """
         out_dir = self.out_dir
 
@@ -301,6 +297,56 @@ class Plass:
                 record = SeqRecord(dna_record.seq, id=id_updated, description = "" )
                 SeqIO.write(record, dna_fa, 'fasta')
 
+    def add_multimer_info(self,  prefix):
+        """
+        Combine combined df and multimer df 
+        """
+        out_dir = self.out_dir
+
+        paf_file =  os.path.join(out_dir, "mapping.paf")
+        col_list = ["flye_contig", "qlen", "qstart", "qend", "strand", "contig", "tlen", "tstart", "tend", "nmatch", "blocklen", "mapq", "s1", "s2", "s3", "s4", "s5", "s6"] 
+        multimer_df = pd.read_csv(paf_file, delimiter= '\t', index_col=False , names=col_list, skiprows=1) 
+
+        # set as string
+        multimer_df['contig'] = multimer_df['contig'].astype('str')
+
+        # get rid of chromosome
+        # multimer_df = multimer_df[multimer_df['flye_contig'] != 'chromosome']
+
+        # sum the blocklens
+        # group the dataframe by 'contig' and calculate the sum of 'value' for each group
+        blocklen_by_contig = multimer_df.groupby('contig')['blocklen'].sum()
+
+        # convert to df
+        blocklen_by_contig = blocklen_by_contig.to_frame().reset_index()
+
+        # merge in
+        combined_depth_mash_df = self.combined_depth_mash_df.merge(blocklen_by_contig, on='contig', how='left')
+
+        combined_depth_mash_df['block_len_to_len_ratio'] = combined_depth_mash_df['blocklen'] / combined_depth_mash_df['length']
+
+        combined_depth_mash_df['multimer'] = 'no'
+
+        # change the 'contig' value to 'pl' for all rows with value between 29 and 31
+        dimers = (combined_depth_mash_df['block_len_to_len_ratio'] >=1.9)
+        combined_depth_mash_df.loc[dimers, 'multimer'] = 'multimer'
+        
+        # trimers = (combined_depth_mash_df['block_len_to_len_ratio'] >=2.9) & (combined_depth_mash_df['block_len_to_len_ratio'] <= 3.1)
+        # combined_depth_mash_df.loc[trimers, 'multimer'] = 'trimer'
+
+        # mmers = (combined_depth_mash_df['block_len_to_len_ratio'] >=3.1)
+        # combined_depth_mash_df.loc[mmers, 'multimer'] = 'multimer (>3x)'
+
+        chrom = (combined_depth_mash_df['contig'] == 'chromosome')
+        combined_depth_mash_df.loc[chrom, 'multimer'] = 'no'
+
+        # move the 'multimer' column to be after the 'circularity' (13th) column
+        cols = combined_depth_mash_df.columns.tolist()
+        cols = cols[:13] + cols[-1:] + cols[13:-1]
+        combined_depth_mash_df = combined_depth_mash_df.reindex(columns=cols)       
+
+        combined_depth_mash_df.to_csv(os.path.join(out_dir, prefix + "_summary.tsv"), sep="\t", index=False) 
+        self.combined_depth_mash_df = combined_depth_mash_df
 
 
 class Assembly:

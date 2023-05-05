@@ -34,6 +34,7 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode):
         shutil.rmtree(os.path.join(out_dir,"10-consensus"))
         shutil.rmtree(os.path.join(out_dir,"20-repeat"))
         shutil.rmtree(os.path.join(out_dir,"30-contigger"))
+        shutil.rmtree(os.path.join(out_dir, "40-polishing"))
 
     # delete intermediate mash file
     remove_file(os.path.join(out_dir,"mash.tsv") )
@@ -46,6 +47,10 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode):
     # delete fastq intermediate files
     remove_file(os.path.join(out_dir,"final_filtered_long_reads.fastq.gz"))
     remove_file(os.path.join(out_dir,"chopper_long_reads.fastq.gz"))
+    remove_file(os.path.join(out_dir, "multimap_plasmid_chromosome_long.fastq"))
+
+    # multimer
+    remove_file(os.path.join(out_dir,"mapping.paf"))
 
     # chromosome
     if keep_chromosome == False:
@@ -93,6 +98,7 @@ def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, as
         shutil.move(os.path.join(out_dir,"short_read_concat_R1.fastq"), os.path.join(fastqs_dir,"plasmids_R1.fastq")) 
         shutil.move(os.path.join(out_dir,"short_read_concat_R2.fastq"), os.path.join(fastqs_dir,"plasmids_R2.fastq")) 
         shutil.move(os.path.join(out_dir,"plasmid_long.fastq"), os.path.join(fastqs_dir,"plasmids_long.fastq")) 
+        shutil.move(os.path.join(out_dir, "multimap_plasmid_chromosome_long.fastq"), os.path.join(out_dir, "multimap_long.fastq")) 
 
 
 # function to touch create a file 

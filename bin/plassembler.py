@@ -18,6 +18,7 @@ import sam_to_fastq
 import concat
 import test_incompatibility
 import run_unicycler
+import multimer
 
 
 
@@ -253,18 +254,15 @@ if __name__ == "__main__":
                 
 
                 # for long, custom function is quick enough
-                sam_to_fastq.extract_bin_long_fastqs(out_dir, args.multi_map)
+                sam_to_fastq.extract_bin_long_fastqs(out_dir)
 
                 # short
                 if args.kmer_mode == False:
-                # for short, too slow so use samtools unless multimap is on
-                    if args.multi_map == True:
-                        sam_to_fastq.extract_bin_short_fastqs(out_dir)
-                    else:
-                        bam.sam_to_bam_short(out_dir, args.threads, logger)
-                        bam.split_bams(out_dir, args.threads, logger)
-                        bam.bam_to_fastq_short(out_dir, args.threads, logger)
-                        concat.concatenate_short_fastqs(out_dir,logger)
+                # for short, too slow so use samtools 
+                    bam.sam_to_bam_short(out_dir, args.threads, logger)
+                    bam.split_bams(out_dir, args.threads, logger)
+                    bam.bam_to_fastq_short(out_dir, args.threads, logger)
+                    concat.concatenate_short_fastqs(out_dir,logger)
 
                 # running unicycler
                 message = 'Running Unicycler.'
@@ -379,18 +377,15 @@ if __name__ == "__main__":
             
                 # for long, custom function
                 # for short, too slow so use samtools
-                sam_to_fastq.extract_bin_long_fastqs(out_dir, args.multi_map)
+                sam_to_fastq.extract_bin_long_fastqs(out_dir)
 
                 # short
-                # for short, too slow so use samtools unless multimap is on
+                # for short, too slow so use samtools 
                 if args.kmer_mode == False:
-                    if args.multi_map == True:
-                        sam_to_fastq.extract_bin_short_fastqs(out_dir)
-                    else:
-                        bam.sam_to_bam_short(out_dir, args.threads, logger)
-                        bam.split_bams(out_dir, args.threads, logger)
-                        bam.bam_to_fastq_short(out_dir, args.threads, logger)
-                        concat.concatenate_short_fastqs(out_dir,logger)
+                    bam.sam_to_bam_short(out_dir, args.threads, logger)
+                    bam.split_bams(out_dir, args.threads, logger)
+                    bam.bam_to_fastq_short(out_dir, args.threads, logger)
+                    concat.concatenate_short_fastqs(out_dir,logger)
 
 
                 # running unicycler
@@ -431,7 +426,7 @@ if __name__ == "__main__":
                 # processes output
                 plass.process_mash_tsv(args.database)
 
-                # combine depth and mash tsvs
+                # combine depth and mash tsvs 
                 plass.combine_depth_mash_tsvs(prefix)
 
                 # rename contigs and update copy bumber with plsdb
@@ -439,6 +434,12 @@ if __name__ == "__main__":
 
                 # heuristic check 
                 test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
+
+                # multimer check
+                multimer.minimap2_unicycler_vs_flye_plasmids(out_dir, prefix, logger)
+
+                # combine depth and mash tsvs with dimer information
+                plass.add_multimer_info(prefix)
 
                 cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False)
                 cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)

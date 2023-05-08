@@ -365,16 +365,10 @@ class Plass:
 
         combined_depth_mash_df['multimer'] = 'no'
 
-        # change the 'contig' value to 'pl' for all rows with value between 29 and 31
-        dimers = (combined_depth_mash_df['block_len_to_len_ratio'] >=1.9)
+        # if more than 1.5x assembly block, denote as multimer
+        dimers = (combined_depth_mash_df['block_len_to_len_ratio'] >=1.5)
         combined_depth_mash_df.loc[dimers, 'multimer'] = 'multimer'
-        
-        # trimers = (combined_depth_mash_df['block_len_to_len_ratio'] >=2.9) & (combined_depth_mash_df['block_len_to_len_ratio'] <= 3.1)
-        # combined_depth_mash_df.loc[trimers, 'multimer'] = 'trimer'
-
-        # mmers = (combined_depth_mash_df['block_len_to_len_ratio'] >=3.1)
-        # combined_depth_mash_df.loc[mmers, 'multimer'] = 'multimer (>3x)'
-
+      
         chrom = (combined_depth_mash_df['contig'] == 'chromosome')
         combined_depth_mash_df.loc[chrom, 'multimer'] = 'no'
 

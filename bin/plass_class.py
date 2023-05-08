@@ -180,7 +180,7 @@ class Plass:
                             circ = info_df.circ.loc[info_df['seq_name'] == dna_record.id]
                             plas_circ =  str(circ.iloc[0])
                             if plas_circ == "Y":
-                                dna_description = "circular=true"
+                                dna_description = "circular=true" 
                             else:
                                 dna_description = ""
                             # get length for bed file
@@ -322,14 +322,14 @@ class Plass:
             for dna_record in SeqIO.parse(plasmid_fasta, 'fasta'): 
                 if "circular" in dna_record.description: # circular contigs
                     if self.long_only == False: 
-                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_short=" + str(combined_depth_mash_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + dna_record.description.split(' ')[3]
+                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_short=" + str(combined_depth_mash_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + "circular=true"
                     else: # long only
-                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + dna_record.description.split(' ')[3]
+                        id_updated = dna_record.description.split(' ')[0] + " " + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + "circular=true"
                 else: # non circular contigs
                     if self.long_only == False:
                         id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_short=" + str(combined_depth_mash_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " 
                     else: #long only
-                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x "
+                        id_updated = dna_record.description.split(' ')[0] + " "  + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x "
                 i += 1
                 record = SeqRecord(dna_record.seq, id=id_updated, description = "" )
                 SeqIO.write(record, dna_fa, 'fasta')

@@ -12,7 +12,7 @@ import shutil
 # cleanup
 ##########################################################
 
-def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode):
+def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_only):
     """ removes intermediate files
     :param out_dir:  Output Directory
     :return: 
@@ -35,6 +35,9 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode):
         shutil.rmtree(os.path.join(out_dir,"20-repeat"))
         shutil.rmtree(os.path.join(out_dir,"30-contigger"))
         shutil.rmtree(os.path.join(out_dir, "40-polishing"))
+
+    if long_only == True:
+        shutil.rmtree(os.path.join(out_dir,"unicycler_output"))
 
     # delete intermediate mash file
     remove_file(os.path.join(out_dir,"mash.tsv") )

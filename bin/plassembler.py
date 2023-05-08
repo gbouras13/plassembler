@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
         # rename contigs and update copy number with plsdb
         cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, True)
-        cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, True)
+        cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, True, args.long_only)
 
 
 #############################
@@ -230,7 +230,7 @@ if __name__ == "__main__":
                 message = 'No chromosome was identified. Likely, there was insufficient long read depth for Flye to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. '
                 log.write_message(message, logger)
                 cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
-                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
+                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
             else: # chromosome identified -> move on 
                 if args.long_only == False:
                     message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
@@ -288,7 +288,7 @@ if __name__ == "__main__":
                         message = "No plasmids found."
                         log.write_message(message, logger)
                         cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
-                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
+                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
                     
                     # get depth    
                     # as class so saves the depth dataframe nicely
@@ -317,7 +317,7 @@ if __name__ == "__main__":
 
                     # cleanup files 
                     cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False)
-                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
+                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
                     
                 
                 # long only with 1 contig -> chromosome
@@ -325,7 +325,7 @@ if __name__ == "__main__":
                     message = 'No plasmids found'
                     log.write_message(message, logger)
                     cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
-                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
+                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
 
                 
         
@@ -353,7 +353,7 @@ if __name__ == "__main__":
                 message = 'No chromosome was idenfitied. please check your -c or --chromosome parameter, it may be too high. \nLikely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended.'
                 log.write_message(message, logger)
                 cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
-                cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, False)
+                cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, False, args.long_only)
 
             ####################################################################
             # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> get reads mappeed to plasmids, unmapped to chromosome and assemble
@@ -444,7 +444,7 @@ if __name__ == "__main__":
                     plass.add_multimer_info(prefix)
 
                 cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False)
-                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
+                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
 
     # Determine elapsed time
     elapsed_wallclock_time = time.perf_counter() - start_time

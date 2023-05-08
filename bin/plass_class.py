@@ -175,8 +175,13 @@ class Plass:
                         # if the length is over chromosome length
                         contig_len = len(dna_record.seq)
                         if contig_len < int(chromosome_len): 
-                            dna_header = "plasmid_" + str(i)
-                            dna_description = ""
+                            dna_header = str(i)
+                            # get circularity
+                            circ = info_df.length.loc[info_df['circ'] == dna_record.id]
+                            if circ == "Y":
+                                dna_description = "circular=true"
+                            else:
+                                dna_description = ""
                             # get length for bed file
                             l = info_df.length.loc[info_df['seq_name'] == dna_record.id]
                             plas_len =  int(l.iloc[0])
@@ -305,6 +310,33 @@ class Plass:
     def finalise_contigs(self, prefix ):
         """
         Renames the contigs of unicycler with the new plasmid copy numbers and outputs finalised file
+        """
+        out_dir = self.out_dir
+
+        combined_depth_mash_df = self.combined_depth_mash_df
+        combined_depth_mash_df = combined_depth_mash_df.loc[combined_depth_mash_df['contig'] != 'chromosome'].reset_index(drop=True)
+        # get contigs only
+        plasmid_fasta = os.path.join(out_dir,"unicycler_output", "assembly.fasta")
+        i = 0
+        with open(os.path.join(out_dir, prefix + "_plasmids.fasta"), 'w') as dna_fa:
+            for dna_record in SeqIO.parse(plasmid_fasta, 'fasta'): 
+                if "circular" in dna_record.description: # circular contigs
+                    if self.long_only == False: 
+                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_short=" + str(combined_depth_mash_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + dna_record.description.split(' ')[3]
+                    else: # kmer mode
+                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + dna_record.description.split(' ')[3]
+                else: # non circular contigs
+                    if self.long_only == False:
+                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_short=" + str(combined_depth_mash_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " 
+                    else: #kmer mode
+                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x "
+                i += 1
+                record = SeqRecord(dna_record.seq, id=id_updated, description = "" )
+                SeqIO.write(record, dna_fa, 'fasta')
+
+    def finalise_contigs_long(self, prefix ):
+        """
+        Renames the contigs of Flye
         """
         out_dir = self.out_dir
 

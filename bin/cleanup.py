@@ -60,7 +60,7 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
         remove_file(os.path.join(out_dir,"chromosome.fasta"))
 
 
-def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, assembled_mode):
+def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, assembled_mode, long_only):
     """ moves and copies files
     :param out_dir:  Output Directory
     :param prefix: prefix
@@ -81,20 +81,21 @@ def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, as
         shutil.move(os.path.join(out_dir,"assembly_graph.gv"), flye_dir)
 
     if unicycler_success_flag == True:
-         # move unicycler graph output to main directory
-        shutil.copy2( os.path.join(out_dir,"unicycler_output", "assembly.gfa"), os.path.join(out_dir, prefix + "_plasmids.gfa"))
+        if long_only == False:
+            # move unicycler graph output to main directory
+            shutil.copy2( os.path.join(out_dir,"unicycler_output", "assembly.gfa"), os.path.join(out_dir, prefix + "_plasmids.gfa"))
     else:
         # to touch empty versions of the output files if no plasmids 
         touch_output_fail_files(out_dir, prefix)
 
     # put kept fastqs into separate directory
     # make fastqs dir 
-    if keep_fastqs == True:
+    if keep_fastqs == True and long_only == False:
         fastqs_dir = os.path.join(out_dir,"plasmid_fastqs")
         if not os.path.exists(fastqs_dir):
             os.mkdir(fastqs_dir)
 
-        # move flye files
+        # move fastqs
         shutil.move(os.path.join(out_dir,"short_read_concat_R1.fastq"), os.path.join(fastqs_dir,"plasmids_R1.fastq")) 
         shutil.move(os.path.join(out_dir,"short_read_concat_R2.fastq"), os.path.join(fastqs_dir,"plasmids_R2.fastq")) 
         shutil.move(os.path.join(out_dir,"plasmid_long.fastq"), os.path.join(fastqs_dir,"plasmids_long.fastq")) 

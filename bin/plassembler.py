@@ -136,7 +136,7 @@ if __name__ == "__main__":
         test_incompatibility.incompatbility(assembly.combined_depth_mash_df, logger)
 
         # rename contigs and update copy number with plsdb
-        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, True)
+        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, True, args.long_only)
         cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, True, args.long_only)
 
 
@@ -229,7 +229,7 @@ if __name__ == "__main__":
             if plass.chromosome_flag == False:
                 message = 'No chromosome was identified. Likely, there was insufficient long read depth for Flye to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. '
                 log.write_message(message, logger)
-                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
+                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
                 cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
             else: # chromosome identified -> move on 
                 if args.long_only == False:
@@ -287,7 +287,7 @@ if __name__ == "__main__":
                     else: # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
                         message = "No plasmids found."
                         log.write_message(message, logger)
-                        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
+                        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
                         cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
                     
                     # get depth    
@@ -316,7 +316,7 @@ if __name__ == "__main__":
                         test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
 
                     # cleanup files 
-                    cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False)
+                    cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only)
                     cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
                     
                 
@@ -324,7 +324,7 @@ if __name__ == "__main__":
                 else:
                     message = 'No plasmids found'
                     log.write_message(message, logger)
-                    cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
+                    cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
                     cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
 
                 
@@ -352,7 +352,7 @@ if __name__ == "__main__":
             if plass.chromosome_flag == False:
                 message = 'No chromosome was idenfitied. please check your -c or --chromosome parameter, it may be too high. \nLikely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended.'
                 log.write_message(message, logger)
-                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
+                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
                 cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, False, args.long_only)
 
             ####################################################################
@@ -443,7 +443,7 @@ if __name__ == "__main__":
                     # combine depth and mash tsvs with dimer information
                     plass.add_multimer_info(prefix)
 
-                cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False)
+                cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only)
                 cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
 
     # Determine elapsed time

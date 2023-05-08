@@ -23,7 +23,7 @@ def get_input():
 	parser.add_argument('-l', '--longreads', action="store", help='Fastq file of long reads.',  default='nothing')
 	parser.add_argument('-1', '--short_one', action="store", help='R1 short read fastq file.',  default='nothing')
 	parser.add_argument('-2', '--short_two', action="store", help='R2 short read fastq file.',  default='nothing')
-	parser.add_argument('-c', '--chromosome', action="store", help='Approximate lower-bound chromosome length of bacteria. \nDefaults to 2500000.',  default=2500000)
+	parser.add_argument('-c', '--chromosome', action="store", help='Approximate lower-bound chromosome length of bacteria. \nDefaults to 1000000.',  default=1000000)
 	parser.add_argument('-o', '--outdir', action="store", help='Directory to write the output to. Defaults to output/', default=os.path.join(os.getcwd(), "output/") )
 	parser.add_argument('-m', '--min_length', action="store", help='minimum length for filtering long reads with chopper. Defaults to 500.',  default='500')
 	parser.add_argument('-q', '--min_quality', action="store", help='minimum quality for filtering long reads with chopper. Defaults to 9.',  default=str(9))

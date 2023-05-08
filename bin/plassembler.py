@@ -314,22 +314,20 @@ if __name__ == "__main__":
                     if args.long_only == False:
                     # heuristic check 
                         test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
+                        plass.add_multimer_info(prefix)
 
                     # cleanup files 
                     cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only)
                     cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
-                    
-                
+                                    
                 # long only with 1 contig -> chromosome
                 else:
-                    message = 'No plasmids found'
+                    message = 'No plasmids found.'
                     log.write_message(message, logger)
                     cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
                     cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
 
-                
-        
-
+          
 ####################################################################
         # where more than 1 contig was assembled
 ####################################################################

@@ -342,35 +342,45 @@ class Plass:
         out_dir = self.out_dir
 
         paf_file =  os.path.join(out_dir, "mapping.paf")
-        col_list = ["flye_contig", "qlen", "qstart", "qend", "strand", "contig", "tlen", "tstart", "tend", "nmatch", "blocklen", "mapq", "s1", "s2", "s3", "s4", "s5", "s6"] 
-        multimer_df = pd.read_csv(paf_file, delimiter= '\t', index_col=False , names=col_list, skiprows=1) 
+        if os.path.exists(paf_file):
+            # if dimer file exists
+            col_list = ["flye_contig", "qlen", "qstart", "qend", "strand", "contig", "tlen", "tstart", "tend", "nmatch", "blocklen", "mapq", "s1", "s2", "s3", "s4", "s5", "s6"] 
+            multimer_df = pd.read_csv(paf_file, delimiter= '\t', index_col=False , names=col_list, skiprows=1) 
 
-        # set as string
-        multimer_df['contig'] = multimer_df['contig'].astype('str')
+            # set as string
+            multimer_df['contig'] = multimer_df['contig'].astype('str')
 
-        # get rid of chromosome
-        # multimer_df = multimer_df[multimer_df['flye_contig'] != 'chromosome']
+            # get rid of chromosome
+            # multimer_df = multimer_df[multimer_df['flye_contig'] != 'chromosome']
 
-        # sum the blocklens
-        # group the dataframe by 'contig' and calculate the sum of 'value' for each group
-        blocklen_by_contig = multimer_df.groupby('contig')['blocklen'].sum()
+            # sum the blocklens
+            # group the dataframe by 'contig' and calculate the sum of 'value' for each group
+            blocklen_by_contig = multimer_df.groupby('contig')['blocklen'].sum()
 
-        # convert to df
-        blocklen_by_contig = blocklen_by_contig.to_frame().reset_index()
+            # convert to df
+            blocklen_by_contig = blocklen_by_contig.to_frame().reset_index()
 
-        # merge in
-        combined_depth_mash_df = self.combined_depth_mash_df.merge(blocklen_by_contig, on='contig', how='left')
+            # merge in
+            combined_depth_mash_df = self.combined_depth_mash_df.merge(blocklen_by_contig, on='contig', how='left')
 
-        combined_depth_mash_df['block_len_to_len_ratio'] = combined_depth_mash_df['blocklen'] / combined_depth_mash_df['length']
+            combined_depth_mash_df['block_len_to_len_ratio'] = combined_depth_mash_df['blocklen'] / combined_depth_mash_df['length']
 
-        combined_depth_mash_df['multimer'] = 'no'
+            combined_depth_mash_df['multimer'] = 'no_evidence'
 
-        # if more than 1.5x assembly block, denote as multimer
-        dimers = (combined_depth_mash_df['block_len_to_len_ratio'] >=1.5)
-        combined_depth_mash_df.loc[dimers, 'multimer'] = 'multimer'
-      
-        chrom = (combined_depth_mash_df['contig'] == 'chromosome')
-        combined_depth_mash_df.loc[chrom, 'multimer'] = 'no'
+            # if more than 1.5x assembly block, denote as multimer
+            dimers = (combined_depth_mash_df['block_len_to_len_ratio'] >=1.5)
+            combined_depth_mash_df.loc[dimers, 'multimer'] = 'yes'
+        
+            chrom = (combined_depth_mash_df['contig'] == 'chromosome')
+            combined_depth_mash_df.loc[chrom, 'multimer'] = 'no'
+
+            combined_depth_mash_df = combined_depth_mash_df.drop(columns=['block_len_to_len_ratio'])
+
+        else:
+            combined_depth_mash_df = self.combined_depth_mash_df
+            combined_depth_mash_df['multimer'] = 'no_evidence'
+            chrom = (combined_depth_mash_df['contig'] == 'chromosome')
+            combined_depth_mash_df.loc[chrom, 'multimer'] = 'no'
 
         # move the 'multimer' column to be after the 'circularity' (13th) column
         cols = combined_depth_mash_df.columns.tolist()

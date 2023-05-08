@@ -177,8 +177,8 @@ class Plass:
                         if contig_len < int(chromosome_len): 
                             dna_header = str(i)
                             # get circularity
-                            circ = info_df.circ.loc[info_df['circ'] == dna_record.id]
-                            plas_circ =  int(circ.iloc[0])
+                            circ = info_df.circ.loc[info_df['seq_name'] == dna_record.id]
+                            plas_circ =  str(circ.iloc[0])
                             if plas_circ == "Y":
                                 dna_description = "circular=true"
                             else:

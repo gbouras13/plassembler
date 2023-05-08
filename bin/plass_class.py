@@ -165,9 +165,9 @@ class Plass:
                 # make fake unicycler output file 
                 if not os.path.exists(os.path.join(out_dir,"unicycler_output")):
                     os.mkdir(os.path.join(out_dir,"unicycler_output"))
-                # remove bed
-                if os.path.exists(bed_file):
-                    os.remove(bed_file)
+                # remove bed if exists
+                if os.path.exists(os.path.join(out_dir, "non_chromosome.bed")):
+                    os.remove(os.path.join(out_dir, "non_chromosome.bed"))
                 with open(os.path.join(out_dir,"unicycler_output", "assembly.fasta"), 'w') as rename_fa:
                     # for plasmid numbering
                     i = 1

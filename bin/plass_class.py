@@ -192,7 +192,6 @@ class Plass:
                             # make bed file
                             bed_file.write(f'{dna_header}\t1\t{plas_len}\n')  # Write read name
                             i += 1
-            
         # add to object
         self.chromosome_flag = chromosome_flag
 
@@ -323,43 +322,17 @@ class Plass:
                 if "circular" in dna_record.description: # circular contigs
                     if self.long_only == False: 
                         id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_short=" + str(combined_depth_mash_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + dna_record.description.split(' ')[3]
-                    else: # kmer mode
+                    else: # long only
                         id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + dna_record.description.split(' ')[3]
                 else: # non circular contigs
                     if self.long_only == False:
                         id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_short=" + str(combined_depth_mash_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " 
-                    else: #kmer mode
+                    else: #long only
                         id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x "
                 i += 1
                 record = SeqRecord(dna_record.seq, id=id_updated, description = "" )
                 SeqIO.write(record, dna_fa, 'fasta')
 
-    def finalise_contigs_long(self, prefix ):
-        """
-        Renames the contigs of Flye
-        """
-        out_dir = self.out_dir
-
-        combined_depth_mash_df = self.combined_depth_mash_df
-        combined_depth_mash_df = combined_depth_mash_df.loc[combined_depth_mash_df['contig'] != 'chromosome'].reset_index(drop=True)
-        # get contigs only
-        plasmid_fasta = os.path.join(out_dir,"unicycler_output", "assembly.fasta")
-        i = 0
-        with open(os.path.join(out_dir, prefix + "_plasmids.fasta"), 'w') as dna_fa:
-            for dna_record in SeqIO.parse(plasmid_fasta, 'fasta'): 
-                if "circular" in dna_record.description: # circular contigs
-                    if self.long_only == False: 
-                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_short=" + str(combined_depth_mash_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + dna_record.description.split(' ')[3]
-                    else: # kmer mode
-                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + dna_record.description.split(' ')[3]
-                else: # non circular contigs
-                    if self.long_only == False:
-                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_short=" + str(combined_depth_mash_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " 
-                    else: #kmer mode
-                        id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x "
-                i += 1
-                record = SeqRecord(dna_record.seq, id=id_updated, description = "" )
-                SeqIO.write(record, dna_fa, 'fasta')
 
     def add_multimer_info(self,  prefix):
         """

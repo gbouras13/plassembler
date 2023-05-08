@@ -20,7 +20,7 @@ class Plass:
         depth_df:  pd.DataFrame() =  pd.DataFrame({'col1': [1, 2, 3], 'col2': [4, 5, 6]}),
         mash_df:  pd.DataFrame() =  pd.DataFrame({'col1': [1, 2, 3], 'col2': [4, 5, 6]}),
         combined_depth_mash_df: pd.DataFrame() =  pd.DataFrame({'col1': [1, 2, 3], 'col2': [4, 5, 6]}),
-        kmer_mode: bool = False,
+        long_only: bool = False,
         unicycler_success: bool = True
         ) -> None:
         """
@@ -40,7 +40,7 @@ class Plass:
             dataframe with mash output
         threads: int, required
             integer giving args.threads - defaults to 1.
-        kmer_mode: bool, required
+        long_only: bool, required
             whether plassembler is in kmer mode
         unicycler_success: bool, required
             whether unicycler succeeded
@@ -53,7 +53,7 @@ class Plass:
         self.depth_df = depth_df
         self.mash_df = mash_df
         self.combined_depth_mash_df = combined_depth_mash_df
-        self.kmer_mode = kmer_mode
+        self.long_only = long_only
         self.unicycler_success = unicycler_success
 
     def get_contig_count(self,  logger):
@@ -93,6 +93,7 @@ class Plass:
         :return chromosome_flag: bool whether chromosome assembles
         """
         out_dir = self.out_dir
+        long_only = self.long_only
         info_file =  os.path.join(out_dir, "assembly_info.txt")
         col_list = ["seq_name", "length", "cov", "circ", "repeat", "mult", "alt_group", "graph_path"] 
         info_df = pd.read_csv(info_file, delimiter= '\t', index_col=False , names=col_list, skiprows=1) 
@@ -156,6 +157,37 @@ class Plass:
                             # make bed file
                             bed_file.write(f'{dna_header}\t1\t{plas_len}\n')  # Write read name
                             i += 1
+            # if lony only is true, create new unicycler_output file (fake)
+            if long_only == True:
+                message = "Extracting possible plasmids from Flye assembly."
+                print(message)
+                logger.info(message)  
+                # make fake unicycler output file 
+                if not os.path.exists(os.path.join(out_dir,"unicycler_output")):
+                    os.mkdir(os.path.join(out_dir,"unicycler_output"))
+                # remove bed
+                if os.path.exists(bed_file):
+                    os.remove(bed_file)
+                with open(os.path.join(out_dir,"unicycler_output", "assembly.fasta"), 'w') as rename_fa:
+                    # for plasmid numbering
+                    i = 1
+                    for dna_record in SeqIO.parse(os.path.join(out_dir, "assembly.fasta"), 'fasta'):
+                        # if the length is over chromosome length
+                        contig_len = len(dna_record.seq)
+                        if contig_len < int(chromosome_len): 
+                            dna_header = "plasmid_" + str(i)
+                            dna_description = ""
+                            # get length for bed file
+                            l = info_df.length.loc[info_df['seq_name'] == dna_record.id]
+                            plas_len =  int(l.iloc[0])
+                            # write the updated record
+                            dna_record = SeqRecord(dna_record.seq, id=dna_header, description = dna_description)
+                            SeqIO.write(dna_record, rename_fa, 'fasta')
+                            # get length for bed file
+                            # make bed file
+                            bed_file.write(f'{dna_header}\t1\t{plas_len}\n')  # Write read name
+                            i += 1
+            
         # add to object
         self.chromosome_flag = chromosome_flag
 
@@ -181,19 +213,19 @@ class Plass:
         out_dir = self.out_dir
         depth.concatenate_chrom_plasmids(out_dir, logger)
         depth.minimap_depth_sort_long(out_dir, threads)
-        if self.kmer_mode == False:
+        if self.long_only == False:
             depth.minimap_depth_sort_short(out_dir, threads)
 
         contig_lengths = depth.get_contig_lengths(out_dir)
-        if self.kmer_mode == False:
+        if self.long_only == False:
             depthsShort = depth.get_depths_from_bam(out_dir, "short", contig_lengths)
         depthsLong = depth.get_depths_from_bam(out_dir, "long", contig_lengths)
         circular_status = depth.get_contig_circularity(out_dir)
-        if self.kmer_mode == False:
+        if self.long_only == False:
             summary_depth_df_short = depth.collate_depths(depthsShort,"short",contig_lengths)
         summary_depth_df_long = depth.collate_depths(depthsLong,"long",contig_lengths)
         # save the depth df in the class
-        if self.kmer_mode == False:
+        if self.long_only == False:
             self.depth_df = depth.combine_depth_dfs( summary_depth_df_short, summary_depth_df_long,  circular_status)
         else:
             self.depth_df = depth.depth_df_single( summary_depth_df_long,  circular_status)
@@ -284,12 +316,12 @@ class Plass:
         with open(os.path.join(out_dir, prefix + "_plasmids.fasta"), 'w') as dna_fa:
             for dna_record in SeqIO.parse(plasmid_fasta, 'fasta'): 
                 if "circular" in dna_record.description: # circular contigs
-                    if self.kmer_mode == False: 
+                    if self.long_only == False: 
                         id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_short=" + str(combined_depth_mash_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + dna_record.description.split(' ')[3]
                     else: # kmer mode
                         id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " + dna_record.description.split(' ')[3]
                 else: # non circular contigs
-                    if self.kmer_mode == False:
+                    if self.long_only == False:
                         id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_short=" + str(combined_depth_mash_df.plasmid_copy_number_short[i]) + "x plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x " 
                     else: #kmer mode
                         id_updated = dna_record.description.split(' ')[0] + " " + dna_record.description.split(' ')[1] + " plasmid_copy_number_long=" + str(combined_depth_mash_df.plasmid_copy_number_long[i]) + "x "

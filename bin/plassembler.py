@@ -152,8 +152,8 @@ if __name__ == "__main__":
             message = 'ERROR:You have not input a long read FASTQ file with -l. Please check your input.'
             log.print_and_exit(message, logger)
 
-        # experimental kmer mode - high quality long read only
-        if args.kmer_mode == False:
+        # experimental long only - high quality long read only
+        if args.long_only == False:
             if args.short_one == 'nothing':
                 message = "ERROR: You have not input a short read R1 FASTQ file with -1. Please check your input."
                 log.print_and_exit(message, logger)
@@ -161,14 +161,14 @@ if __name__ == "__main__":
                 message = "ERROR: You have not input a short read R2 FASTQ file with -2. Please check your input."
                 log.print_and_exit(message, logger)
         else:
-            message = "You have chosen --kmer_mode with long reads only. Ignoring any short reads."
+            message = "You have chosen --long_only with long reads only. Ignoring any short reads."
             log.write_message(message, logger)
         
         # checking fastq 
         # if long reads
         long_zipped = input_commands.validate_fastq(args.longreads)
 
-        if args.kmer_mode == False:
+        if args.long_only == False:
             s1_zipped = input_commands.validate_fastq(args.short_one)
             s2_zipped = input_commands.validate_fastq(args.short_two)
 
@@ -176,9 +176,9 @@ if __name__ == "__main__":
         message ="Filtering long reads with chopper."
         log.write_message(message, logger)
         min_quality = args.min_quality
-        if args.kmer_mode == True:
+        if args.long_only == True:
             if int(min_quality) < 15:
-                message = "Increasing min quality to 15 in kmer mode."
+                message = "Increasing min quality to 15 in long only mode."
                 log.write_message(message, logger)
                 min_quality = str(15)
         qc.chopper(args.longreads, out_dir, args.min_length, min_quality, long_zipped, args.threads)
@@ -203,7 +203,7 @@ if __name__ == "__main__":
         plass = Plass()
         plass.out_dir = out_dir
         plass.threads = args.threads
-        plass.kmer_mode = args.kmer_mode
+        plass.long_only = args.long_only
 
         # count contigs and add to the object
         message = "Counting Contigs."
@@ -225,72 +225,72 @@ if __name__ == "__main__":
             plass.identify_chromosome_process_flye( args.chromosome, logger)
 
             # no chromosome identified - cleanup and exit
+            ####################################################################
             if plass.chromosome_flag == False:
                 message = 'No chromosome was identified. Likely, there was insufficient long read depth for Flye to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. '
-                print(message)
-                logger.info(message)
+                log.write_message(message, logger)
                 cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
                 cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
             else: # chromosome identified -> move on 
+                if args.long_only == False:
+                    message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
+                    log.write_message(message, logger)
 
-                message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
-                log.write_message(message, logger)
+                    message = 'Trimming short reads.'
+                    log.write_message(message, logger)
+                    qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
 
-                message = 'Trimming short reads.'
-                log.write_message(message, logger)
-                qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+                    message = 'Mapping long reads.'
+                    log.write_message(message, logger)
+                    mapping.minimap_long_reads(out_dir, args.threads, pacbio_model, logger)
 
-                message = 'Mapping long reads.'
-                log.write_message(message, logger)
-                mapping.minimap_long_reads(out_dir, args.threads, pacbio_model, logger)
+                    #### short reads mapping
+                    message = 'Mapping short reads.'
+                    log.write_message(message, logger)
+                    mapping.minimap_short_reads(out_dir, args.threads, logger)
 
-                #### short reads mapping
-                message = 'Mapping short reads.'
-                log.write_message(message, logger)
-                mapping.minimap_short_reads(out_dir, args.threads, logger)
-
-                message = 'Processing Sam/Bam Files and extracting Fastqs.'
-                log.write_message(message, logger)
+                    message = 'Processing Sam/Bam Files and extracting Fastqs.'
+                    log.write_message(message, logger)
                 
+                    # for long, custom function is quick enough
+                    sam_to_fastq.extract_bin_long_fastqs(out_dir)
 
-                # for long, custom function is quick enough
-                sam_to_fastq.extract_bin_long_fastqs(out_dir)
-
-                # short
-                if args.kmer_mode == False:
-                # for short, too slow so use samtools 
+                    # for short, too slow so use samtools 
                     bam.sam_to_bam_short(out_dir, args.threads, logger)
                     bam.split_bams(out_dir, args.threads, logger)
                     bam.bam_to_fastq_short(out_dir, args.threads, logger)
                     concat.concatenate_short_fastqs(out_dir,logger)
 
-                # running unicycler
-                message = 'Running Unicycler.'
-                log.write_message(message, logger)
+                    # running unicycler
+                    message = 'Running Unicycler.'
+                    log.write_message(message, logger)
 
-                long_reads = os.path.join(out_dir, "plasmid_long.fastq")
-
-                if args.kmer_mode == False:
+                    long_reads = os.path.join(out_dir, "plasmid_long.fastq")    
                     short_r1 = os.path.join(out_dir, "short_read_concat_R1.fastq")
                     short_r2 = os.path.join(out_dir, "short_read_concat_R2.fastq")
 
-
-                if args.kmer_mode == False:
                     run_unicycler.run_unicycler(False, args.threads, logger, short_r1, short_r2, long_reads, 
                                                 os.path.join(out_dir, "unicycler_output"))
-                else:
-                    run_unicycler.run_unicycler(True, args.threads, logger, long_reads, long_reads, long_reads, 
-                            os.path.join(out_dir, "unicycler_output"))
 
-                # check for successful unicycler completion
-                plass.check_unicycler_success()
+                    # check for successful unicycler completion
+                    plass.check_unicycler_success()
 
-                # if unicycler successfully finished, calculate the plasmid copy numbers
-                if plass.unicycler_success == True:
+                    # if unicycler successfully finished, calculate the plasmid copy numbers
+                    if plass.unicycler_success == True:
 
-                    message ='Unicycler identified plasmids. Calculating Plasmid Copy Numbers.'
-                    log.write_message(message, logger)
-
+                        message ='Unicycler identified plasmids. Calculating Plasmid Copy Numbers.'
+                        log.write_message(message, logger)
+                    
+                    ####################################################################
+                    # Case 4: where there are truly no plasmids even after unicycler runs
+                    ####################################################################
+                    else: # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
+                        message = "No plasmids found."
+                        log.write_message(message, logger)
+                        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
+                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
+                    
+                    # get depth    
                     # as class so saves the depth dataframe nicely
                     plass.get_depth( logger, args.threads)
 
@@ -310,21 +310,25 @@ if __name__ == "__main__":
                     # rename contigs and update copy bumber with plsdb
                     plass.finalise_contigs(prefix)
 
+                    # heuristic check only if not long_only
+                    if args.long_only == False:
                     # heuristic check 
-                    test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
+                        test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
 
                     # cleanup files 
                     cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False)
                     cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
-
-                ####################################################################
-                # Case 4: where there are truly no plasmids even after unicycler runs
-                ####################################################################
-                else: # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
-                    message = "No plasmids found."
+                    
+                
+                # long only with 1 contig -> chromosome
+                else:
+                    message = 'No plasmids found'
                     log.write_message(message, logger)
                     cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False)
                     cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)
+
+                
+        
 
 ####################################################################
         # where more than 1 contig was assembled
@@ -355,15 +359,15 @@ if __name__ == "__main__":
             # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> get reads mappeed to plasmids, unmapped to chromosome and assemble
             ####################################################################
             else:
-                message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
-                log.write_message(message, logger)
+                if args.long_only == False:
+                    message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
+                    log.write_message(message, logger)
 
-                message = 'Mapping Long Reads.'
-                log.write_message(message, logger)
-                mapping.minimap_long_reads( out_dir, args.threads, pacbio_model, logger)
+                    message = 'Mapping Long Reads.'
+                    log.write_message(message, logger)
+                    mapping.minimap_long_reads( out_dir, args.threads, pacbio_model, logger)
 
                  #### short reads trimming and  mapping
-                if args.kmer_mode == False:
                     message = 'Trimming short reads.'
                     log.write_message(message, logger)
                     qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
@@ -372,37 +376,32 @@ if __name__ == "__main__":
                     log.write_message(message, logger)
                     mapping.minimap_short_reads(out_dir, args.threads, logger)
 
-                message = 'Processing Sam/Bam Files and extracting Fastqs.'
-                log.write_message(message, logger)
+                    message = 'Processing Sam/Bam Files and extracting Fastqs.'
+                    log.write_message(message, logger)
             
-                # for long, custom function
-                # for short, too slow so use samtools
-                sam_to_fastq.extract_bin_long_fastqs(out_dir)
+                    # for long, custom function
+                    # for short, too slow so use samtools
+                    sam_to_fastq.extract_bin_long_fastqs(out_dir)
 
-                # short
-                # for short, too slow so use samtools 
-                if args.kmer_mode == False:
+                    # short
+                    # for short, too slow so use samtools 
                     bam.sam_to_bam_short(out_dir, args.threads, logger)
                     bam.split_bams(out_dir, args.threads, logger)
                     bam.bam_to_fastq_short(out_dir, args.threads, logger)
                     concat.concatenate_short_fastqs(out_dir,logger)
 
 
-                # running unicycler
-                message = 'Running Unicycler.'
-                log.write_message(message, logger)
+                    # running unicycler
+                    message = 'Running Unicycler.'
+                    log.write_message(message, logger)
 
-                long_reads = os.path.join(out_dir, "plasmid_long.fastq")
-                
-                if args.kmer_mode == False: # regular mode
+                    long_reads = os.path.join(out_dir, "plasmid_long.fastq")
                     short_r1 = os.path.join(out_dir, "short_read_concat_R1.fastq")
                     short_r2 = os.path.join(out_dir, "short_read_concat_R2.fastq")
 
                     run_unicycler.run_unicycler(False, args.threads, logger, short_r1, short_r2, long_reads, 
                                                  os.path.join(out_dir, "unicycler_output"))
-                else: # long only flag
-                    run_unicycler.run_unicycler(True, args.threads, logger, long_reads, long_reads, long_reads, 
-                                                 os.path.join(out_dir, "unicycler_output"))
+
         
 ####################################################################
 ##### get copy number depths
@@ -420,6 +419,7 @@ if __name__ == "__main__":
 
                 # sketches the plasmids
                 run_mash.mash_sketch(out_dir, os.path.join(out_dir,"unicycler_output", "assembly.fasta"), logger)
+
                 # runs mash 
                 run_mash.run_mash(out_dir, args.database, logger)
 
@@ -433,13 +433,15 @@ if __name__ == "__main__":
                 plass.finalise_contigs(prefix)
 
                 # heuristic check 
-                test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
+                if args.long_only == False:
+                    # incompatibility
+                    test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
 
-                # multimer check
-                multimer.minimap2_unicycler_vs_flye_plasmids(out_dir, prefix, logger)
+                    # multimer check
+                    multimer.minimap2_unicycler_vs_flye_plasmids(out_dir, prefix, logger)
 
-                # combine depth and mash tsvs with dimer information
-                plass.add_multimer_info(prefix)
+                    # combine depth and mash tsvs with dimer information
+                    plass.add_multimer_info(prefix)
 
                 cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False)
                 cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False)

@@ -57,9 +57,6 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode):
         remove_file(os.path.join(out_dir,"chromosome.fasta"))
 
 
-
-
-
 def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, assembled_mode):
     """ moves and copies files
     :param out_dir:  Output Directory

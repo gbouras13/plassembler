@@ -15,7 +15,7 @@ import concat
 
 
 
-def concatenate_chrom_plasmids(out_dir, logger):
+def concatenate_chrom_plasmids(out_dir,logger ):
     """ concatenates chromosome and plasmids
     :param out_dir:  Output Directory
     :param logger: logger

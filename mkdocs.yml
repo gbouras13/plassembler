@@ -1,0 +1,27 @@
+site_name: plassembler
+site_url: "https://github.com/gbouras13/plassembler"
+site_author: George Bouras
+theme:
+    name: readthedocs
+    highlightjs: true
+    hljs_languages:
+        - yaml
+        - bash
+        - shell
+        - python
+nav:
+    - ABOUT:
+      - Overview: index.md
+      - Why Use Plassembler?: reasons.md
+      - Method: method.md
+    - RUNNING:
+      - Install: install.md
+      - Usage: run.md
+    - OUTPUT:
+      - Output: output.md
+    - BENCHMARKING:
+      - Fastq Preparation: fastqs.md
+      - Results: benchmarking_results.md
+    - QUALITY CONTROL:
+      - Quality Control: quality_control.md
+

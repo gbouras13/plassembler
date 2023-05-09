@@ -281,7 +281,7 @@ class Plass:
             # create empty df
             tophits_mash_df = pd.DataFrame(columns=["contig","PLSDB_hit", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
             for contig in contigs:
-                tophits_mash_df.loc[contig-1] = [contig,'No_hit', '', '', '', '']
+                tophits_mash_df.loc[contig-1] = [contig,'', '', '', '', '']
         
         # read in the plasdb tsv to get the description
         plsdb_tsv_file = os.path.join(plassembler_db_dir, "plsdb.tsv")
@@ -302,7 +302,7 @@ class Plass:
         self.mash_df['contig'] = self.mash_df['contig'].astype('str')
         combined_depth_mash_df = self.depth_df.merge(self.mash_df, on='contig', how='left')
         # no hit for chromosome
-        combined_depth_mash_df.loc[combined_depth_mash_df['contig'].str.contains('chromosome'), 'PLSDB_hit'] = 'No_hit'
+        combined_depth_mash_df.loc[combined_depth_mash_df['contig'].str.contains('chromosome'), 'PLSDB_hit'] = ''
         combined_depth_mash_df.to_csv(os.path.join(out_dir, prefix + "_summary.tsv"), sep="\t", index=False) 
         self.combined_depth_mash_df = combined_depth_mash_df
 
@@ -550,7 +550,7 @@ class Assembly:
                     tmp_df = mash_df.loc[mash_df['contig'] == contig].sort_values('mash_distance').reset_index(drop=True).loc[0]
                     tophits.append([tmp_df.contig, 'Yes', tmp_df.ACC_NUCCORE, tmp_df.mash_distance, tmp_df.mash_pval, tmp_df.mash_matching_hashes])
                 else: # no hits append no it
-                    tophits.append([contig, 'No_hit', '', '', '', ''])
+                    tophits.append([contig, '', '', '', '', ''])
                 # create tophits df
             tophits_mash_df = pd.DataFrame(tophits, columns=["contig", "PLSDB_hit", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
 
@@ -559,7 +559,7 @@ class Assembly:
             # create empty df
             tophits_mash_df = pd.DataFrame(columns=["contig","PLSDB_hit", "ACC_NUCCORE", "mash_distance", "mash_pval", "mash_matching_hashes"])
             for contig in contigs:
-                tophits_mash_df.loc[contig-1] = [contig,'No_hit', '', '', '', '']
+                tophits_mash_df.loc[contig-1] = [contig,'', '', '', '', '']
 
         # read in the plasdb tsv to get the description
         plsdb_tsv_file = os.path.join(plassembler_db_dir, "plsdb.tsv")
@@ -581,7 +581,7 @@ class Assembly:
         self.mash_df['contig'] = self.mash_df['contig'].astype('str')
         combined_depth_mash_df = self.depth_df.merge(self.mash_df, on='contig', how='left')
         # no hit for chromosome
-        combined_depth_mash_df.loc[combined_depth_mash_df['contig'].str.contains('chromosome'), 'PLSDB_hit'] = 'No_hit'
+        combined_depth_mash_df.loc[combined_depth_mash_df['contig'].str.contains('chromosome'), 'PLSDB_hit'] = ''
         combined_depth_mash_df.to_csv(os.path.join(out_dir, prefix + "_summary.tsv"), sep="\t", index=False) 
         self.combined_depth_mash_df = combined_depth_mash_df
 

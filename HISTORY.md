@@ -1,9 +1,9 @@
 # History
 
-1.0.0 (2023-05-02)
+1.0.0 (2023-05-10)
 ------------------
 
-* Massive overhaul.
+* Large overhaul - easiest to refer to the paper.
 
 
 0.1.5 (2023-01-16)

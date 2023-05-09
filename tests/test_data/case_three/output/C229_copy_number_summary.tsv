@@ -1,3 +1,0 @@
-contig	length	mean_depth_short	sd_depth_short	q25_depth_short	q75_depth_short	plasmid_copy_number_short	mean_depth_long	sd_depth_long	q25_depth_long	q75_depth_long	plasmid_copy_number_long	circularity
-chromosome	2857100	196.05	110.07	104	276	1.0	47.45	8.42	42	53	1.0	circular
-1	29025	158.25	118.56	77	209	0.81	59.0	5.54	55	63	1.24	circular

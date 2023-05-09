@@ -37,7 +37,7 @@ def get_input():
 	parser.add_argument('--no_subsample',  help='Turns off long-read sub-sampling. \nRecommended if long-read sets have low N50s/N90s, \nor are of a difficult-to-assemble species with lots of repeats.', action="store_true" )
 	parser.add_argument('--keep_fastqs',  help='Whether you want to keep FASTQ files containing putative plasmid reads \nand long reads that map to multiple contigs (plasmid and chromosome).', action="store_true")
 	parser.add_argument('--keep_chromosome',  help='Whether you want to keep the polished Flye chromosome assembly.', action="store_true")
-	parser.add_argument('-a', '--assembled_mode',  help='Activates assembled mode..', action="store_true")
+	parser.add_argument('-a', '--assembled_mode',  help='Activates assembled mode.', action="store_true")
 	parser.add_argument('--input_chromosome',  help='Input FASTA file consisting of already assembled chromosome with assembled mode. \nMust be 1 complete contig.', action="store", default='nothing')
 	parser.add_argument('--input_plasmids',  help='Input FASTA file consisting of already assembled plasmids with assembled mode. \nRequires FASTQ file input (short only, long only or long + short).', action="store", default='nothing')
 	parser.add_argument('-V', '--version', action='version',help='show plassembler version and exit.', version=v)

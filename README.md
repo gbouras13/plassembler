@@ -23,12 +23,13 @@ Table of Contents
 - [Why Not Just Use Unicycler?](#why-not-just-use-unicycler)
 - [Documentation](#documentation)
 - [Method](#method)
+- [Other Features](#other-features)
 - [Installation](#installation)
   - [Unicycler v0.5.0 Installation Issues](#unicycler-v050-installation-issues)
 - [Running plassembler](#running-plassembler)
 - [Outputs](#outputs)
-- [Quality Control](#qc)
-- [Bacteria with Multiple Chromosomes/Megaplasmids/Chromids](#multiple-chromosomes)
+- [Quality Control](#quality-control)
+- [Bacteria with Multiple Chromosomes/Megaplasmids/Chromids](#bacteria-with-multiple-chromosomesmegaplasmidschromids)
 - [Benchmarking](#benchmarking)
   - [Time \& Accuracy](#time--accuracy)
   - [Small Plasmid Duplication](#small-plasmid-duplication)
@@ -101,7 +102,7 @@ Documentation can be found at http://plassembler.readthedocs.io/.
 
 2. Multi-mapped reads.
 
-* All reads that map to multiple contigs (mostly, reads that map to both the chromosome and plasmids, but also to multiple putative plasmids) can be extracted using the `--multi-map` options. These may be of interest if you are looking at shared mobile genetic elements.
+* All long reads that map to multiple contigs (mostly, reads that map to both the chromosome and plasmids, but also to multiple putative plasmids) will be extracted when using the `--keep-fastqs` options. These may be of interest if you are looking at shared mobile genetic elements.
 
 3. Multiple chromosome bacteria/megaplasmids/chromids
 
@@ -195,7 +196,7 @@ Once this is finished, you can run plassembler as follows:
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length>`
 
-* -c will default to 2500000 (a lower bound for the estimated genome length of _Staphylococcus aureus_) if it is absent.
+* -c will default to 1000000 if it is absent.
 
 To specify more threads:
 
@@ -211,7 +212,7 @@ To specify a minimum long read length and minimum read quality Q-score for filte
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality>`
 
-* -m will default to 500 and -q will default to 8. Note that for some tiny plasmids, -m should be reduced or perhaps even set to 1 (see this [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2) ).
+* -m will default to 500 and -q will default to 9. Note that for some tiny plasmids, -m should be reduced or perhaps even set to 1 (see this [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2) ).
 
 To overwrite an existing output directory, use -f
 
@@ -223,9 +224,10 @@ To overwrite an existing output directory, use -f
 
 
 ```
-usage: plassembler.py [-h] -d DATABASE [-l LONGREADS] [-1 SHORT_ONE] [-2 SHORT_TWO] [-c CHROMOSOME] [-o OUTDIR] [-m MIN_LENGTH] [-q MIN_QUALITY]
-                      [-t THREADS] [-f] [-r] [-p PREFIX] [-s SUBSAMPLE_DEPTH] [-k] [--pacbio_model PACBIO_MODEL] [--no_subsample] [--keep_fastqs]
-                      [--keep_chromosome] [--multi_map] [-a] [--input_chromosome INPUT_CHROMOSOME] [--input_plasmids INPUT_PLASMIDS] [-V]
+usage: plassembler.py [-h] -d DATABASE [-l LONGREADS] [-1 SHORT_ONE] [-2 SHORT_TWO] [-c CHROMOSOME] [-o OUTDIR] [-m MIN_LENGTH]
+                      [-q MIN_QUALITY] [-t THREADS] [-f] [-r] [-p PREFIX] [-s SUBSAMPLE_DEPTH] [--long_only]
+                      [--pacbio_model PACBIO_MODEL] [--no_subsample] [--keep_fastqs] [--keep_chromosome] [-a]
+                      [--input_chromosome INPUT_CHROMOSOME] [--input_plasmids INPUT_PLASMIDS] [-V]
 
 plassembler: automated bacterial plasmid assembly tool.
 
@@ -234,14 +236,14 @@ optional arguments:
   -d DATABASE, --database DATABASE
                         Directory of PLSDB database downloaded using install_database.py.
   -l LONGREADS, --longreads LONGREADS
-                        Fastq file of long reads.
+                        FASTQ file of long reads.
   -1 SHORT_ONE, --short_one SHORT_ONE
-                        R1 short read fastq file.
+                        R1 short read FASTQ file.
   -2 SHORT_TWO, --short_two SHORT_TWO
-                        R2 short read fastq file.
+                        R2 short read FASTQ file.
   -c CHROMOSOME, --chromosome CHROMOSOME
                         Approximate lower-bound chromosome length of bacteria. 
-                        Defaults to 2500000.
+                        Defaults to 1000000.
   -o OUTDIR, --outdir OUTDIR
                         Directory to write the output to. Defaults to output/
   -m MIN_LENGTH, --min_length MIN_LENGTH
@@ -260,7 +262,7 @@ optional arguments:
                         Subsample long-read depth as an integer. 
                         Used combined with the coverage of the chromosome length provided with -c. 
                         Defaults to 30.
-  -k, --kmer_mode       Very high quality Nanopore R10.4 and above reads. 
+  --long_only           Very high quality Nanopore R10.4 and above reads. Just takes Flye output (unpolished) and runs the depth arguments. 
                         No short reads required. Experimental for now.
   --pacbio_model PACBIO_MODEL
                         Pacbio Flye model. Must be pacbio-raw, pacbio-corr or pacbio-hifi. 
@@ -270,10 +272,9 @@ optional arguments:
   --no_subsample        Turns off long-read sub-sampling. 
                         Recommended if long-read sets have low N50s/N90s, 
                         or are of a difficult-to-assemble species with lots of repeats.
-  --keep_fastqs         Whether you want to keep fastq files containing putative plasmid reads.
-  --keep_chromosome     Whether you want to keep the unpolished Flye chromosome assembly.
-  --multi_map           Whether you want to find and save all multi-map (chromosome and plasmid) reads for downstream analysis. 
-                        Will make plassembler slower.
+  --keep_fastqs         Whether you want to keep FASTQ files containing putative plasmid reads 
+                        and long reads that map to multiple contigs (plasmid and chromosome).
+  --keep_chromosome     Whether you want to keep the polished Flye chromosome assembly.
   -a, --assembled_mode  Activates assembled mode..
   --input_chromosome INPUT_CHROMOSOME
                         Input FASTA file consisting of already assembled chromosome with assembled mode. 
@@ -304,7 +305,7 @@ Please see [here](docs/quality_control.md) for more details and some examples.
 
 Plassembler can be used to recover small plasmids in more complicated scenarios assemblies multiple chromosomes, megaplasmids or chromids. 
 
-I would recommend that for the chromosome size replicons (i.e. >1 Mbp), you should treat them as chromosomes and assemble them following the prodedure in Wick et al ([here](https://doi.org/10.1371/journal.pcbi.1010905)) or by using [dragonflye](https://github.com/rpetit3/dragonflye).
+I would recommend that for the chromosome size replicons (i.e. >1 Mbp), you should treat them as chromosomes and assemble them following the prodedures in Wick et al ([here](https://doi.org/10.1371/journal.pcbi.1010905)), or in an automated fashion by using [dragonflye](https://github.com/rpetit3/dragonflye).
 
 But for the smaller plasmids, plassembler works great! It just requires tweaking the `-c` and `-s` parameters a bit to make sure you don't subsample away too many long reads. 
 
@@ -315,7 +316,8 @@ Please see [here](docs/multiple_chromosomes.md) for more details and some exampl
 
 Please see [benchmarking](docs/benchmarking.md) for a full benchmarking analysis. 
 
-Tldr: Plassembler is 3-10x faster than Unicycler and can recover low coverage plasmids that Unicycler misses.
+Tldr: Plassembler is 3-10x faster than Unicycler, is more accurate (has fewer indels and mismatches) and can recover low coverage plasmids that Unicycler might miss.
+
 
 
 Plassembler was benchmarked using 6 pathogen isolates from this [study](https://doi.org/10.1099/mgen.0.000631)  available [here](https://bridges.monash.edu/articles/dataset/Small_plasmid_Nanopore_data/13543754) o along with one Staphylococcus aureus isolate (SAMN32360844 in BioProject [PRJNA914892]() https://www.ncbi.nlm.nih.gov/bioproject/PRJNA914892 ) .

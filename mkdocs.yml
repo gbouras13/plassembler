@@ -12,7 +12,7 @@ theme:
 nav:
     - ABOUT:
       - Overview: index.md
-      - Why Use plassembler?: reasons.md
+      - Why Use Plassembler?: reasons.md
       - Method: method.md
     - RUNNING:
       - Install: install.md
@@ -20,5 +20,8 @@ nav:
     - OUTPUT:
       - Output: output.md
     - BENCHMARKING:
-      - Benchmarking: benchmarking.md
+      - Fastq Preparation: fastqs.md
+      - Results: benchmarking_results.md
+    - QUALITY CONTROL:
+      - Quality Control: quality_control.md
 

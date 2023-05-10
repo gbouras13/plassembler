@@ -1,5 +1,19 @@
 # History
 
+1.0.0 (2023-05-10)
+------------------
+
+* Large overhaul.
+* Adds `--pacbio_model` for pacbio data
+* Replaces nanofilt with chopper
+* Adds `-a` for assembled mode
+* Adds subsampling with rasusa, and `-s` to change subsampling depth, and `--no_subsample` to turn off subsampling
+* Adds `--keep_fastqs`
+* Adds `--keep_chromosome`
+* Refactors mapping code 
+* Adds custom function to identify multimapped reads
+* Changes output formats - consolidates all output into `summary.tsv`.
+
 
 0.1.5 (2023-01-16)
 ------------------

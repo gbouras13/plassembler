@@ -15,45 +15,7 @@ import concat
 
 
 
-def get_depth(out_dir, logger,  threads, prefix):
-    """ wrapper function to get depth of each plasmid in kmer mode
-    :param prefix: prefix (default plassembler)
-    :param out_dir:  Output Directory
-    :param threads: threads
-    :param logger: logger
-    :return: 
-    """
-    concatenate_chrom_plasmids(out_dir, logger)
-    mapping.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
-    bwa_map_depth_sort(out_dir, threads)
-    minimap_depth_sort(out_dir, threads)
-    contig_lengths = get_contig_lengths(out_dir)
-    depthsShort = get_depths_from_bam(out_dir, "short", contig_lengths)
-    depthsLong = get_depths_from_bam(out_dir, "long", contig_lengths)
-    circular_status = get_contig_circularity(out_dir)
-    summary_depth_df_short = collate_depths(depthsShort,"short",contig_lengths)
-    summary_depth_df_long = collate_depths(depthsLong,"long",contig_lengths)
-    combine_depth_dfs(out_dir, summary_depth_df_short, summary_depth_df_long, prefix, circular_status)
-
-def get_depth_kmer(out_dir, logger,  threads, prefix):
-    """ wrapper function to get depth of each plasmid - kmer mode 
-    :param prefix: prefix (default plassembler)
-    :param out_dir:  Output Directory
-    :param threads: threads
-    :param logger: logger
-    :return: 
-    """
-    concatenate_chrom_plasmids(out_dir, logger)
-    mapping.index_fasta(os.path.join(out_dir, "combined.fasta"),  logger)
-    minimap_depth_sort(out_dir, threads)
-    contig_lengths = get_contig_lengths(out_dir)
-    depthsLong = get_depths_from_bam(out_dir, "long", contig_lengths)
-    circular_status = get_contig_circularity(out_dir)
-    summary_depth_df_long = collate_depths(depthsLong,"long",contig_lengths)
-    kmer_final_output(out_dir, summary_depth_df_long, prefix, circular_status)
-
-
-def concatenate_chrom_plasmids(out_dir, logger):
+def concatenate_chrom_plasmids(out_dir,logger ):
     """ concatenates chromosome and plasmids
     :param out_dir:  Output Directory
     :param logger: logger
@@ -66,7 +28,6 @@ def concatenate_chrom_plasmids(out_dir, logger):
         concat.concatenate_single(chrom_fasta, plas_fasta, concat_fasta, logger)
     except:
         sys.exit("Error with concatenate_fastas\n")  
-
 
 # get lengths of contigs
 def get_contig_lengths(out_dir):
@@ -105,29 +66,13 @@ def get_contig_circularity(out_dir):
 
 
 
-def bwa_map_depth_sort(out_dir, threads):
-    """ maps short reads using bwa to combined fasta and sorts bam
-    :param out_dir:  Output Directory
-    :return: threads: threads
-    """
-    trim_one = os.path.join(out_dir, "trimmed_R1.fastq")
-    trim_two = os.path.join(out_dir, "trimmed_R2.fastq")
-    fasta = os.path.join(out_dir, "combined.fasta")
-    bam = os.path.join(out_dir, "combined_sorted.bam")
-    try:
-        bwa_map = sp.Popen(["bwa", "mem", "-t", threads, fasta, trim_one, trim_two ], stdout=sp.PIPE, stderr=sp.DEVNULL) 
-        samtools_sort = sp.Popen(["samtools", "sort", "-@", threads, "-o", bam, "-" ], stdin=bwa_map.stdout, stderr=sp.DEVNULL ) 
-        samtools_sort.communicate()[0]
-    except:
-        sys.exit("Error with bwa mem or samtools sort.\n")  
-
-
-def minimap_depth_sort(out_dir, threads):
+def minimap_depth_sort_long(out_dir, threads):
     """ maps long reads using minimap2 to combined fasta and sorts bam
     :param out_dir:  out_dir
     :param: threads: threads
     """
-    input_long_reads = os.path.join(out_dir, "filtered_long_reads.fastq.gz")
+    # use chopper reads - no subsetting
+    input_long_reads = os.path.join(out_dir, "chopper_long_reads.fastq.gz")
     fasta = os.path.join(out_dir, "combined.fasta")
     bam = os.path.join(out_dir, "combined_sorted_long.bam")
     try:
@@ -138,6 +83,22 @@ def minimap_depth_sort(out_dir, threads):
         sys.exit("Error with mapping and sorting\n")  
 
 
+def minimap_depth_sort_short(out_dir, threads):
+    """ maps short reads using minimap2 to combined fasta and sorts bam
+    :param out_dir:  out_dir
+    :param: threads: threads
+    """
+    trim_one = os.path.join(out_dir, "trimmed_R1.fastq")
+    trim_two = os.path.join(out_dir, "trimmed_R2.fastq")
+    fasta = os.path.join(out_dir, "combined.fasta")
+    bam = os.path.join(out_dir, "combined_sorted_short.bam")
+    try:
+        minimap = sp.Popen(["minimap2", "-ax", "sr", "-t", threads, fasta, trim_one, trim_two ], stdout=sp.PIPE, stderr=sp.DEVNULL)
+        samtools_sort = sp.Popen(["samtools", "sort", "-@", threads, "-o", bam, "-" ], stdin=minimap.stdout, stderr=sp.DEVNULL ) 
+        samtools_sort.communicate()[0]
+    except:
+        sys.exit("Error with mapping and sorting\n")  
+
 def get_depths_from_bam(out_dir, shortFlag, contig_lengths):
     """ maps runs samtools depth on bam
     :param out_dir:  out_dir
@@ -147,7 +108,7 @@ def get_depths_from_bam(out_dir, shortFlag, contig_lengths):
     """
     depths = {}
     if shortFlag == "short":
-        filename = os.path.join(out_dir, "combined_sorted.bam")
+        filename = os.path.join(out_dir, "combined_sorted_short.bam")
     else: # long
         filename = os.path.join(out_dir, "combined_sorted_long.bam")
     for repName, repLength in contig_lengths.items():
@@ -213,16 +174,17 @@ def collate_depths(depths, shortFlag, contig_lengths):
     else: # long
         summary_df = pd.DataFrame(
         {'contig': contig_names,
+        'length': contig_length,
         'mean_depth_long': mean_depth_col,
         'sd_depth_long': sd_depth_col, 
         'q25_depth_long': q25_depth,
         'q75_depth_long': q75_depth
         })
         summary_df['plasmid_copy_number_long'] = round(summary_df['mean_depth_long'] / chromosome_depth,2)
-    # return df         
+    # return df    
     return(summary_df)
 
-def combine_depth_dfs(out_dir, df_short, df_long, prefix, circular_status):
+def combine_depth_dfs( df_short, df_long,  circular_status):
     """ combines long and short depths
     :param out_dir:  output directory
     :param df_short: short depth summary df
@@ -230,28 +192,25 @@ def combine_depth_dfs(out_dir, df_short, df_long, prefix, circular_status):
     :param: prefix: prefix - default plassembler
     :param: circular_status: dictionary of contig header and circular status
     """
+    # drop double up len
+    df_long = df_long.drop(['length'], axis=1)
     combined_df = pd.merge(df_short, df_long, on='contig', how='outer')
-        # add in circularity info 
-
+    # add in circularity info 
     combined_df['circularity'] = combined_df['contig'].map(circular_status)
-    out_file = os.path.join(out_dir, prefix + "_copy_number_summary.tsv")
-    with open(out_file, 'w') as f:
-        combined_df.to_csv(f, sep="\t", index=False, header=True)
+    return combined_df
     
-def kmer_final_output(out_dir, df_long, prefix, circular_status):
+def depth_df_single( df,  circular_status):
     """ final output for kmer mode
     :param out_dir:  output directory
-    :param df_long: long depth summary df
+    :param df: short or long depth summary df
     :param: prefix: prefix - default plassembler
     :param: circular_status: dictionary of contig header and circular status
     """
 
-     # add in circularity info 
+    # add in circularity info 
 
-    df_long['circularity'] = df_long['contig'].map(circular_status)
-    out_file = os.path.join(out_dir, prefix + "_copy_number_summary.tsv")
-    with open(out_file, 'w') as f:
-        df_long.to_csv(f, sep="\t", index=False, header=True)
+    df['circularity'] = df['contig'].map(circular_status)
+    return df
     
 
 

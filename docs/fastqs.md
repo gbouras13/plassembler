@@ -1,6 +1,8 @@
-##### Plassembler Benchmarking v0.1.4
+##### Plassembler Benchmarking 
 
-* Firstly, I downloaded the 6 tarballs from this [link](https://bridges.monash.edu/articles/dataset/Small_plasmid_Nanopore_data/13543754). 
+# FASTQ Set Up for Wick et al 
+
+* Firstly, I downloaded the tarballs from this [link](https://bridges.monash.edu/articles/dataset/Small_plasmid_Nanopore_data/13543754). 
 
 * These contained tech_rep_1_rapid_reads.fastq.gz, tech_rep_2_rapid_reads.fastq.gz, tech_rep_1_ligation_reads.fastq.gz, tech_rep_2_ligation_reads.fastq.gz, tech_rep_1_illumina_reads  and tech_rep_2_illumina_reads tarballs.
 
@@ -67,7 +69,7 @@ gunzip -c tech_rep_2_ligation_reads.fastq.gz | grep -A3 "barcode=barcode07" | gz
 #### Repairing fastqs
 
 * There were some issues with the resulting long read FASTQ files as lengths of quality and sequence did not match for some reads
-* There seemed to be some stray "--" characters. Accordingly I wrote a little script called validate_fastq.py to get all the validated fastq reads
+* There seemed to be some stray "--" characters. Accordingly I wrote a little script called validate_fastq.py to get all the validated fastq reads. You can find this in the Zenodo output directory here.
 
 ```
 # repeat  for all 4 read sets
@@ -187,7 +189,7 @@ cat tech_rep_2_illumina_reads/Klebsiella_variicola_INF345/INF345_S147_L001_R2_00
 
 
 * The original files of these reads can also be found on the SRA SAMN32360844 in BioProject PRJNA914892
-* These were my local reads hence not called SRR_...
+* These were my local reads hence not called SRR_..., but they are easy to download using [fastq-dl](https://github.com/rpetit3/fastq-dl).
 * I subsampled the long reads to 60x to match the other pathogens, and also 30x to illustrate how Plassembler's speedup will be higher at lower read depths (with this read set, a chromosome will be assembled down to around 15x - this may be even lower for reads with higher N50s).
 
 ```
@@ -197,131 +199,34 @@ rasusa --coverage 60 --genome-size 2.5mb --input C222.fastq.gz | gzip > C222_sub
 conda deactivate
 ```
 
-* all reads were placed in the C222 directory
+#### De Maio
 
-
-#### Running Plassembler 
-
-
-*  Install plassembler - Linux. If you need Mac see the [instructions](https://github.com/gbouras13/plassembler#installation)
-
-* First download the database
+* The fastqs were really easy to get - just use fastq-dl
 
 ```
-conda create -n plassembler plassembler unicycler==0.5.0
-conda activate plassembler
-install_database.py plassembler_db
+fastq-dl --cpus 8  PRJNA422511  
 ```
 
-* Then run Plassembler
-* Plassembler was run using raw mode (-r) as these reads were a few years old and originally assembled with flye --nano-raw by Ryan. 
-* They were assembled with 16 threads using -t 16 and with a minimum read depth of 500 (-m 500) and with the default minimum q-score of 9. 
+* I got the assemblies from [here](https://figshare.com/articles/dataset/Hybrid_Enterobacteriaceae_assemblies_using_PacBio_Illumina_or_ONT_Illumina_sequencing/7649051), using the 'subsampled Nanopore' assemblies as the ground truth.
+
+#### CAV1217
+
+For this isolate (see the [paper](https://doi.org/10.1128/AAC.01823-16) for more information), I only have the assemblies available, not the reads. I downloaded them as follows:
 
 ```
-mkdir -p Output_Final
-mkdir -p Output_Final/Plassembler
-mkdir -p Output_Final/Unicycler
+conda activate ncbi-acc-download
 
-P_DIR="Output_Final/Plassembler"
-U_DIR="Output_Final/Unicycler"
+# https://github.com/kblin/ncbi-acc-download
 
-# Wick et al
-plassembler.py -d plassembler_db  -l pooled_long_reads/Acinetobacter_baumannii_subsampled60x.fastq.gz  -1 pooled_illumina/Acinetobacter_baumannii_1.fastq.gz  -2 pooled_illumina/Acinetobacter_baumannii_2.fastq.gz   -o $P_DIR/Acinetobacter_baumannii_pooled_plassembler -t 16 -p Acinetobacter_baumannii_pooled_plassembler -r -f -c 3500000 -m 500 
-plassembler.py -d plassembler_db  -l pooled_long_reads/Citrobacter_koseri_subsampled60x.fastq.gz  -1 pooled_illumina/Citrobacter_koseri_1.fastq.gz  -2 pooled_illumina/Citrobacter_koseri_2.fastq.gz   -o $P_DIR/Citrobacter_koseri_pooled_plassembler -t 16 -p Citrobacter_koseri_pooled_plassembler -r -f -c 4500000 -m 500 
-plassembler.py -d plassembler_db  -l pooled_long_reads/Enterobacter_kobei_subsampled60x.fastq.gz  -1 pooled_illumina/Enterobacter_kobei_1.fastq.gz  -2 pooled_illumina/Enterobacter_kobei_2.fastq.gz   -o $P_DIR/Enterobacter_kobei_pooled_plassembler -t 16 -p Enterobacter_kobei_pooled_plassembler -r -f -c 4500000 -m 500 
-plassembler.py -d plassembler_db  -l pooled_long_reads/Haemophilus_unknown_subsampled60x.fastq.gz  -1 pooled_illumina/Haemophilus_unknown_1.fastq.gz  -2 pooled_illumina/Haemophilus_unknown_2.fastq.gz   -o $P_DIR/Haemophilus_unknown_pooled_plassembler -t 16 -p Haemophilus_unknown_pooled_plassembler -r -f -c 2000000 -m 500 
-plassembler.py -d plassembler_db  -l pooled_long_reads/Klebsiella_oxytoca_subsampled60x.fastq.gz  -1 pooled_illumina/Klebsiella_oxytoca_1.fastq.gz  -2 pooled_illumina/Klebsiella_oxytoca_2.fastq.gz   -o $P_DIR/Klebsiella_oxytoca_pooled_plassembler -t 16 -p Klebsiella_oxytoca_pooled_plassembler -r -f -c 5500000 -m 500 
-plassembler.py -d plassembler_db  -l pooled_long_reads/Klebsiella_variicola_subsampled60x.fastq.gz  -1 pooled_illumina/Klebsiella_variicola_1.fastq.gz  -2 pooled_illumina/Klebsiella_variicola_2.fastq.gz   -o $P_DIR/Klebsiella_variicola_pooled_plassembler -t 16 -p Klebsiella_variicola_pooled_plassembler -r -f -c 5000000 -m 500 
+ncbi-acc-download --format fasta CP018676.1
+ncbi-acc-download --format fasta CP018674.1
+ncbi-acc-download --format fasta CP018672.1
+ncbi-acc-download --format fasta CP018675.1
+ncbi-acc-download --format fasta CP018673.1
 ```
 
-* C222
-* These were not assembled with -r, as they were basecalled with Guppy 6.2.11 SUP mode and hence --nano-hq is more appropriate for Flye.
-
-```
-plassembler.py -d plassembler_db  -l C222/C222_subsampled30x.fastq.gz -1 C222/C222_S17_R1_001.fastq.gz -2 C222/C222_S17_R2_001.fastq.gz  -o $P_DIR/C222_30x -t 16 -p C222 -f -c 2500000 -m 500
-plassembler.py -d plassembler_db  -l C222/C222_subsampled60x.fastq.gz -1 C222/C222_S17_R1_001.fastq.gz -2 C222/C222_S17_R2_001.fastq.gz  -o $P_DIR/C222_60x -t 16 -p C222 -f -c 2500000 -m 500
-conda deactivate
-```
-
-
-#### Running Unicycler 
-
-```
-conda create -n unicycler unicycler 
-conda activate unicycler 
-U_DIR="Output_Final/Unicycler"
-unicycler -l pooled_long_reads/Acinetobacter_baumannii_subsampled60x.fastq.gz  -1 pooled_illumina/Acinetobacter_baumannii_1.fastq.gz  -2 pooled_illumina/Acinetobacter_baumannii_2.fastq.gz   -o $U_DIR/Acinetobacter_baumannii_pooled_plassembler -t 16 
-unicycler  -l pooled_long_reads/Citrobacter_koseri_subsampled60x.fastq.gz  -1 pooled_illumina/Citrobacter_koseri_1.fastq.gz  -2 pooled_illumina/Citrobacter_koseri_2.fastq.gz   -o $U_DIR/Citrobacter_koseri_pooled_plassembler -t 16
-unicycler -l pooled_long_reads/Enterobacter_kobei_subsampled60x.fastq.gz  -1 pooled_illumina/Enterobacter_kobei_1.fastq.gz  -2 pooled_illumina/Enterobacter_kobei_2.fastq.gz   -o $U_DIR/Enterobacter_kobei_pooled_plassembler -t 16
-unicycler -l pooled_long_reads/Haemophilus_unknown_subsampled60x.fastq.gz  -1 pooled_illumina/Haemophilus_unknown_1.fastq.gz  -2 pooled_illumina/Haemophilus_unknown_2.fastq.gz   -o $U_DIR/Haemophilus_unknown_pooled_plassembler -t 16 
-unicycler -l pooled_long_reads/Klebsiella_oxytoca_subsampled60x.fastq.gz  -1 pooled_illumina/Klebsiella_oxytoca_1.fastq.gz  -2 pooled_illumina/Klebsiella_oxytoca_2.fastq.gz   -o $U_DIR/Klebsiella_oxytoca_pooled_plassembler -t 16 
-unicycler -l pooled_long_reads/Klebsiella_variicola_subsampled60x.fastq.gz  -1 pooled_illumina/Klebsiella_variicola_1.fastq.gz  -2 pooled_illumina/Klebsiella_variicola_2.fastq.gz   -o $U_DIR/Klebsiella_variicola_pooled_plassembler -t 16 
-
-# C222
-unicycler -l C222/C222_subsampled30x.fastq.gz -1 C222/C222_S17_R1_001.fastq.gz -2 C222/C222_S17_R2_001.fastq.gz  -o $U_DIR/C222_30x -t 16
-unicycler -l C222/C222_subsampled60x.fastq.gz -1 C222/C222_S17_R1_001.fastq.gz -2 C222/C222_S17_R2_001.fastq.gz  -o $U_DIR/C222_60x -t 16
-conda deactivate
-```
-
-
-* All benchmarking output can be found at the Zenodo repository ____.
-
-
-# Output 
-
-Benchmarking Output is as follows:
-
-Time & Accuracy
-------
-
-|                               | **Plassembler**    | **Unicycler**     | **Ground Truth**   |
-|-------------------------------|--------------------|-------------------|--------------------|
-| **_Acinetobacter baumannii_** |                    |                   |                    |
-| Time (sec)                    | 1330               | 3938              |                    |
-| Plasmids (bp)                 | 145059, 6078       | 145059, 6078      | 145059, 6078       |
-| **_Citrobacter koseri_**      |                    |                   |                    |
-| Time (sec)                    | 1321               | 4106              |                    |
-| Plasmids (bp)                 | 64962, 9294        | 64962, 9294       | 64962, 9294        |
-| **_Enterobacter kobei_**      |                         |                   |                    |
-| Time (sec)                    | 2097               | 2097              |                    |
-| Plasmids (bp)                 | 136482, 108411, 4665, 3715, 2370      | 136482, 108411, 4665, 3715, 2370  | 136482, 108411, 4665, 3715, 2370      |
-| **_Haemophilus sp002998595_**      |                         |                   |                    |
-| Time (sec)                    | 1325               | 3221              |                    |
-| Plasmids (bp)                 | 39345, 10719, 9975     | 39345, 10719, 9975  | 39398, 10719, 9975, 7392, 5675     |
-| **_Klebsiella oxytoca_**      |                         |                   |                    |
-| Time (sec)                    | 1467               | 5552              |                    |
-| Plasmids (bp)                 | 118161, 58472, 4574    | 118161, 58472, 4574 | 118161, 58472, 4574   |
-| **_Klebsiella variicola_**      |                         |                   |                    |
-| Time (sec)                    | 1816               | 4527              |                    |
-| Plasmids (bp)                 | 250884, 243620, 31078 (linear), 5783, 3514  | 250902, 243534, 31078 (linear), 5783, 3514 | 250980, 243620, 31780 (linear), 5783, 3514  |
-| **_Staphylococcus aureus_ 30x**     |                         |                   |                    |
-| Time (sec)                    | 548               | 2600              |                    |
-| Plasmids (bp)                 | 2473 | 2473 | 2473 |
-| **_Staphylococcus aureus_ 60x**     |                         |                   |                    |
-| Time (sec)                    | 897               | 3158              |                    |
-| Plasmids (bp)                 | 2473 | 2473 | 2473 |
+Then I concatenated the files and manually edited the FASTA headers to add `circular=true`.
 
 
 
-Small Plasmid Duplication
-------
 
-
-| **Small Plasmid Duplication**  | **Plassembler**   | **Flye (Output from Plassembler)**  |
-|-------------------------------|--------------------|-------------------|
-| **_Acinetobacter baumannii_** |                    |                   |                    
-| Plasmids (bp)                 | 6078       | 12147    |
-| **_Citrobacter koseri_**      |                    |                   |                    
-| Plasmids (bp)                 | 9294        | 27773      |
-| **_Enterobacter kobei_**      |                         |                   |                    
-| Plasmids (bp)               | 4665, 3715, 2370                | 9652, (3715 plasmid missing), 4676              |                    
-| **_Haemophilus sp002998595_**      |                         |                   |                    
-| Plasmids (bp)                 | 10719, 9975     | 21402, 9962  | 
-| **_Klebsiella oxytoca_**      |                         |                   |                               
-| Plasmids (bp)                 | 4574    | 4566 | 
-| **_Klebsiella variicola_**      |                         |                   |                                 
-| Plasmids (bp)                 |  5783, 3514  |  11573, (3514 plasmid missing) |
-| **_Staphylococcus aureus_ 30x**     |                         |                   |                    
-| Plasmids (bp)                 | 2473 | 2471 | 
-| **_Staphylococcus aureus_ 60x**     |                         |                   |                    
-| Plasmids (bp)                 | 2473 | 1611 |

@@ -311,9 +311,9 @@ plassembler will also output a log file, a `flye_output` directory, which contai
 
 # Benchmarking
 
-Please see [benchmarking](docs/benchmarking_results.md) for a full benchmarking analysis. 
+Please see [benchmarking](docs/benchmarking_results_simulated.md) (and [here](docs/benchmarking_results_real.md))for a full benchmarking analysis. 
 
-Tldr: Plassembler is much faster than Unicycler (4-20x usually), is more accurate (has fewer indels and mismatches) and can recover low coverage plasmids that Unicycler might miss.
+Tldr: Plassembler is much faster than Unicycler (4-20x usually), is more accurate (fewer indels and mismatches) and is more likely to recover low coverage plasmids that Unicycler might miss.
 
 # Acknowledgements
 

@@ -60,6 +60,8 @@ Plassembler was therefore created as an automated tool to ensure plasmids assemb
 
 As it turns out (though this wasn't a motivation for making it!), Plassembler also assembles plasmids more accurately than Unicycler. I think this is because subsampling short reads sets can improve assembly quality (see [this](https://doi.org/10.1093/bioinformatics/btv311) and [this](https://doi.org/10.1371/journal.pone.0060204) and [this](https://academic.oup.com/bioinformatics/article/27/4/479/198367) - thanks Michael Hall for the references!), so throwing away chromosomal reads probably has a similar effect.
 
+You can see this increase in quality and speed in the benchmarking results for [simulated](docs/benchmarking_results_simulated.md) and [real](docs/benchmarking_results_real.md) datasets.
+
 Plassembler also uses [mash](https://github.com/marbl/Mash) as a quick way to determine whether each assembled contig has any similar hits in [PLSDB](https://doi.org/10.1093/nar/gkab1111). 
 
 Additionally, due to its mapping approach, Plassembler can also be used as a quality control tool for checking whether your long and short read sets come from the same isolate. This may be particularly useful if your read sets come from different extractions, or you have multiplexed many samples (& want to avoid mislabelling).  
@@ -310,7 +312,9 @@ plassembler will also output a log file, a `flye_output` directory, which contai
 
 # Benchmarking
 
-Please see [benchmarking](docs/benchmarking_results_simulated.md) (and [here](docs/benchmarking_results_real.md))for a full benchmarking analysis. 
+The benchmarking results for [simulated](docs/benchmarking_results_simulated.md) and [real](docs/benchmarking_results_real.md) datasets are available at the provided links.
+
+All benchmarking was conducted on a Intel® Core™ i7-10700K CPU @ 3.80GHz on a machine running Ubuntu 20.04.6 LTS. 
 
 Tldr: Plassembler is much faster than Unicycler (4-20x usually), is more accurate (fewer indels and mismatches) and is more likely to recover low coverage plasmids that Unicycler might miss.
 

@@ -275,17 +275,6 @@ def check_dependencies(logger):
 	except:
 		sys.exit("chopper not found.\n")  
 
-#seqkit
-	try:
-		process = sp.Popen(["seqkit", "version"], stdout=sp.PIPE, stderr=sp.PIPE) 
-		seqkit_out, _ = process.communicate()
-		seqkit_version = seqkit_out.decode()
-		seqkit_version = seqkit_version.split("\n")[0].split(' ')[1]
-		message ="seqkit " + str(seqkit_version) + " found."
-		log.write_message(message, logger)
-	except:
-		sys.exit("seqkit not found.\n")  
-
 #mash
 	try:
 		process = sp.Popen(["mash", "version"], stdout=sp.PIPE, stderr=sp.PIPE) 

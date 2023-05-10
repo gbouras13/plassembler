@@ -3,6 +3,7 @@ import sys
 import subprocess as sp
 import log
 import logging
+import shutil
 
 def chopper(input_long_reads, out_dir, min_length, min_quality, gzip_flag, threads):
     """Filters long reads using chopper
@@ -54,7 +55,7 @@ def rasusa(out_dir, no_subset_flag, subsample_depth, chromosome_length, logger )
 
     # if chosen not to subset then just take chopper output
     if no_subset_flag == True:
-        sp.run(["mv", chopper_long_reads, subset_long_reads])
+        shutil.copy2( chopper_long_reads, subset_long_reads)
     # use rasusa to subset to 
     else:
         f = open(subset_long_reads, "w")

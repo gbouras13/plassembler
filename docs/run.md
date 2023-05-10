@@ -13,6 +13,8 @@ To specify more threads to speed up Plassembler:
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads>`
 
+plassembler defaults to 1 thread.
+
 To specify a prefix for the output files:
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix>`
@@ -25,15 +27,27 @@ To specify a minimum length and minimum read quality Q-score for chopper :
 
 To overwrite an existing output directory, use `-f`
 
-` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality> -f`
+` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> `
 
-To change long read subsampling depth use `-c` (e.g. here to 50x)
+To change long read subsampling depth use `-s` (e.g. here to 50x)
 
-` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality> -f -c 50`
+` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads>   -s 50`
 
+To disable subsampling
 
-plassembler defaults to 1 thread.
+` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads>   --no_subsample`
 
+To keep the Flye assembled chromosome(s) (as `chromosome.fasta`)
+
+` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads>   --keep_chromosome`
+
+To use pacbio reads (e.g. with regular CLR reads):
+
+` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads>  --pacbio_model pacbio-raw`
+
+To use assembled mode to calculate plasmid copy numbers, you need `-a`, along with an already assembled chromosome with `--input_chromosome` and plasmids with `--input_plasmids`.
+
+` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads>  -a --input_chromosome <path to chromosome FASTA> --input_plasmids <path to plasmids FASTA> `
 
 
 

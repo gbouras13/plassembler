@@ -8,10 +8,10 @@ Plassembler is a program that is designed for automated & fast assembly of plasm
 
 If you are assembling a small number of bacterial genomes manually, I would highly recommend starting by using [Trycycler](https://github.com/rrwick/Trycycler) to recover the chromosome before using Plassembler. If you have more genomes or want to assemble your genomes in a more automated way, try [dragonflye](https://github.com/rpetit3/dragonflye), especially if you are used to Shovill, or my own pipeline [hybracter](https://github.com/gbouras13/hybracter) that is more appropriate for large datasets.  
 
-Additionally, I would recommend reading the following guides to bacterial genome assembly regardless of whether you want to use plassembler:
+Additionally, I would recommend reading the following guides to bacterial genome assembly regardless of whether you want to use Plassembler:
 *  [Trycycler](https://github.com/rrwick/Trycycler/wiki/Guide-to-bacterial-genome-assembly)
 *  [Perfect Bacterial Assembly Tutorial](https://github.com/rrwick/Perfect-bacterial-genome-tutorial)
-*  [Perfect bacterial assembly preprint](https://preprints.scielo.org/index.php/scielo/preprint/view/5053)
+*  [Perfect bacterial assembly Paper](https://doi.org/10.1371/journal.pcbi.1010905)
 
 Table of Contents
 -----------
@@ -321,7 +321,7 @@ Many thanks are owed to Ryan Wick (https://github.com/rrwick), who not only wrot
 
 # Version Log
 
-A brief description of what is new in each update of plassembler can be found in the HISTORY.md file.
+A brief description of what is new in each update of Plassembler can be found in the HISTORY.md file.
 
 # Bugs and Suggestions
 

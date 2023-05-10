@@ -280,6 +280,36 @@ if __name__ == "__main__":
 
                         message ='Unicycler identified plasmids. Calculating Plasmid Copy Numbers.'
                         log.write_message(message, logger)
+
+                        # get depth    
+                        # as class so saves the depth dataframe nicely
+                        plass.get_depth( logger, args.threads)
+
+                        # run mash
+                        message ='Calculating mash distances to PLSDB.'
+                        log.write_message(message, logger)
+
+                        # sketches the plasmids
+                        run_mash.mash_sketch(out_dir, os.path.join(out_dir,"unicycler_output", "assembly.fasta"), logger)
+                        # runs mash 
+                        run_mash.run_mash(out_dir, args.database, logger)
+                        # processes output
+                        plass.process_mash_tsv( args.database)
+                        # combine depth and mash tsvs
+                        plass.combine_depth_mash_tsvs(prefix)
+
+                        # rename contigs and update copy bumber with plsdb
+                        plass.finalise_contigs(prefix)
+
+                        # heuristic check only if not long_only
+                        if args.long_only == False:
+                        # heuristic check 
+                            test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
+                            plass.add_multimer_info(prefix)
+
+                        # cleanup files 
+                        cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only)
+                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
                     
                     ####################################################################
                     # Case 4: where there are truly no plasmids even after unicycler runs
@@ -290,43 +320,6 @@ if __name__ == "__main__":
                         cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
                         cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
                     
-                    # get depth    
-                    # as class so saves the depth dataframe nicely
-                    plass.get_depth( logger, args.threads)
-
-                    # run mash
-                    message ='Calculating mash distances to PLSDB.'
-                    log.write_message(message, logger)
-
-                    # sketches the plasmids
-                    run_mash.mash_sketch(out_dir, os.path.join(out_dir,"unicycler_output", "assembly.fasta"), logger)
-                    # runs mash 
-                    run_mash.run_mash(out_dir, args.database, logger)
-                    # processes output
-                    plass.process_mash_tsv( args.database)
-                    # combine depth and mash tsvs
-                    plass.combine_depth_mash_tsvs(prefix)
-
-                    # rename contigs and update copy bumber with plsdb
-                    plass.finalise_contigs(prefix)
-
-                    # heuristic check only if not long_only
-                    if args.long_only == False:
-                    # heuristic check 
-                        test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
-                        plass.add_multimer_info(prefix)
-
-                    # cleanup files 
-                    cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only)
-                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
-                                    
-                # long only with 1 contig -> chromosome
-                else:
-                    message = 'No plasmids found.'
-                    log.write_message(message, logger)
-                    cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
-                    cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
-
           
 ####################################################################
         # where more than 1 contig was assembled

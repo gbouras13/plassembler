@@ -199,3 +199,34 @@ rasusa --coverage 60 --genome-size 2.5mb --input C222.fastq.gz | gzip > C222_sub
 conda deactivate
 ```
 
+#### De Maio
+
+* The fastqs were really easy to get - just use fastq-dl
+
+```
+fastq-dl --cpus 8  PRJNA422511  
+```
+
+* I got the assemblies from [here](https://figshare.com/articles/dataset/Hybrid_Enterobacteriaceae_assemblies_using_PacBio_Illumina_or_ONT_Illumina_sequencing/7649051), using the 'subsampled Nanopore' assemblies as the ground truth.
+
+#### CAV1217
+
+For this isolate (see the [paper](https://doi.org/10.1128/AAC.01823-16) for more information), I only have the assemblies available, not the reads. I downloaded them as follows:
+
+```
+conda activate ncbi-acc-download
+
+# https://github.com/kblin/ncbi-acc-download
+
+ncbi-acc-download --format fasta CP018676.1
+ncbi-acc-download --format fasta CP018674.1
+ncbi-acc-download --format fasta CP018672.1
+ncbi-acc-download --format fasta CP018675.1
+ncbi-acc-download --format fasta CP018673.1
+```
+
+Then I concatenated the files and manually edited the FASTA headers to add `circular=true`.
+
+
+
+

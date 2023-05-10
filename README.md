@@ -69,13 +69,14 @@ Additionally, due to its mapping approach, Plassembler can also be used as a qua
 
 Unicycler is awesome and still a good way to assemble plasmids from hybrid sequencing - plassembler uses it! But there are a few reasons to use plassembler instead:
 
-1. Time. Plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so it is much faster (3-5x usually, higher if you have lots of long reads). 
-2. Plassembler will output only the likely plasmids, and can more easily be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://doi.org/10.1371/journal.pcbi.1010905) so plassembler can get you only what is necessary from Unicycler.
-3. Plassembler will give you summary depth and copy number stats for both long and short reads.
-4. Plassembler can be used as a quality control to check if your short and long reads come from the same sample - if plassembler results in many non-circular contigs (particularly those that have no hits in PLSDB), it is likely because your read sets do not come from the same isolate! 
-5. As of v 0.1.4, you will get information whether each assembled contig has a similar entry in [PLSDB](https://doi.org/10.1093/nar/gkab1111). Especially for common pathogen species that are well represented in databases, this will likely tell you specifically what plasmid you have in your sample. 
+1. Time. Plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so it is much faster (4-10x usually, higher if you have lots of long reads). 
+2. Accuracy. Benchmarking has shown Plassembler is more accurate than Unicycler in terms of indels and mismatches. I honestly wasn't even aiming for this when I wrote Plassembler, just a big speed-up, but it is a nice result of course! I think it's maybe because throwing away the chromosomal reads is a bit like subsampling for short read assemblies, which can lead to improvements (e.g. see this [paper](https://doi.org/10.1099/mgen.0.000294)).
+3. Plassembler will output only the likely plasmids, and can more easily be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://doi.org/10.1371/journal.pcbi.1010905) so plassembler can get you only what is necessary from Unicycler.
+4. Plassembler will give you summary depth and copy number stats for both long and short reads.
+5. Plassembler can be used as a quality control to check if your short and long reads come from the same sample - if plassembler results in many non-circular contigs (particularly those that have no hits in PLSDB), it is likely because your read sets do not come from the same isolate! 
+6. You will get information whether each assembled contig has a similar entry in [PLSDB](https://doi.org/10.1093/nar/gkab1111). Especially for common pathogen species that are well represented in databases, this will likely tell you specifically what plasmid you have in your sample. 
 * Note: Especially for less commonly sequenced species, I would not suggest that that absence of a PLSDB hit is necessary meaningful, especially for circular contigs - those would likely be novel plasmids uncaptured by PLSDB.
-6. Plassembler is really good at recovering small (<10kbp) plasmids that long-read only assemblies miss, and can alert you (using copy number estimation) if you have lost these in the long-read set.
+
 
 # Documentation
 
@@ -88,7 +89,7 @@ Documentation can be found at http://plassembler.readthedocs.io/.
 3. If the resulting assembly is checked. If the largest contig is over the length of the provided chromosome size -c, then it is identified as the chromosome and extracted. Any other contigs are extracted as putative plasmid contigs, if Flye assembled any. If no chromosome is identified, plassembler will exit - you probably need to get some more long reads to complete your assembly (or check -c).
 4. Short reads are filtered using [fastp](https://github.com/OpenGene/fastp).
 5. Long & short reads are mapped to the identified chromosome and any putative plasmid contigs using [minimap2](https://github.com/lh3/minimap2#uguide).
-6. All reads that map to the putative plasmid contigs and all reads that are unmapped are extracted, combined and de-duplicated using [pysam](https://github.com/pysam-developers/pysam), [samtools](https://doi.org/10.1093/bioinformatics/btp352) and [seqkit](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0163962).
+6. All reads that map to the putative plasmid contigs and all reads that are unmapped are extracted and combined  using [pysam](https://github.com/pysam-developers/pysam) and [samtools](https://doi.org/10.1093/bioinformatics/btp352).
 7. The resulting read sets are assembled using the hybrid assembler [Unicycler](https://github.com/rrwick/Unicycler) to generate final plasmid contigs.
 8. Average read coverage depth for each plasmid is calculated using a modified version of code found [here](https://github.com/rrwick/Small-plasmid-Nanopore). See also this [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
 9. Plasmid copy number is calculated by dividing the plasmid read depth by the chromosome read depth.
@@ -108,7 +109,7 @@ Documentation can be found at http://plassembler.readthedocs.io/.
 
 * Plassembler should work with bacteria with multiple chromosomes, megaplasmids or chromids. In this case, I would treat the megaplasmids etc like chromosomes and assemble them using a long-read first approach with Trycycler or Dragonflye, as they are of approximately chromosome size. However, I'd still use Plassembler to recover small plasmids - for example, for  it managed to recover a 5386bp plasmid in the _Vibrio campbellii DS40M4_ genome (see this [paper](https://doi.org/10.1128/MRA.01187-18) and this [bioproject](https://www.ncbi.nlm.nih.gov/bioproject/479421) ) that was missed with Unicycler v.0.4.4 (or at least not uploaded!).
 * I would recommend tweaking the parameters a bit in this use case. -c needs to be smaller than the size of the largest chromosome-like element, and I would increase the subsampling depth `-s` from 30 to something higher (e.g. `-s 100`), because this is based off the `-c` value. 
-* For example, if for the vibrio example, which had approximately 1.8Mbp and 3.3Mbp chromosomes , I used `-c 1500000 -s 100`.
+* For example, for the vibrio example, which had approximately 1.8Mbp and 3.3Mbp chromosomes , I used `-c 1500000 -s 100`.
 
 # Installation
 

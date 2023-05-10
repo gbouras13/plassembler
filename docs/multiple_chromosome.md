@@ -44,44 +44,45 @@ install_database.py plassembler_db
 ```
 The below was run on my Mac Mini M1 (2021).
 
-Plassembler was run using the default the `-r` flage, as these reads were seuqenced SUP generate in 2019. They were assembled with 16 threads.
+Plassembler was run using the default the `-r` flag, as these reads were sequenced SUP generate in 2019. They were assembled with 16 threads.
 
 From the paper, I knew that the smaller chromosome was 1.9Mbp, with the larger being 3.3 Mbp. So I decided on using a `-s` value of 100 along with a `-c` value of 1500000 - this means approximately a 30x coverage of the chromosome (Plassembler will keep 1500000x100=150Mbp of long reads, with a combined chromosome size of approximately 5.2 Mbp). 
 
 
 
 ```
-plassembler.py -d plassembler_db  -l SRR8335319_1.fastq.gz -1  SRR22859826_1.fastq.gz -2 SRR8335320_2.fastq.gz -o vibrio -t 16 -s 100 -c 1500000 -f
+plassembler.py -d plassembler_db  -l SRR8335319_1.fastq.gz  -1 $FASTQS/SRR8335320_1.fastq.gz  -2 $FASTQS/SRR8335320_2.fastq.gz  -o vibrio -t 16 -s 100 -c 1500000 -f -r
 
 ```
 
 ```
 Starting plassembler v1.0.0
 Checking dependencies.
-Flye version found is v2.9.1-b1780.
+Flye version found is v2.9.2-b1786.
 Flye version is ok.
 Unicycler version found is v0.5.0.
 Unicycler version is ok.
-Samtools v1.16.1 found.
+SPAdes v3.15.2 found.
+Samtools v1.17 found.
 minimap2 v2.24-r1122 found.
 fastp v0.23.2 found.
 chopper v0.5.0 found.
-seqkit v2.3.0 found.
+seqkit v2.4.0 found.
 mash v2.3 found.
 rasusa v0.7.1 found.
 All dependencies found.
 Checking database installation.
 Database successfully checked.
 Checking input fastqs.
-FASTQ SRR22859710_1.fastq.gz checked
-FASTQ SRR22859826_1.fastq.gz checked
-FASTQ SRR22859826_2.fastq.gz checked
+FASTQ SRR8335319_1.fastq.gz checked
+FASTQ SRR8335320_1.fastq.gz checked
+FASTQ SRR8335320_2.fastq.gz checked
 Filtering long reads with chopper.
-Kept 60568 reads out of 80687 reads
+Kept 60090 reads out of 88896 reads
 Subsampling long reads with rasusa.
 Running Flye.
 Counting Contigs.
-Flye assembled 2 contigs.
+Flye assembled 4 contigs.
 More than one contig was assembled with Flye.
 Extracting Chromosome.
 Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.
@@ -92,10 +93,6 @@ Processing Sam/Bam Files and extracting Fastqs.
 Running Unicycler.
 Calculating Plasmid Copy Numbers.
 Calculating mash distances to PLSDB.
-WARNING: 10 non-circular contigs with no PLSDB mash hits were detected. 
-This indicates your long and short read sets may come from different bacterial isolates. 
-Please check this!
-plassembler has finished
-Elapsed time: 803.24 seconds
-
+Plassembler has finished.
+Elapsed time: 1107.47 seconds.
 ```

@@ -1,23 +1,25 @@
-Why Use plassembler?
+Why Does Plassembler Exist?
 ---------
 
-In long-read first assembled bacterial genomes, small plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated or missed (see https://f1000research.com/articles/8-2138 https://github.com/rrwick/Trycycler/wiki/Clustering-contigs).
+In long-read first assembled bacterial genomes, small plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated or missed (see [this](https://doi.org/10.1371/journal.pcbi.1010905) and [this](https://github.com/rrwick/Trycycler/wiki/Clustering-contigs) ).
 
-plassembler was created as an automated tool to ensure plasmids assemble correctly without duplicated regions for high-throughput uses - and to provide some useful statistics as well (like copy number). Additionally, it will likely recover small plasmids that long read assemblers like Flye simply miss.
+Plassembler was therefore created as an automated tool to ensure plasmids assemble correctly without duplicated regions for high-throughput uses - and to provide some useful statistics as well (such as estimate plasmid copy numbers for both long and short read sets). Plassembler will likely also recover small plasmids that long read assemblers like Flye simply miss.
 
-plassembler is primarily intended for high-throughput users with hybrid ONT/short read bacterial sequencing data who want accurate plasmid assemblies.
+As it turns out (though this wasn't a motivation for making it!), Plassembler also assembles plasmids more accurately than Unicycler. I think this is because subsampling short reads sets can improve assembly quality (see [this](https://doi.org/10.1093/bioinformatics/btv311) and [this](https://doi.org/10.1371/journal.pone.0060204)), so throwing away chromosomal reads probably has a similar effect.
 
-I developed plassembler because, if conducting Flye assembly alone (and using short reads to polish the assemblies), plasmid assemblies would often be duplicated or triplicated, which would bias downstream analyses involving measures such as plasmid copy numbers.
+Plassembler also uses [mash](https://github.com/marbl/Mash) as a quick way to determine whether each assembled contig has any similar hits in [PLSDB](https://doi.org/10.1093/nar/gkab1111). 
 
-I also noticed that short read assemblies of plasmids alone would often fail to assemble some plasmids into one circularised contig, due to repetitive elements such as transposons. 
+Additionally, due to its mapping approach, Plassembler can also be used as a quality control tool for checking whether your long and short read sets come from the same isolate. This may be particularly useful if your read sets come from different extractions, or you have multiplexed many samples (& want to avoid mislabelling).  
 
-Why Not Use Unicycler?
-----
+Why Not Just Use Unicycler?
+---------
 
-Unicycler is awesome and still probably the best way to assemble plasmids from hybrid sequencing - plassembler uses it! But there are a few reasons to use plassembler instead:
+Unicycler is awesome and still a good way to assemble plasmids from hybrid sequencing - plassembler uses it! But there are a few reasons to use plassembler instead:
 
-1. Time. plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so is much faster than simply running Unicycler. 
-2. Plassembler will output only the plasmids, which may be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://preprints.scielo.org/index.php/scielo/preprint/view/5053) so plassembler can get you only what is necessary from Unicycler.
-3. Plassembler will give you summary coverage stats for both long and short reads.
-4. Plassembler can be used as fast-ish quality control to check if your short and long reads come from the same sample - if plassembler results in many non-circular contigs (particularly those that, with the help of something like BLAST, map to bacterial chromosomes), it is likely because your read sets do not come from the same isolate! 
-5. As of v 0.1.4, you will get information whether each assembled contig has a similar entry in [PLSDB](https://doi.org/10.1093/nar/gkab1111). Especially for common pathogen species that are well represented in databases, this will likely tell you specifically what plasmid you have in your sample. Additionally, if there are many contigs with no PLSDB hits, this can help you determine that your long and short reads do not come from the same isolate, or that there may be some other biological phenomenon in your "isolate" (for example, perhaps there is some other non-plasmid mobile genetic element present in low abundance). For less commonly sequenced species, I would not suggest that that absence of a PLSDB hit is necessary meaningful, especially for circular contigs - those would likely be novel plasmids uncaptured by PLSDB.
+1. Time. Plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so it is much faster (4-20x, and will be higher if you have lots of long reads). 
+2. Accuracy. Benchmarking has shown Plassembler is more accurate than Unicycler in terms of indels and mismatches. I honestly wasn't even aiming for this when I wrote Plassembler, just a big speed-up, but it is a nice result of course!
+3. Plassembler will output only the likely plasmids, and can more easily be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://doi.org/10.1371/journal.pcbi.1010905) so plassembler can get you only what is necessary from Unicycler.
+4. Plassembler will give you summary depth and copy number stats for both long and short reads.
+5. Plassembler can be used as a quality control to check if your short and long reads come from the same sample - if plassembler results in many non-circular contigs (particularly those that have no hits in PLSDB), it is likely because your read sets do not come from the same isolate! 
+6. You will get information whether each assembled contig has a similar entry in [PLSDB](https://doi.org/10.1093/nar/gkab1111). Especially for common pathogen species that are well represented in databases, this will likely tell you specifically what plasmid you have in your sample. 
+* Note: Especially for less commonly sequenced species, I would not suggest that that absence of a PLSDB hit is necessary meaningful, especially for circular contigs - those would likely be novel plasmids uncaptured by PLSDB.

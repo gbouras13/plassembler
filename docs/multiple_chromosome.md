@@ -2,11 +2,9 @@
 
 The following example shows how Plassembler can be used for assembling small plasmids in a bacterial isolate with multiple chromosomes (or chromosome sized replicons).
 
-We will assemble _Vibrio ampbellii DS40M4_ from Bioproject PRJNA479421, which is a _Vibrio_ that has 2 chromosomes. You can read more about this bacterium in the [paper](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6346181/). The authors hybrid sequenced this bacterium with ONT long and illumina short reads. 
-
+We will assemble _Vibrio ampbellii DS40M4_ from Bioproject PRJNA479421, which is a _Vibrio_ that has 2 chromosomes. You can read more about this bacterium in the [paper](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6346181/). The authors hybrid sequenced this with ONT long and illumina short reads. 
 
 #### vibrio
-
 
 Firstly, I downloaded the fastqs from the SRA using the fantastic [fastq-ql](https://github.com/rpetit3/fastq-dl) program (after installation with mamba).
 

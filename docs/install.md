@@ -50,25 +50,29 @@ pip3 install git+https://github.com/rrwick/Unicycler.git
 
 **MacOS**
 
-For MacOS environments, the current plassembler bioconda installation method will only install the latest available bioconda Unicycler version of v0.4.8. Plassembler should still run without any issue and provide a satisfactory assembly, but you will be warned of this when you run plassembler.
+For MacOS environments, the current plassembler bioconda installation method will only install the latest available bioconda Unicycler version of v0.4.8. Plassembler should still run without any issue and provide a satisfactory assembly, but you will be warned of this when you run Plassembler.
 
 Ryan Wick (the author of Unicycler) suggests that v0.5.0 should ideally be used, as v0.4.8 is not compatible with the latest versions of spades (see [here](https://github.com/rrwick/Unicycler/releases/tag/v0.5.0) ). This will require another installation step on MacOS.
 
 To install Unicycler v0.5.0, it is recommended that you install Unicycler from github after installing Plassembler follows:
 
 ```
+# installs plassembler into an environment called 'plassemblerENV' and activates it
 conda create -n plassemblerENV
 conda activate plassemblerENV
 conda install -c bioconda plassembler
+# installs Unicycler v0.5.0
 pip3 install git+https://github.com/rrwick/Unicycler.git
 ```
 
 Mac M1 users may need to change some compiler settings and install from the Unicycler github repo e.g.
 
 ```
+# installs plassembler into an environment called 'plassemblerENV' and activates it
 conda create -n plassemblerENV
 conda activate plassemblerENV
 conda install -c bioconda plassembler
+# installs Unicycler v0.5.0
 git clone https://github.com/rrwick/Unicycler.git
 cd Unicycler
 python3 setup.py install --makeargs "CXX=g++"

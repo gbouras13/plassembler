@@ -60,7 +60,7 @@ Plassembler was therefore created as an automated tool to ensure plasmids assemb
 
 As it turns out (though this wasn't a motivation for making it!), Plassembler also assembles plasmids more accurately than Unicycler. I think this is because subsampling short reads sets can improve assembly quality (see [this](https://doi.org/10.1093/bioinformatics/btv311) and [this](https://doi.org/10.1371/journal.pone.0060204) and [this](https://academic.oup.com/bioinformatics/article/27/4/479/198367) - thanks Michael Hall for the references!), so throwing away chromosomal reads probably has a similar effect.
 
-You can see this increase in quality and speed in the benchmarking results for [simulated](docs/benchmarking_results_simulated.md) and [real](docs/benchmarking_results_real.md) datasets.
+You can see this increase in quality and speed in the benchmarking results for [simulated](docs/benchmarking_results_sim.md) and [real](docs/benchmarking_results_real.md) datasets.
 
 Plassembler also uses [mash](https://github.com/marbl/Mash) as a quick way to determine whether each assembled contig has any similar hits in [PLSDB](https://doi.org/10.1093/nar/gkab1111). 
 
@@ -70,11 +70,11 @@ Additionally, due to its mapping approach, Plassembler can also be used as a qua
 
 Unicycler is awesome and still a good way to assemble plasmids from hybrid sequencing - plassembler uses it! But there are a few reasons to use plassembler instead:
 
-1. Time. Plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so it is much faster (4-20x, and will be higher if you have lots of long reads). 
+1. Time. Plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so it is much faster (4-20x, which will likely be even higher if you have lots of long reads). 
 2. Accuracy. Benchmarking has shown Plassembler is more accurate than Unicycler in terms of indels and mismatches. I honestly wasn't even aiming for this when I wrote Plassembler, just a big speed-up, but it is a nice result of course!
-3. Plassembler will output only the likely plasmids, and can more easily be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://doi.org/10.1371/journal.pcbi.1010905) so plassembler can get you only what is necessary from Unicycler.
+3. Plassembler will output only the likely plasmids, and can more easily be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://doi.org/10.1371/journal.pcbi.1010905) so Plassembler can get you only what is necessary from Unicycler.
 4. Plassembler will give you summary depth and copy number stats for both long and short reads.
-5. Plassembler can be used as a quality control to check if your short and long reads come from the same sample - if plassembler results in many non-circular contigs (particularly those that have no hits in PLSDB), it is likely because your read sets do not come from the same isolate! 
+5. Plassembler can be used as a quality control to check if your short and long reads come from the same sample - if plassembler results in many non-circular contigs (particularly those that have no hits in PLSDB), it is likely because your read sets do not come from the same isolate! See [Quality Control](#quality-control).
 6. You will get information whether each assembled contig has a similar entry in [PLSDB](https://doi.org/10.1093/nar/gkab1111). Especially for common pathogen species that are well represented in databases, this will likely tell you specifically what plasmid you have in your sample. 
 * Note: Especially for less commonly sequenced species, I would not suggest that that absence of a PLSDB hit is necessary meaningful, especially for circular contigs - those would likely be novel plasmids uncaptured by PLSDB.
 
@@ -111,7 +111,7 @@ Documentation can be found at http://plassembler.readthedocs.io/.
 3. Multiple chromosome bacteria/megaplasmids/chromids
 
 * Plassembler should work with bacteria with multiple chromosomes, megaplasmids or chromids. In this case, I would treat the megaplasmids etc like chromosomes and assemble them using a long-read first approach with Trycycler or Dragonflye, as they are of approximately chromosome size. 
-* However, I'd still use Plassembler to recover small plasmids - for example, for  it managed to recover a 5386bp plasmid in the _Vibrio campbellii DS40M4_ genome (see this [paper](https://doi.org/10.1128/MRA.01187-18) and this [bioproject](https://www.ncbi.nlm.nih.gov/bioproject/479421) ) that was missed with Unicycler v.0.4.4 (or at least not uploaded!).
+* However, I'd still use Plassembler to recover small plasmids - for example, for  it managed to recover a 5386bp plasmid in the _Vibrio campbellii DS40M4_ genome (see this [paper](https://doi.org/10.1128/MRA.01187-18) and this [bioproject](https://www.ncbi.nlm.nih.gov/bioproject/479421) ) that was missed with Unicycler v.0.4.4 (or at least it was not uploaded!).
 * I would recommend tweaking the parameters a bit in this use case. -c needs to be smaller than the size of the largest chromosome-like element, and I would increase the subsampling depth `-s` from 30 to something higher (e.g. `-s 100`), because this is based off the `-c` value. 
 * For example, for the vibrio example, which had approximately 1.8Mbp and 3.3Mbp chromosomes , I used `-c 1500000 -s 100`.
 
@@ -125,7 +125,7 @@ Please see [here](docs/quality_control.md) for more details and some examples.
 
 # Installation
 
-Plassembler should run and has been tested on Linux and MacOS machines. 
+Plassembler has been tested on Linux and MacOS machines. 
 
 The easiest way to install plassembler is via conda - Plassembler is on bioconda. 
 
@@ -156,7 +156,7 @@ plassembler.py --help
 Unicycler v0.5.0 Installation Issues
 ------
 
-Plassembler works best with Unicycler v0.5.0. With Unicycler v0.4.8, Plassembler should still run without any issue and provide a satisfactory assembly, but you will be warned of this when you run plassembler. Plassembler will not work with any older version.
+Plassembler works best with Unicycler v0.5.0. With Unicycler v0.4.8, Plassembler should still run without any issue and provide a satisfactory assembly, but you will be warned of this when you run plassembler. Plassembler will not work with any older version of Unicycler.
 
 **Linux**
 
@@ -182,18 +182,20 @@ Ryan Wick (the author of Unicycler) suggests that v0.5.0 should be used, as v0.4
 To install Unicycler v0.5.0, it is recommended that you install Unicycler from github after installing Plassembler follows:
 
 ```
-conda create -n plassemblerENV
+# installs plassembler into an environment called 'plassemblerENV' and activates it
+conda create -n plassemblerENV plassembler
 conda activate plassemblerENV
-conda install -c bioconda plassembler
+# installs Unicycler v0.5.0
 pip3 install git+https://github.com/rrwick/Unicycler.git
 ```
 
 Mac M1 users may need to change some compiler settings and install from the Unicycler github repo e.g.
 
 ```
-conda create -n plassemblerENV
+# installs plassembler into an environment called 'plassemblerENV' and activates it
+conda create -n plassemblerENV plassembler
 conda activate plassemblerENV
-conda install -c bioconda plassembler
+# installs Unicycler v0.5.0
 git clone https://github.com/rrwick/Unicycler.git
 cd Unicycler
 python3 setup.py install --makeargs "CXX=g++"
@@ -312,7 +314,7 @@ plassembler will also output a log file, a `flye_output` directory, which contai
 
 # Benchmarking
 
-The benchmarking results for [simulated](docs/benchmarking_results_simulated.md) and [real](docs/benchmarking_results_real.md) datasets are available at the provided links.
+The benchmarking results for [simulated](docs/benchmarking_results_sim.md) and [real](docs/benchmarking_results_real.md) datasets are available.
 
 All benchmarking was conducted on a Intel® Core™ i7-10700K CPU @ 3.80GHz on a machine running Ubuntu 20.04.6 LTS. 
 
@@ -320,7 +322,7 @@ Tldr: Plassembler is much faster than Unicycler (4-20x usually), is more accurat
 
 # Acknowledgements
 
-Many thanks are owed to Ryan Wick (https://github.com/rrwick), who not only wrote Unicycler and some other code used in Plassembler, but also gave me original ideas about how to approach the plasmid assembly problem originally. If you are doing any bacterial genome assembly, you should read all of his work, but if you have read this far you probably already have.
+Many thanks are owed to Ryan Wick (https://github.com/rrwick), who not only wrote Unicycler and some other code used in Plassembler, but also gave me ideas about how to approach the plasmid assembly problem originally. If you are doing any bacterial genome assembly, you should read all of his work, but if you have read this far you probably already have.
 
 # Version Log
 
@@ -338,7 +340,7 @@ Further, other approaches may be more appropriate for Kit 14 long read only asse
 
 # Citations
 
-Plassembler manuscript is under review :).
+Plassembler manuscript is under review :)
 
 If you use plassembler, please cite:
 

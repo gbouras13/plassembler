@@ -7,17 +7,6 @@ We will assemble _Vibrio ampbellii DS40M4_ from Bioproject PRJNA479421, which is
 
 #### vibrio
 
-conda activate fastq-dl
-
-fastq-dl --cpus 8  PRJNA479421  
-
-conda activate plassembler
-
-PLASSEMBLER_DIR="/Users/a1667917/Documents/plassembler/bin"
-
-PLASSEMBLER_DB="/Users/a1667917/Documents/Plassembler_DB"
-
-$PLASSEMBLER_DIR/plassembler.py -d $PLASSEMBLER_DB -l  SRR8335319_1.fastq.gz -1 SRR8335320_1.fastq.gz -2 SRR8335320_2.fastq.gz -o vibrio -t 16 -s 100 -c 1500000 -f
 
 Firstly, I downloaded the fastqs from the SRA using the fantastic [fastq-ql](https://github.com/rpetit3/fastq-dl) program (after installation with mamba).
 
@@ -42,18 +31,20 @@ mamba create -n plassembler plassembler
 conda activate plassembler
 install_database.py plassembler_db
 ```
+
 The below was run on my Mac Mini M1 (2021).
 
-Plassembler was run using the default the `-r` flag, as these reads were sequenced SUP generate in 2019. They were assembled with 16 threads.
+Plassembler was run using the default the `-r` flag, as these Nanopore reads were sequenced in 2019. They were assembled with 16 threads.
 
 From the paper, I knew that the smaller chromosome was 1.9Mbp, with the larger being 3.3 Mbp. So I decided on using a `-s` value of 100 along with a `-c` value of 1500000 - this means approximately a 30x coverage of the chromosome (Plassembler will keep 1500000x100=150Mbp of long reads, with a combined chromosome size of approximately 5.2 Mbp). 
 
 
+```
+plassembler.py -d plassembler_db  -l SRR8335319_1.fastq.gz  -1 SRR8335320_1.fastq.gz  -2 SRR8335320_2.fastq.gz  -o vibrio -t 16 -s 100 -c 1500000 -f -r
 
 ```
-plassembler.py -d plassembler_db  -l SRR8335319_1.fastq.gz  -1 $FASTQS/SRR8335320_1.fastq.gz  -2 $FASTQS/SRR8335320_2.fastq.gz  -o vibrio -t 16 -s 100 -c 1500000 -f -r
 
-```
+The terminal output looks like this.
 
 ```
 Starting plassembler v1.0.0
@@ -96,3 +87,5 @@ Calculating mash distances to PLSDB.
 Plassembler has finished.
 Elapsed time: 1107.47 seconds.
 ```
+
+Intrestingly, I found a small 5386bp plasmid that isn't in the PRJNA479421 assembly! 

@@ -2,7 +2,7 @@
 
 The following example shows how Plassembler can be used for quality control (checking your long and short read sets come from the same isolate).
 
-We will assemble SAMN32360844, a _S. aureus_ ST22 isolate long read set with a SAMN32360859 short read set, a distinct _S. aureus_ ST22 isolate. These samples are extremely closely related, being part of the same sequence type. We will also assemble the SAMN32360844 long read set with the SAMN32360837 short read set, a more distantly related ST30 isolate. These samples are taken from Houtak et al (2023) _The Intra-Host Evolutionary Landscape And Pathoadaptation Of Persistent Staphylococcus aureus In Chronic Rhinosinusitis_ available on bioRxiv [here](https://doi.org/10.1101/2023.03.28.534496) if you want more details.
+We will assemble SAMN32360844, a _S. aureus_ ST22 isolate long read set with a SAMN32360859 short read set, a distinct _S. aureus_ ST22 isolate. These samples are extremely closely related, being part of the same sequence type (see this [paper](https://doi.org/10.1128/JCM.38.3.1008-1015.2000) for more information on sequence typing). We will also assemble the SAMN32360844 long read set with the SAMN32360837 short read set, a more distantly related ST30 isolate. These samples are taken from Houtak et al (2023) _The Intra-Host Evolutionary Landscape And Pathoadaptation Of Persistent Staphylococcus aureus In Chronic Rhinosinusitis_ available on bioRxiv [here](https://doi.org/10.1101/2023.03.28.534496) if you want more details.
 
 Firstly, I downloaded the fastqs from the SRA using the fantastic [fastq-ql](https://github.com/rpetit3/fastq-dl) program (after installation with mamba).
 
@@ -96,7 +96,7 @@ Elapsed time: 803.24 seconds
 
 For the different sequence type isolates, plassembler took double as long as with the same sequence type isolates, which is not surprising as there would have been many more unmapped reads to assemble with Unicycler.
 
-As you can see below, plassembler recovered 59 non-circular contigs with no hits to PLSDB, indictating that the long and short read sets don't match.
+As you can see below, Plassembler recovered 59 non-circular contigs with no hits to PLSDB, indictating that the long and short read sets don't match.
 
 ```
 plassembler.py -d plassembler_db -l SRR22859710_1.fastq.gz  -1  SRR22859826_1.fastq.gz -2 SRR22859826_2.fastq.gz   -o S_Aureus_QC_Illustration_same_sequence_type -t 16 -f -c 2500000

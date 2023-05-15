@@ -182,10 +182,11 @@ if __name__ == "__main__":
                 log.write_message(message, logger)
                 min_quality = str(15)
         qc.chopper(args.longreads, out_dir, args.min_length, min_quality, long_zipped, args.threads)
-        if args.no_subsample == False:
+        if args.subsample == True:
             message ="Subsampling long reads with rasusa."
             log.write_message(message, logger)
-        qc.rasusa(out_dir, args.no_subsample, args.subsample_depth, args.chromosome, logger )
+
+        qc.rasusa(out_dir, args.subsample, args.subsample_depth, args.chromosome, logger )
 
         # pacbio model check that the string is valid
         if args.pacbio_model != "nothing":
@@ -197,7 +198,7 @@ if __name__ == "__main__":
         # running Flye
         message = "Running Flye."
         log.write_message(message, logger)
-        run_flye.run_flye(out_dir, args.threads,args.raw_flag, pacbio_model, logger)
+        run_flye.run_flye(out_dir,args.raw_flag, pacbio_model, logger)
 
         # instanatiate the class with some of the commands
         plass = Plass()

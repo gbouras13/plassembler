@@ -21,7 +21,8 @@ nav:
       - Output: output.md
     - BENCHMARKING:
       - Fastq Preparation: fastqs.md
-      - Results: benchmarking_results.md
+      - Simulated Read Results: benchmarking_results_sim.md
+      - Real Read Results: benchmarking_results_real.md
     - QUALITY CONTROL:
       - Quality Control: quality_control.md
 

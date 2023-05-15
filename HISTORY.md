@@ -1,5 +1,11 @@
 # History
 
+1.0.1 (2023-05-15)
+------------------
+
+* Small but important change. Uses `--determinism` flag to ensure determinism with Flye after significant non-determinism was uncovered during benchmarking.
+* Will make Plassembler a bit slower (especially for higher values of `-s`), but ensures determinism (as far as Unicycler/SPAdes).
+
 1.0.0 (2023-05-10)
 ------------------
 

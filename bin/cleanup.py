@@ -12,7 +12,7 @@ import shutil
 # cleanup
 ##########################################################
 
-def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_only):
+def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_only, use_flye):
     """ removes intermediate files
     :param out_dir:  Output Directory
     :return: 
@@ -29,13 +29,14 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
     for file in files:
         remove_file(file)
     
-    if long_only == True:
+    if long_only == True or use_flye == True:
         shutil.rmtree(os.path.join(out_dir,"00-assembly"))
         shutil.rmtree(os.path.join(out_dir,"10-consensus"))
         shutil.rmtree(os.path.join(out_dir,"20-repeat"))
         shutil.rmtree(os.path.join(out_dir,"30-contigger"))
         shutil.rmtree(os.path.join(out_dir, "40-polishing"))
 
+    if long_only == True:
         # the fake unicycler directory
         shutil.rmtree(os.path.join(out_dir,"unicycler_output"))
 
@@ -59,7 +60,7 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
         remove_file(os.path.join(out_dir,"chromosome.fasta"))
 
 
-def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, assembled_mode, long_only):
+def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, assembled_mode, long_only, use_flye):
     """ moves and copies files
     :param out_dir:  Output Directory
     :param prefix: prefix
@@ -68,7 +69,7 @@ def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, as
     """
 
     # long only
-    if long_only == True:
+    if long_only == True or use_flye == True:
         # make flye dir 
         flye_dir = os.path.join(out_dir,"flye_output")
         if not os.path.exists(flye_dir):

@@ -42,7 +42,7 @@ def run_raven(out_dir, threads, logger):
     f = open(os.path.join(out_dir, "assembly.fasta"), "w")
 
     # default to 8 threads
-    command = "raven -t " + str(8) + " " + trim_long +  " --graphical-fragment-assembly " + gfa
+    command = "raven -t " + str(1) + " " + trim_long +  " --graphical-fragment-assembly " + gfa
 
     try:
         # Create a subprocess using Popen

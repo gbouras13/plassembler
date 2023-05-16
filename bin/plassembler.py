@@ -136,8 +136,8 @@ if __name__ == "__main__":
         test_incompatibility.incompatbility(assembly.combined_depth_mash_df, logger)
 
         # rename contigs and update copy number with plsdb
-        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, True, args.long_only)
-        cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, True, args.long_only)
+        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, True, args.long_only, args.use_flye)
+        cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, True, args.long_only, args.use_flye)
 
 
 #############################
@@ -195,14 +195,18 @@ if __name__ == "__main__":
             pacbio_model = args.pacbio_model
 
 
-        # running Flye
-        message = "Running Raven."
-        log.write_message(message, logger)
 
-        # just keep Flye as placeholder experimental for now
-        if args.long_only == True:
+        # Flye for long only or '--use_flye'
+        if args.long_only == True or args.use_flye == True:
+            if args.use_flye == True:
+                message = "You have specified --use_flye. Using Flye for long read assembly."
+                log.write_message(message, logger)               
+            message = "Running Flye."
+            log.write_message(message, logger)
             assembly.run_flye(out_dir, args.threads, args.raw_flag, pacbio_model, logger)
         else:
+            message = "Running Raven."
+            log.write_message(message, logger)
             assembly.run_raven(out_dir, args.threads,  logger)
 
         # instanatiate the class with some of the commands
@@ -227,7 +231,7 @@ if __name__ == "__main__":
 
             # identifies chromosome and renames contigs
             # just keep Flye as placeholder experimental for now
-            if args.long_only == True:
+            if args.long_only == True or args.use_flye == True :
                 message = "Only one contig was assembled with Flye."
                 log.write_message(message, logger)
                 plass.identify_chromosome_process_flye( args.chromosome, logger)
@@ -241,8 +245,8 @@ if __name__ == "__main__":
             if plass.chromosome_flag == False:
                 message = 'No chromosome was identified. Likely, there was insufficient long read depth for Flye to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. '
                 log.write_message(message, logger)
-                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
-                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
+                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only, args.use_flye)
+                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_flye)
             else: # chromosome identified -> move on 
                 if args.long_only == False:
                     message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
@@ -320,8 +324,8 @@ if __name__ == "__main__":
                             #plass.add_multimer_info(prefix)
 
                         # cleanup files 
-                        cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only)
-                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
+                        cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only, args.use_flye)
+                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_flye)
                     
                     ####################################################################
                     # Case 4: where there are truly no plasmids even after unicycler runs
@@ -329,8 +333,8 @@ if __name__ == "__main__":
                     else: # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
                         message = "No plasmids found."
                         log.write_message(message, logger)
-                        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
-                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
+                        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only, args.use_flye)
+                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_flye)
                     
           
 ####################################################################
@@ -343,7 +347,7 @@ if __name__ == "__main__":
 
             # identifies chromosome and renames contigs
             # just keep Flye as placeholder experimental for now for long read only
-            if args.long_only == True:
+            if args.long_only == True or args.use_flye == True:
                 message = "More than one contig was assembled with Flye."
                 log.write_message(message, logger)
                 message = "Extracting Chromosome."
@@ -363,8 +367,8 @@ if __name__ == "__main__":
             if plass.chromosome_flag == False:
                 message = 'No chromosome was idenfitied. please check your -c or --chromosome parameter, it may be too high. \nLikely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended.'
                 log.write_message(message, logger)
-                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
-                cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, False, args.long_only)
+                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only, args.use_flye)
+                cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, False, args.long_only, args.use_flye)
 
             ####################################################################
             # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> get reads mappeed to plasmids, unmapped to chromosome and assemble
@@ -454,8 +458,8 @@ if __name__ == "__main__":
                     # combine depth and mash tsvs with dimer information
                     #plass.add_multimer_info(prefix)
 
-                cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only)
-                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
+                cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only, args.use_flye)
+                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_flye)
 
     # Determine elapsed time
     elapsed_wallclock_time = time.perf_counter() - start_time

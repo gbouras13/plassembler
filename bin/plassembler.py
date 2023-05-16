@@ -306,7 +306,7 @@ if __name__ == "__main__":
                         if args.long_only == False:
                         # heuristic check 
                             test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
-                            plass.add_multimer_info(prefix)
+                            #plass.add_multimer_info(prefix)
 
                         # cleanup files 
                         cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only)
@@ -430,10 +430,10 @@ if __name__ == "__main__":
                     test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
 
                     # multimer check
-                    multimer.minimap2_unicycler_vs_flye_plasmids(out_dir, prefix, logger)
+                    #multimer.minimap2_unicycler_vs_flye_plasmids(out_dir, prefix, logger)
 
                     # combine depth and mash tsvs with dimer information
-                    plass.add_multimer_info(prefix)
+                    #plass.add_multimer_info(prefix)
 
                 cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only)
                 cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)

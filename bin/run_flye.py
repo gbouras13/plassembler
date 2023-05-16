@@ -22,7 +22,7 @@ def run_flye(out_dir, raw_flag, pacbio_model, logger):
     if pacbio_model != 'nothing':
         flye_model = pacbio_model
     try:
-        flye = sp.Popen(["flye", flye_model, trim_long, "--out-dir", out_dir, "--threads", "1"], stdout=sp.PIPE, stderr=sp.PIPE) 
+        flye = sp.Popen(["flye", flye_model, trim_long, "--out-dir", out_dir, "--threads", "1", "--deterministic"], stdout=sp.PIPE, stderr=sp.PIPE) 
         log.write_to_log(flye.stdout, logger)
     except:
         sys.exit("Error with Flye\n")  

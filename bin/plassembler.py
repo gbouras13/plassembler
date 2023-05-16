@@ -198,7 +198,7 @@ if __name__ == "__main__":
         # running Flye
         message = "Running Flye."
         log.write_message(message, logger)
-        run_flye.run_flye(out_dir,args.raw_flag, pacbio_model, logger)
+        run_flye.run_flye(out_dir, args.threads, args.raw_flag, pacbio_model, logger)
 
         # instanatiate the class with some of the commands
         plass = Plass()

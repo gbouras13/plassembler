@@ -337,28 +337,26 @@ if __name__ == "__main__":
         # where more than 1 contig was assembled
 ####################################################################
         else:
-            message = "More than one contig was assembled with Flye."
-            log.write_message(message, logger)
-
-            message = "Extracting Chromosome."
-            log.write_message(message, logger)
 
             # no_plasmids_flag = False as no plasmids
             plass.no_plasmids_flag = False
 
             # identifies chromosome and renames contigs
-
-            # just keep Flye as placeholder experimental for now
+            # just keep Flye as placeholder experimental for now for long read only
             if args.long_only == True:
                 message = "More than one contig was assembled with Flye."
+                log.write_message(message, logger)
+                message = "Extracting Chromosome."
                 log.write_message(message, logger)
                 plass.identify_chromosome_process_flye( args.chromosome, logger)
             else:
                 message = "More than one contig was assembled with Raven."
                 log.write_message(message, logger)
+                message = "Extracting Chromosome."
+                log.write_message(message, logger)
                 plass.identify_chromosome_process_raven( args.chromosome, logger)
 
-
+            
             ####################################################################
             # Case 2 - where no chromosome was identified (likely below required depth) - need more long reads or user got chromosome parameter wrong - exit plassembler
             ####################################################################

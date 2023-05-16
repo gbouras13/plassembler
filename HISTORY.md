@@ -1,10 +1,12 @@
 # History
 
-1.0.1 (2023-05-15)
+1.0.1 (2023-05-16)
 ------------------
 
-* Small but important change. Uses `--determinism` flag to ensure determinism with Flye after significant non-determinism was uncovered during benchmarking.
-* Will make Plassembler a bit slower (especially for higher values of `-s`), but ensures determinism (as far as Unicycler/SPAdes).
+* Small but important changes. 
+* Passes `--deterministic` to Flye to ensure determinism after significant non-determinism was uncovered in Flye during benchmarking. No changes to Plassembler CLI. 
+* Moved subsampling from default to optional and changed CLI from `--no_subsample` to `--subsample`. `--subsample` will turn subsampling on (with default `-s` 30, which can be modified), otherwise no subsampling will be conducted. Note that subsampling isn't deterministic because you will get different subsampled read sets each time you run Plassembler, so if you are concerned about this please subsample your reads first and do not use `--subsample`. 
+* These changes make Plassembler a bit slower, but ensures better reproducibility in its results.
 
 1.0.0 (2023-05-10)
 ------------------

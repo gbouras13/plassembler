@@ -16,7 +16,7 @@ def minimap_long_reads(out_dir, threads, pacbio_model, logger):
     :param logger: logger
     :return: 
     """
-    input_long_reads = os.path.join(out_dir, "final_filtered_long_reads.fastq.gz")
+    input_long_reads = os.path.join(out_dir, "chopper_long_reads.fastq.gz")
 
     fasta = os.path.join(out_dir, "flye_renamed.fasta")
     sam = os.path.join(out_dir, "long_read.sam")

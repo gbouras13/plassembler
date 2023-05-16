@@ -6,7 +6,7 @@ import datetime
 import input_commands
 import qc
 import mapping
-import run_flye
+import assembly
 import cleanup
 import log
 import run_mash
@@ -109,7 +109,7 @@ if __name__ == "__main__":
             log.write_message(message, logger)
             qc.chopper(args.longreads, out_dir, args.min_length, args.min_quality, long_gzipped, args.threads)
             # doesn't subsample by default for assembled mode
-            qc.rasusa(out_dir, False, args.subsample_depth, args.chromosome, logger)
+            #qc.rasusa(out_dir, False, args.subsample_depth, args.chromosome, logger)
         if short_flag == True:
             message = "Trimming short reads."
             log.write_message(message, logger)
@@ -182,11 +182,11 @@ if __name__ == "__main__":
                 log.write_message(message, logger)
                 min_quality = str(15)
         qc.chopper(args.longreads, out_dir, args.min_length, min_quality, long_zipped, args.threads)
-        if args.subsample == True:
-            message ="Subsampling long reads with rasusa."
-            log.write_message(message, logger)
+        # if args.subsample == True:
+        #     message ="Subsampling long reads with rasusa."
+        #     log.write_message(message, logger)
 
-        qc.rasusa(out_dir, args.subsample, args.subsample_depth, args.chromosome, logger )
+        #  qc.rasusa(out_dir, args.subsample, args.subsample_depth, args.chromosome, logger )
 
         # pacbio model check that the string is valid
         if args.pacbio_model != "nothing":
@@ -196,9 +196,14 @@ if __name__ == "__main__":
 
 
         # running Flye
-        message = "Running Flye."
+        message = "Running Raven."
         log.write_message(message, logger)
-        run_flye.run_flye(out_dir, args.threads, args.raw_flag, pacbio_model, logger)
+
+        # just keep Flye as placeholder experimental for now
+        if args.long_only == True:
+            assembly.run_flye(out_dir, args.threads, args.raw_flag, pacbio_model, logger)
+        else:
+            assembly.run_raven(out_dir, args.threads,  logger)
 
         # instanatiate the class with some of the commands
         plass = Plass()
@@ -216,14 +221,20 @@ if __name__ == "__main__":
         ####################################################################
 
         if plass.contig_count == 1:
-            logger.info("Only one contig was assembled with Flye.")
-            print("Only one contig was assembled with Flye.")
 
             # no_plasmids_flag = True as no plasmids
             plass.no_plasmids_flag = True
 
             # identifies chromosome and renames contigs
-            plass.identify_chromosome_process_flye( args.chromosome, logger)
+            # just keep Flye as placeholder experimental for now
+            if args.long_only == True:
+                message = "Only one contig was assembled with Flye."
+                log.write_message(message, logger)
+                plass.identify_chromosome_process_flye( args.chromosome, logger)
+            else:
+                message = "Only one contig was assembled with Raven."
+                log.write_message(message, logger)
+                plass.identify_chromosome_process_raven( args.chromosome, logger)
 
             # no chromosome identified - cleanup and exit
             ####################################################################
@@ -336,7 +347,17 @@ if __name__ == "__main__":
             plass.no_plasmids_flag = False
 
             # identifies chromosome and renames contigs
-            plass.identify_chromosome_process_flye(args.chromosome, logger)
+
+            # just keep Flye as placeholder experimental for now
+            if args.long_only == True:
+                message = "More than one contig was assembled with Flye."
+                log.write_message(message, logger)
+                plass.identify_chromosome_process_flye( args.chromosome, logger)
+            else:
+                message = "More than one contig was assembled with Raven."
+                log.write_message(message, logger)
+                plass.identify_chromosome_process_raven( args.chromosome, logger)
+
 
             ####################################################################
             # Case 2 - where no chromosome was identified (likely below required depth) - need more long reads or user got chromosome parameter wrong - exit plassembler

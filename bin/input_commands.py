@@ -280,10 +280,6 @@ def check_dependencies(logger):
 		log.write_message(message, logger)
 	except:
 		sys.exit("mash not found.\n")  
-	
-	# all dependencies found
-	print("All dependencies found.")
-	logger.info("All dependencies found.")
 
 	# Flye
 	try:
@@ -307,6 +303,9 @@ def check_dependencies(logger):
 	message = "Flye version is ok."
 	log.write_message(message, logger)
 
+	# all dependencies found
+	print("All dependencies found.")
+	logger.info("All dependencies found.")
 
 
 def validate_pacbio_model(pacbio_model, logger):

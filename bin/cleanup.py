@@ -83,7 +83,7 @@ def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, as
 
     # normal use
 
-    if long_only == False and assembled_mode == False:
+    if long_only == False and assembled_mode == False and use_flye == False:
         # make raven dir 
         raven_dir = os.path.join(out_dir,"raven_output")
         if not os.path.exists(raven_dir):

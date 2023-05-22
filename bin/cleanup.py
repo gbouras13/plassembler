@@ -12,7 +12,7 @@ import shutil
 # cleanup
 ##########################################################
 
-def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_only, use_flye):
+def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_only, use_raven):
     """ removes intermediate files
     :param out_dir:  Output Directory
     :return: 
@@ -29,7 +29,7 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
     for file in files:
         remove_file(file)
     
-    if long_only == True or use_flye == True:
+    if long_only == True or use_raven == False:
         shutil.rmtree(os.path.join(out_dir,"00-assembly"))
         shutil.rmtree(os.path.join(out_dir,"10-consensus"))
         shutil.rmtree(os.path.join(out_dir,"20-repeat"))
@@ -60,7 +60,7 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
         remove_file(os.path.join(out_dir,"chromosome.fasta"))
 
 
-def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, assembled_mode, long_only, use_flye):
+def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, assembled_mode, long_only, use_raven):
     """ moves and copies files
     :param out_dir:  Output Directory
     :param prefix: prefix
@@ -69,7 +69,7 @@ def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, as
     """
 
     # long only
-    if long_only == True or use_flye == True:
+    if long_only == True or use_raven == False:
         # make flye dir 
         flye_dir = os.path.join(out_dir,"flye_output")
         if not os.path.exists(flye_dir):
@@ -83,7 +83,7 @@ def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, as
 
     # normal use
 
-    if long_only == False and assembled_mode == False and use_flye == False:
+    if long_only == False and assembled_mode == False and use_raven == True:
         # make raven dir 
         raven_dir = os.path.join(out_dir,"raven_output")
         if not os.path.exists(raven_dir):

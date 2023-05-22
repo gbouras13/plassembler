@@ -31,7 +31,7 @@ def run_raven(out_dir, threads, logger):
     """Runs raven on trimmed long reads
 
     :param out_dir: output directory
-    :param raw_flag: boolean - true if --nano-raw used for flue
+    :param raw_flag: boolean - true if --nano-raw used for flye
     :param logger: logger
     :return:
     """

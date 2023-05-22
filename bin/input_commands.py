@@ -36,7 +36,7 @@ def get_input():
 	parser.add_argument('--input_chromosome',  help='Input FASTA file consisting of already assembled chromosome with assembled mode. \nMust be 1 complete contig.', action="store", default='nothing')
 	parser.add_argument('--input_plasmids',  help='Input FASTA file consisting of already assembled plasmids with assembled mode. \nRequires FASTQ file input (short only, long only or long + short).', action="store", default='nothing')
 	parser.add_argument('--long_only',  help='Experimental for now. \nVery high quality Nanopore R10.4 and above reads. \nAssembly using Flye, extracts contigs under size -c and runs the depth arguments. \nNo short reads required.', action="store_true" )
-	parser.add_argument('--use_flye',  help='Uses Flye instead of Raven for long read assembly. \nMay be useful if you have low long read depths (15-30x).', action="store_true" )
+	parser.add_argument('--use_raven',  help='Uses Raven instead of Flye for long read assembly. \nMay be useful if you want to reduce runtime.', action="store_true" )
 	parser.add_argument('--pacbio_model',  help='Pacbio Flye model with --long_only. Must be pacbio-raw, pacbio-corr or pacbio-hifi. \nUse pacbio-raw for PacBio regular CLR reads (<20 percent error), \npacbio-corr for PacBio reads that were corrected with other methods (<3 percent error) \nor pacbio-hifi for PacBio HiFi reads (<1 percent error).', action="store", default='nothing')
 	parser.add_argument('-r', '--raw_flag', help="Use --nano-raw for Flye with --long_only. \nDesigned for Guppy fast configuration reads. \nBy default, Flye will assume SUP or HAC reads and use --nano-hq", action="store_true" )
 	parser.add_argument('-V', '--version', action='version',help='show plassembler version and exit.', version=v)
@@ -167,6 +167,28 @@ def check_dependencies(logger):
 	"""Checks the version of Unicycler, spades and Raven
     :return:
     """
+
+	# Flye
+	try:
+		process = sp.Popen(["flye", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT) 
+		flye_out, _ = process.communicate()
+		flye_out = flye_out.decode().strip()
+		flye_major_version = int(flye_out.split('.')[0])
+		flye_minor_version = int(flye_out.split('.')[1])
+		flye_minorest_version = flye_out.split('.')[2]
+	except:
+		sys.exit("Flye not found. Please reinstall Plassembler.")
+
+	message = "Flye version found is v" + str(flye_major_version) +"." + str(flye_minor_version) +"."+flye_minorest_version + "."
+	log.write_message(message, logger)
+
+	if flye_major_version != 2:
+		sys.exit("Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
+	if flye_minor_version < 9:
+		sys.exit("Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
+
+	message = "Flye version is ok."
+	log.write_message(message, logger)
     
 	#raven
 	try:
@@ -280,28 +302,6 @@ def check_dependencies(logger):
 		log.write_message(message, logger)
 	except:
 		sys.exit("mash not found.\n")  
-
-	# Flye
-	try:
-		process = sp.Popen(["flye", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT) 
-		flye_out, _ = process.communicate()
-		flye_out = flye_out.decode().strip()
-		flye_major_version = int(flye_out.split('.')[0])
-		flye_minor_version = int(flye_out.split('.')[1])
-		flye_minorest_version = flye_out.split('.')[2]
-	except:
-		sys.exit("Flye not found. Please reinstall Plassembler.")
-
-	message = "Flye version found is v" + str(flye_major_version) +"." + str(flye_minor_version) +"."+flye_minorest_version + "."
-	log.write_message(message, logger)
-
-	if flye_major_version != 2:
-		sys.exit("Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
-	if flye_minor_version < 9:
-		sys.exit("Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler.")
-
-	message = "Flye version is ok."
-	log.write_message(message, logger)
 
 	# all dependencies found
 	print("All dependencies found.")

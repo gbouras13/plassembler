@@ -246,11 +246,11 @@ To overwrite an existing output directory, use -f
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality> -f`
 
-
 To use Raven instead of Flye as a long read assembler, use `--use_raven`.
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> --use_raven `
 
+Please see the [documentation](docs/run.md) for more options.
 
 ```
 usage: plassembler.py [-h] -d DATABASE [-l LONGREADS] [-1 SHORT_ONE]

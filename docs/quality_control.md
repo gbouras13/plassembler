@@ -17,7 +17,6 @@ fastq-dl SRR22859710
 # SAMN32360859 short reads
 fastq-dl SRR22859826		
 
-
 # SAMN32360837 short reads
 fastq-dl SRR22859924
 conda deactivate
@@ -35,32 +34,32 @@ install_database.py plassembler_db
 ```
 The below was run on my Mac Mini M1 (2021).
 
-Plassembler was run using the default --nano-hq mode, as these reads were seuqenced SUP basecalled in 2022 with Guppy v6. They were assembled with 16 threads using -t 16 and a chromosome size -c of 2500000.
+Plassembler was run using the default --nano-hq mode, as these reads were seuqenced SUP basecalled in 2022 with Guppy v6. They were assembled with 16 threads using -t 8 and a chromosome size -c of 2500000.
 
 # Same Sequence Type
 
-As you can see below, plassembler recovered 10 non-circular contigs with no hits to PLSDB, indictating that the long and short read sets likely don't match.
+As you can see below, plassembler recovered 8 non-circular contigs with no hits to PLSDB, indictating that the long and short read sets likely don't match.
 
 
 ```
-# Wick et al
-plassembler.py -d plassembler_db  -l SRR22859710_1.fastq.gz  -1  SRR22859826_1.fastq.gz -2 SRR22859826_2.fastq.gz   -o S_Aureus_QC_Illustration_same_sequence_type -t 16 -f -c 2500000
+plassembler.py -d plassembler_db  -l SRR22859710_1.fastq.gz  -1  SRR22859826_1.fastq.gz -2 SRR22859826_2.fastq.gz   -o S_Aureus_QC_Illustration_same_sequence_type -t 8 -f -c 2500000
 ```
 
 ```
-Starting plassembler v1.0.0
+Starting plassembler v1.1.0
 Checking dependencies.
-Flye version found is v2.9.1-b1780.
+Flye version found is v2.9.2-b1786.
 Flye version is ok.
+Raven v1.8.1 found.
+Raven version is ok.
 Unicycler version found is v0.5.0.
 Unicycler version is ok.
-Samtools v1.16.1 found.
-minimap2 v2.24-r1122 found.
-fastp v0.23.2 found.
+SPAdes v3.15.2 found.
+Samtools v1.9 found.
+minimap2 v2.26-r1175 found.
+fastp v0.22.0 found.
 chopper v0.5.0 found.
-seqkit v2.3.0 found.
-mash v2.3 found.
-rasusa v0.7.1 found.
+mash v2.2.2 found.
 All dependencies found.
 Checking database installation.
 Database successfully checked.
@@ -70,10 +69,9 @@ FASTQ SRR22859826_1.fastq.gz checked
 FASTQ SRR22859826_2.fastq.gz checked
 Filtering long reads with chopper.
 Kept 60568 reads out of 80687 reads
-Subsampling long reads with rasusa.
 Running Flye.
 Counting Contigs.
-Flye assembled 2 contigs.
+Raven assembled 2 contigs.
 More than one contig was assembled with Flye.
 Extracting Chromosome.
 Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.
@@ -84,11 +82,11 @@ Processing Sam/Bam Files and extracting Fastqs.
 Running Unicycler.
 Calculating Plasmid Copy Numbers.
 Calculating mash distances to PLSDB.
-WARNING: 10 non-circular contigs with no PLSDB mash hits were detected. 
+WARNING: 8 non-circular contigs with no PLSDB mash hits were detected. 
 This indicates your long and short read sets may come from different bacterial isolates. 
 Please check this!
-plassembler has finished
-Elapsed time: 803.24 seconds
+Plassembler has finished.
+Elapsed time: 1038.77 seconds.
 
 ```
 
@@ -96,26 +94,27 @@ Elapsed time: 803.24 seconds
 
 For the different sequence type isolates, plassembler took double as long as with the same sequence type isolates, which is not surprising as there would have been many more unmapped reads to assemble with Unicycler.
 
-As you can see below, Plassembler recovered 59 non-circular contigs with no hits to PLSDB, indictating that the long and short read sets don't match.
+As you can see below, Plassembler recovered 43 non-circular contigs with no hits to PLSDB, indictating that the long and short read sets don't match.
 
 ```
-plassembler.py -d plassembler_db -l SRR22859710_1.fastq.gz  -1  SRR22859826_1.fastq.gz -2 SRR22859826_2.fastq.gz   -o S_Aureus_QC_Illustration_same_sequence_type -t 16 -f -c 2500000
+plassembler.py -d plassembler_db -l SRR22859710_1.fastq.gz  -1  SRR22859924_1.fastq.gz -2 SRR22859924_2.fastq.gz   -o S_Aureus_QC_Illustration_different_sequence_type -t 8 -f -c 2500000
 ```
 
 ```
-Starting plassembler v1.0.0
+Starting plassembler v1.1.0
 Checking dependencies.
-Flye version found is v2.9.1-b1780.
+Flye version found is v2.9.2-b1786.
 Flye version is ok.
+Raven v1.8.1 found.
+Raven version is ok.
 Unicycler version found is v0.5.0.
 Unicycler version is ok.
-Samtools v1.16.1 found.
-minimap2 v2.24-r1122 found.
-fastp v0.23.2 found.
+SPAdes v3.15.2 found.
+Samtools v1.9 found.
+minimap2 v2.26-r1175 found.
+fastp v0.22.0 found.
 chopper v0.5.0 found.
-seqkit v2.3.0 found.
-mash v2.3 found.
-rasusa v0.7.1 found.
+mash v2.2.2 found.
 All dependencies found.
 Checking database installation.
 Database successfully checked.
@@ -125,10 +124,9 @@ FASTQ SRR22859924_1.fastq.gz checked
 FASTQ SRR22859924_2.fastq.gz checked
 Filtering long reads with chopper.
 Kept 60568 reads out of 80687 reads
-Subsampling long reads with rasusa.
 Running Flye.
 Counting Contigs.
-Flye assembled 2 contigs.
+Raven assembled 2 contigs.
 More than one contig was assembled with Flye.
 Extracting Chromosome.
 Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.
@@ -139,11 +137,11 @@ Processing Sam/Bam Files and extracting Fastqs.
 Running Unicycler.
 Calculating Plasmid Copy Numbers.
 Calculating mash distances to PLSDB.
-WARNING: 59 non-circular contigs with no PLSDB mash hits were detected. 
+WARNING: 43 non-circular contigs with no PLSDB mash hits were detected. 
 This indicates your long and short read sets may come from different bacterial isolates. 
 Please check this!
-plassembler has finished
-Elapsed time: 1678.74 seconds
+Plassembler has finished.
+Elapsed time: 1881.52 seconds.
 ```
 
 

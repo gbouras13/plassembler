@@ -30,6 +30,8 @@ def get_input():
 	parser.add_argument('-t', '--threads', help="Number of threads. Defaults to 8. \n", action="store", default = str(1))
 	parser.add_argument('-f', '--force', help="Overwrites the output directory.", action="store_true" )
 	parser.add_argument('-p', '--prefix', action="store", help='Prefix for output files. This is not required. Defaults to plassembler.',  default='Default')
+	parser.add_argument('--pacbio_model',  help='Pacbio Flye model with --long_only. Must be pacbio-raw, pacbio-corr or pacbio-hifi. \nUse pacbio-raw for PacBio regular CLR reads (<20 percent error), \npacbio-corr for PacBio reads that were corrected with other methods (<3 percent error) \nor pacbio-hifi for PacBio HiFi reads (<1 percent error).', action="store", default='nothing')
+	parser.add_argument('-r', '--raw_flag', help="Use --nano-raw for Flye with --long_only. \nDesigned for Guppy fast configuration reads. \nBy default, Flye will assume SUP or HAC reads and use --nano-hq", action="store_true" )
 	parser.add_argument('--keep_fastqs',  help='Whether you want to keep FASTQ files containing putative plasmid reads \nand long reads that map to multiple contigs (plasmid and chromosome).', action="store_true")
 	parser.add_argument('--keep_chromosome',  help='If you want to keep the chromosome assembly.', action="store_true")
 	parser.add_argument('-a', '--assembled_mode',  help='Activates assembled mode.', action="store_true")
@@ -37,8 +39,6 @@ def get_input():
 	parser.add_argument('--input_plasmids',  help='Input FASTA file consisting of already assembled plasmids with assembled mode. \nRequires FASTQ file input (short only, long only or long + short).', action="store", default='nothing')
 	parser.add_argument('--long_only',  help='Experimental for now. \nVery high quality Nanopore R10.4 and above reads. \nAssembly using Flye, extracts contigs under size -c and runs the depth arguments. \nNo short reads required.', action="store_true" )
 	parser.add_argument('--use_raven',  help='Uses Raven instead of Flye for long read assembly. \nMay be useful if you want to reduce runtime.', action="store_true" )
-	parser.add_argument('--pacbio_model',  help='Pacbio Flye model with --long_only. Must be pacbio-raw, pacbio-corr or pacbio-hifi. \nUse pacbio-raw for PacBio regular CLR reads (<20 percent error), \npacbio-corr for PacBio reads that were corrected with other methods (<3 percent error) \nor pacbio-hifi for PacBio HiFi reads (<1 percent error).', action="store", default='nothing')
-	parser.add_argument('-r', '--raw_flag', help="Use --nano-raw for Flye with --long_only. \nDesigned for Guppy fast configuration reads. \nBy default, Flye will assume SUP or HAC reads and use --nano-hq", action="store_true" )
 	parser.add_argument('-V', '--version', action='version',help='show plassembler version and exit.', version=v)
 	args = parser.parse_args()
 

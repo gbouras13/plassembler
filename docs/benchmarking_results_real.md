@@ -2,11 +2,11 @@
 
 All benchmarking was conducted on a Intel® Core™ i7-10700K CPU @ 3.80GHz on a machine running Ubuntu 20.04.6 LTS. 
 
-The following Tables show the results of the real read sets for Wick et al [here](https://github.com/rrwick/Small-plasmid-Nanopore/blob/main/method.md), Houtak et al (C222), [here](https://doi.org/10.1101/2023.03.28.534496) and [here](https://github.com/gbouras13/CRS_Saureus_Evolutionary_Landscape) and Mathers et al (CAV1217) [here](https://doi.org/10.1128/AAC.01823-16), and for De Maio et al [here](https://doi.org/10.1099/mgen.0.000294).
+The following Tables show the summary statistics of Plassembler (with Flye and Raven) and Unicycler run from real read sets simulated from 6 samples from Wick, Judd, Wyres et al 2021. These were compared against the independent Trycyler derived and manually curated ground truth you can find [here](https://github.com/rrwick/Small-plasmid-Nanopore/blob/main/method.md).
 
 You can find the full pipeline used to generate these results [here](https://github.com/gbouras13/plassembler_simulation_benchmarking).
 
-For each isolate, the wall clock time (in seconds), the maximum memory usage (in MB) are provided, along with the assembled plasmid length for each plasmid  (in bp), the QUAST genome fraction (%), mismatches per 100kbp and indels per 100kbp for each plasmid in the ground truth assembly, separated by semicolons. The ground truth lengths and the Flye assembled plasmid lengths are shown in the rightmost columns. ‘FtA’ = Failed to Assemble (meaning there was no assembly found for that plasmid).
+You can find the full details on how the real read sets were obtained and subsampled [here](docs/fastqs.md).
 
 
 Wick et al, Houtak et al (C222) and Mathers et al (CAV1217)

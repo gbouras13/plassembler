@@ -30,35 +30,33 @@ conda activate plassembler
 install_database.py plassembler_db
 ```
 
-The below was run on my Mac Mini M1 (2021).
+The below was run on my Macbook M1 (2022).
 
-Plassembler was run using the default the `-r` flag, as these Nanopore reads were sequenced in 2019. They were assembled with 16 threads.
-
-From the paper, I knew that the smaller chromosome was 1.9Mbp, with the larger being 3.3 Mbp. So I decided on using a `-s` value of 100 along with a `-c` value of 1500000 - this means approximately a 30x coverage of the chromosome (Plassembler will keep 1500000x100=150Mbp of long reads, with a combined chromosome size of approximately 5.2 Mbp). 
+From the paper, I knew that the smaller chromosome was 1.9Mbp, with the larger being 3.3 Mbp. So I decided on using  a `-c` value of 1500000. There were lots of long reads in this sample set, so this was have been a good usecase for `--use_raven` to speed up assembly, as the long read set was quite deep.
 
 
 ```
-plassembler.py -d plassembler_db  -l SRR8335319_1.fastq.gz  -1 SRR8335320_1.fastq.gz  -2 SRR8335320_2.fastq.gz  -o vibrio -t 16 -s 100 -c 1500000 -f -r
+plassembler.py -d plassembler_db  -l SRR8335319_1.fastq.gz  -1 SRR8335320_1.fastq.gz  -2 SRR8335320_2.fastq.gz  -o vibrio -t 8 -f -r --use_raven
 
 ```
 
 The terminal output looks like this.
 
 ```
-Starting plassembler v1.0.0
+Starting plassembler v1.1.0
 Checking dependencies.
 Flye version found is v2.9.2-b1786.
 Flye version is ok.
+Raven v1.8.1 found.
+Raven version is ok.
 Unicycler version found is v0.5.0.
 Unicycler version is ok.
 SPAdes v3.15.2 found.
-Samtools v1.17 found.
-minimap2 v2.24-r1122 found.
-fastp v0.23.2 found.
+Samtools v1.9 found.
+minimap2 v2.26-r1175 found.
+fastp v0.22.0 found.
 chopper v0.5.0 found.
-seqkit v2.4.0 found.
-mash v2.3 found.
-rasusa v0.7.1 found.
+mash v2.2.2 found.
 All dependencies found.
 Checking database installation.
 Database successfully checked.
@@ -68,11 +66,11 @@ FASTQ SRR8335320_1.fastq.gz checked
 FASTQ SRR8335320_2.fastq.gz checked
 Filtering long reads with chopper.
 Kept 60090 reads out of 88896 reads
-Subsampling long reads with rasusa.
-Running Flye.
+You have specified --use_raven. Using Raven for long read assembly.
+Running Raven.
 Counting Contigs.
-Flye assembled 4 contigs.
-More than one contig was assembled with Flye.
+Raven assembled 3 contigs.
+More than one contig was assembled with Raven.
 Extracting Chromosome.
 Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.
 Mapping Long Reads.
@@ -83,7 +81,11 @@ Running Unicycler.
 Calculating Plasmid Copy Numbers.
 Calculating mash distances to PLSDB.
 Plassembler has finished.
-Elapsed time: 1107.47 seconds.
+Elapsed time: 1277.44 seconds.
 ```
 
-Intrestingly, I found a small 5386bp plasmid that isn't in the PRJNA479421 assembly! 
+Intrestingly, I found a small 5386bp contig that isn't in the PRJNA479421 assembly! It has a short read copy number of around 4, but was missed in the long read set. 
+
+It turns out this is phage [phiX174](https://en.wikipedia.org/wiki/Phi_X_174), which is commonly used as a spike in positive control in Illumina sequencing. Therefore, it likely reflects contamination in this sample.
+
+However, this is also a good example showing that Plassembler can also be used to recover phages and phage-plasmids in hybrid sequencing data, so long as they have not integrated into the bacterial chromosome(s) (like prophages).

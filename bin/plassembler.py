@@ -20,8 +20,6 @@ import test_incompatibility
 import run_unicycler
 
 
-
-
 from version import __version__
 
 v = __version__
@@ -129,9 +127,6 @@ if __name__ == "__main__":
         assembly.process_mash_tsv(args.database, args.input_plasmids)
         # combine depth and mash tsvs
         assembly.combine_depth_mash_tsvs(prefix)
-
-        # heuristic check forQC
-        test_incompatibility.incompatbility(assembly.combined_depth_mash_df, logger)
 
         # rename contigs and update copy number with plsdb
         cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, True, args.long_only, args.use_raven)

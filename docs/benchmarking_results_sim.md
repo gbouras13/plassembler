@@ -4,6 +4,8 @@ All benchmarking was conducted on a Intel® Core™ i7-10700K CPU @ 3.80GHz on a
 
 The following Tables show the summary statistics of Plassembler (with Flye and Raven) and Unicycler run from read sets simulated from 20 assemblies from Wick, Judd, Wyres et al 2021 [here](https://github.com/rrwick/Small-plasmid-Nanopore/blob/main/method.md), Houtak et al (C222), [here](https://doi.org/10.1101/2023.03.28.534496) and [here](https://github.com/gbouras13/CRS_Saureus_Evolutionary_Landscape), Mathers et al (CAV1217) [here](https://doi.org/10.1128/AAC.01823-16), and for De Maio et al [here](https://doi.org/10.1099/mgen.0.000294).
 
+Accuracy was assessed using QUAST comparing plasmid assemblies against the ground truth.
+
 You can find the full pipeline used to generate these results [here](https://github.com/gbouras13/plassembler_simulation_benchmarking).
 
 Time and Memory Usage
@@ -26,9 +28,13 @@ As can be seen below, Plassembler was consistently faster than Unicycler by 3-10
 Assembly Accuracy
 ==================
 
+All results below were taken from each program run with 8 threads.
+
 As can be seen below, Plassembler missed only 1 plasmid (2370 bp plasmid in _Enterobacter kobei_ MSB1 1B) while Unicycler missed 7, of which were small (under 10kbp). These were _S. aureus_ C222 (2473 bp), _C. koseri_ MINF 9D  (9294 bp), _K. oxytoca_ MSB1 2C (4574 bp), _K. variicola_ INF345  (5783 bp), _E. cloacae_ RBHSTW-00059 (2495 bp) and _K. pneumoniae_ RBHSTW-00128 (3980 bp).
 
 Plassembler also had more fragmented assemblies than Unicycler (3 and 5 v 1). All assemblers fragmented the linear plasmid in K. variicola_ INF345, while Plassembler with Flye also fragmented a 3764 bp plasmid in _C. gillenii_ RBHSTW-00142, and a 4841 bp plasmid in _K. oxytoca_ RBHSTW-00167.
+
+Brackets indicate (minimum and maximum). Indels and Mismatches are expressed as median, and per 100 kbp from QUAST.
 
 
 | Program                | Missed Plasmids | Incomplete/Fragmented Plasmids | Misassemblies | Genome Fraction                             | Indels      | Mismatches      |

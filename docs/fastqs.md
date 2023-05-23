@@ -187,7 +187,7 @@ cat tech_rep_2_illumina_reads/Klebsiella_variicola_INF345/INF345_S147_L001_R2_00
 Other Read Sets
 ===========================
 
-I didn't end up including these in the benchmakring (due to the lack of independent ground truth), but here is how you would go about getting these.
+I didn't end up including these in the benchmarking (due to the lack of independent ground truth), but here is how you would go about getting these if you want them.
 
 #### De Maio
 
@@ -199,7 +199,7 @@ fastq-dl --cpus 8  PRJNA422511
 
 * I got the assemblies from [here](https://figshare.com/articles/dataset/Hybrid_Enterobacteriaceae_assemblies_using_PacBio_Illumina_or_ONT_Illumina_sequencing/7649051), using the 'subsampled Nanopore' assemblies as the ground truth.
 
-#### CAV1217
+#### CAV1217 Assemblies
 
 For this isolate (see the [paper](https://doi.org/10.1128/AAC.01823-16) for more information), I only have the assemblies available, not the reads. I downloaded them as follows:
 

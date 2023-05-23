@@ -39,9 +39,7 @@ From the paper, I knew that the smaller chromosome was 1.9Mbp, with the larger b
 plassembler.py -d plassembler_db  -l SRR8335319_1.fastq.gz  -1 SRR8335320_1.fastq.gz  -2 SRR8335320_2.fastq.gz  -o vibrio -t 8 -f -r --use_raven
 
 ```
-
 The terminal output looks like this.
-
 ```
 Starting plassembler v1.1.0
 Checking dependencies.

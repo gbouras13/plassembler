@@ -6,12 +6,12 @@ The following Tables show the summary statistics of Plassembler (with Flye and R
 
 You can find the full pipeline used to generate these results [here](https://github.com/gbouras13/plassembler_simulation_benchmarking).
 
-You can find the full details on how the real read sets were obtained and subsampled [here](docs/fastqs.md).
+You can find the full details on how the real read sets were obtained and subsampled [here](fastqs.md).
 
 Time and Memory Usage
 ===============
 
-As can be seen below, Plassembler was consistently faster than Unicycler in terms of wall clock time, with the largest increase coming single-threaded. Plassembler with Raven was also faster than with Flye, but less so than in the [simulated benchmarking](docs/benchmarking_results_sim.md).
+As can be seen below, Plassembler was consistently faster than Unicycler in terms of wall clock time, with the largest increase coming single-threaded. Plassembler with Raven was also faster than with Flye, but less so than in the [simulated benchmarking](benchmarking_results_sim.md).
 
 
 | Threads | Program                | Median Wall Clock Time (s) | Minimum Wall Clock Time (s) | Maximum Wall Clock Time (s) | Median Maximum Memory (MB) | Minimum Maximum Memory (MB) | Maximum Maximum Memory (MB) |
@@ -31,7 +31,7 @@ Assembly Accuracy
 
 All results below were taken from each program run with 8 threads.
 
-Plassembler and Unicycler had identical genome fractions and low indel and mismatch rates. Similarly to the [simulated benchmarking](docs/benchmarking_results_sim.md), Plassembler recovered 2 additional small plasmids missed by Unicycler of lengths 1934 bp  _(_K. variicola_ INF345) and 10697 bp (_K. oxytoca_ MSB1 2C). 
+Plassembler and Unicycler had identical genome fractions and low indel and mismatch rates. Similarly to the [simulated benchmarking](benchmarking_results_sim.md), Plassembler recovered 2 additional small plasmids missed by Unicycler of lengths 1934 bp  _(_K. variicola_ INF345) and 10697 bp (_K. oxytoca_ MSB1 2C). 
 
 It turned out that the 10697 bp plasmid recovered in Klebsiella oxytoca MSB1 2C was not recovered using the long-read first assembly method by Wick, Judd, Wyers, et al., 2021, and annotation with Bakta v1.7.0 (Schwengers et al., 2021) revealed that this plasmid contains a Type III toxin-antitoxin system (Supplementary Table 9) along with other plasmid replication genes (repA etc), indicating to be that it is likely a real plasmid missed in that study!
 

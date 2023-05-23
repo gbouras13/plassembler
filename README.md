@@ -246,11 +246,11 @@ To overwrite an existing output directory, use -f
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality> -f`
 
-
 To use Raven instead of Flye as a long read assembler, use `--use_raven`.
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> --use_raven `
 
+Please see the [documentation](docs/run.md) for more options.
 
 ```
 usage: plassembler.py [-h] -d DATABASE [-l LONGREADS] [-1 SHORT_ONE]
@@ -284,16 +284,15 @@ optional arguments:
   -q MIN_QUALITY, --min_quality MIN_QUALITY
                         minimum quality for filtering long reads with chopper. Defaults to 9.
   -t THREADS, --threads THREADS
-                        Number of threads. Defaults to 8. 
+                        Number of threads. Defaults to 1. 
   -f, --force           Overwrites the output directory.
   -p PREFIX, --prefix PREFIX
                         Prefix for output files. This is not required. Defaults to plassembler.
   --pacbio_model PACBIO_MODEL
-                        Pacbio Flye model with --long_only. Must be pacbio-raw, pacbio-corr or pacbio-hifi. 
-                        Use pacbio-raw for PacBio regular CLR reads (<20 percent error), 
-                        pacbio-corr for PacBio reads that were corrected with other methods (<3 percent error) 
-                        or pacbio-hifi for PacBio HiFi reads (<1 percent error).
-  -r, --raw_flag        Use --nano-raw for Flye with --long_only. 
+                        Pacbio Flye model. 
+                        Must be one of pacbio-raw, pacbio-corr or pacbio-hifi. 
+                        Use pacbio-raw for PacBio regular CLR reads (<20 percent error), pacbio-corr for PacBio reads that were corrected with other methods (<3 percent error) or pacbio-hifi for PacBio HiFi reads (<1 percent error).
+  -r, --raw_flag        Use --nano-raw for Flye. 
                         Designed for Guppy fast configuration reads. 
                         By default, Flye will assume SUP or HAC reads and use --nano-hq
   --keep_fastqs         Whether you want to keep FASTQ files containing putative plasmid reads 

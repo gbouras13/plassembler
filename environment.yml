@@ -13,7 +13,7 @@ dependencies:
   - fastp >=0.18.0
   - chopper >=0.5.0
   - mash >=2.2
-  - rasusa >=0.5.0
+  - raven >=1.8
   # issues with pysam with conda recpie - see https://github.com/bioconda/bioconda-recipes/blob/2653adb4e1ebf32a6cbbedb08e5eec07c27d8c93/recipes/strainflye/meta.yaml#L5
   # so fixing pysam to be 0.15.2 or less 
   # will also fix samtools to be >=1.7,<1.10

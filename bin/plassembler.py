@@ -6,7 +6,7 @@ import datetime
 import input_commands
 import qc
 import mapping
-import run_flye
+import assembly
 import cleanup
 import log
 import run_mash
@@ -18,8 +18,6 @@ import sam_to_fastq
 import concat
 import test_incompatibility
 import run_unicycler
-import multimer
-
 
 
 from version import __version__
@@ -108,8 +106,6 @@ if __name__ == "__main__":
             message = "Filtering long reads."
             log.write_message(message, logger)
             qc.chopper(args.longreads, out_dir, args.min_length, args.min_quality, long_gzipped, args.threads)
-            # doesn't subsample by default for assembled mode
-            qc.rasusa(out_dir, False, args.subsample_depth, args.chromosome, logger)
         if short_flag == True:
             message = "Trimming short reads."
             log.write_message(message, logger)
@@ -132,12 +128,9 @@ if __name__ == "__main__":
         # combine depth and mash tsvs
         assembly.combine_depth_mash_tsvs(prefix)
 
-        # heuristic check forQC
-        test_incompatibility.incompatbility(assembly.combined_depth_mash_df, logger)
-
         # rename contigs and update copy number with plsdb
-        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, True, args.long_only)
-        cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, True, args.long_only)
+        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, True, args.long_only, args.use_raven)
+        cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, True, args.long_only, args.use_raven)
 
 
 #############################
@@ -182,10 +175,7 @@ if __name__ == "__main__":
                 log.write_message(message, logger)
                 min_quality = str(15)
         qc.chopper(args.longreads, out_dir, args.min_length, min_quality, long_zipped, args.threads)
-        if args.no_subsample == False:
-            message ="Subsampling long reads with rasusa."
-            log.write_message(message, logger)
-        qc.rasusa(out_dir, args.no_subsample, args.subsample_depth, args.chromosome, logger )
+
 
         # pacbio model check that the string is valid
         if args.pacbio_model != "nothing":
@@ -194,10 +184,19 @@ if __name__ == "__main__":
             pacbio_model = args.pacbio_model
 
 
-        # running Flye
-        message = "Running Flye."
-        log.write_message(message, logger)
-        run_flye.run_flye(out_dir, args.threads,args.raw_flag, pacbio_model, logger)
+
+        # Raven for long only or '--use_raven'
+        if args.long_only == True or args.use_raven == True:
+            if args.use_raven == True:
+                message = "You have specified --use_raven. Using Raven for long read assembly."
+                log.write_message(message, logger)               
+            message = "Running Raven."
+            log.write_message(message, logger)
+            assembly.run_raven(out_dir, args.threads,  logger)
+        else:
+            message = "Running Flye."
+            log.write_message(message, logger)
+            assembly.run_flye(out_dir, args.threads, args.raw_flag, pacbio_model, logger)
 
         # instanatiate the class with some of the commands
         plass = Plass()
@@ -215,22 +214,28 @@ if __name__ == "__main__":
         ####################################################################
 
         if plass.contig_count == 1:
-            logger.info("Only one contig was assembled with Flye.")
-            print("Only one contig was assembled with Flye.")
 
             # no_plasmids_flag = True as no plasmids
             plass.no_plasmids_flag = True
 
             # identifies chromosome and renames contigs
-            plass.identify_chromosome_process_flye( args.chromosome, logger)
+            # just keep Flye as placeholder experimental for now
+            if args.use_raven == True :
+                message = "Only one contig was assembled with Raven."
+                log.write_message(message, logger)
+                plass.identify_chromosome_process_raven( args.chromosome, logger)
+            else:
+                message = "Only one contig was assembled with Flye."
+                log.write_message(message, logger)
+                plass.identify_chromosome_process_flye( args.chromosome, logger)
 
             # no chromosome identified - cleanup and exit
             ####################################################################
             if plass.chromosome_flag == False:
                 message = 'No chromosome was identified. Likely, there was insufficient long read depth for Flye to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. '
                 log.write_message(message, logger)
-                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
-                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
+                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only, args.use_raven)
+                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_raven)
             else: # chromosome identified -> move on 
                 if args.long_only == False:
                     message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
@@ -305,11 +310,10 @@ if __name__ == "__main__":
                         if args.long_only == False:
                         # heuristic check 
                             test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
-                            plass.add_multimer_info(prefix)
 
                         # cleanup files 
-                        cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only)
-                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
+                        cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only, args.use_raven)
+                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_raven)
                     
                     ####################################################################
                     # Case 4: where there are truly no plasmids even after unicycler runs
@@ -317,34 +321,42 @@ if __name__ == "__main__":
                     else: # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
                         message = "No plasmids found."
                         log.write_message(message, logger)
-                        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
-                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
+                        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only, args.use_raven)
+                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_raven)
                     
           
 ####################################################################
         # where more than 1 contig was assembled
 ####################################################################
         else:
-            message = "More than one contig was assembled with Flye."
-            log.write_message(message, logger)
-
-            message = "Extracting Chromosome."
-            log.write_message(message, logger)
 
             # no_plasmids_flag = False as no plasmids
             plass.no_plasmids_flag = False
 
             # identifies chromosome and renames contigs
-            plass.identify_chromosome_process_flye(args.chromosome, logger)
+            # just keep Flye as placeholder experimental for now for long read only
+            if args.use_raven == True:
+                message = "More than one contig was assembled with Raven."
+                log.write_message(message, logger)
+                message = "Extracting Chromosome."
+                log.write_message(message, logger)
+                plass.identify_chromosome_process_raven( args.chromosome, logger)
+            else:
+                message = "More than one contig was assembled with Flye."
+                log.write_message(message, logger)
+                message = "Extracting Chromosome."
+                log.write_message(message, logger)
+                plass.identify_chromosome_process_flye( args.chromosome, logger)
 
+            
             ####################################################################
             # Case 2 - where no chromosome was identified (likely below required depth) - need more long reads or user got chromosome parameter wrong - exit plassembler
             ####################################################################
             if plass.chromosome_flag == False:
                 message = 'No chromosome was idenfitied. please check your -c or --chromosome parameter, it may be too high. \nLikely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended.'
                 log.write_message(message, logger)
-                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only)
-                cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, False, args.long_only)
+                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only, args.use_raven)
+                cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, False, args.long_only, args.use_raven)
 
             ####################################################################
             # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> get reads mappeed to plasmids, unmapped to chromosome and assemble
@@ -428,14 +440,8 @@ if __name__ == "__main__":
                     # incompatibility
                     test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
 
-                    # multimer check
-                    multimer.minimap2_unicycler_vs_flye_plasmids(out_dir, prefix, logger)
-
-                    # combine depth and mash tsvs with dimer information
-                    plass.add_multimer_info(prefix)
-
-                cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only)
-                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only)
+                cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only, args.use_raven)
+                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_raven)
 
     # Determine elapsed time
     elapsed_wallclock_time = time.perf_counter() - start_time

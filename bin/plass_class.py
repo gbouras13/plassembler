@@ -56,32 +56,128 @@ class Plass:
         self.long_only = long_only
         self.unicycler_success = unicycler_success
 
+
     def get_contig_count(self,  logger):
-        """ Counts the number of contigs assembled by flye and prints to log
-        :param out_dir: output directory
+        """ Counts the number of contigs assembled 
         :return:
         """
         out_dir = self.out_dir
-        info_file =  os.path.join(out_dir, "assembly_info.txt")
-        col_list = ["seq_name", "length", "cov", "circ", "repeat", "mult", "alt_group", "graph_path"] 
-        info_df = pd.read_csv(info_file, delimiter= '\t', index_col=False , names=col_list, skiprows=1) 
-        contig_count = len(info_df['seq_name'])
-        message = "Flye assembled " + str(contig_count) + " contigs."
+        fasta_file = os.path.join(out_dir, "assembly.fasta")
+        contig_count = 0
+        for record in SeqIO.parse(fasta_file, "fasta"):
+            contig_count += 1
+        message = "Raven assembled " + str(contig_count) + " contigs."
         print(message)
         logger.info(message)
         self.contig_count = contig_count
 
-    def make_chrom_bed(self):
-        """ Creates simple bed file with chromosome, 1 and length
+
+    def identify_chromosome_process_raven(self,  chromosome_len, logger):
+        """Identified chromosome and processes Raven output - renames chromosome contig and the others as plasmid_1, plasmid_2 etc
+        Also makes the chromosome bed file for downstream samtools mapping
         :param out_dir: output directory
-        :return:
+        :param chromosome_len: lower bound on length of chromosome from input command
+        :param keep_chromosome: whether the user wants to keep the chromosome as chromosome.fasta
+        :return chromosome_flag: bool whether chromosome assembles
         """
         out_dir = self.out_dir
-        info_file =  os.path.join(out_dir, "assembly_info.txt")
-        col_list = ["seq_name", "length", "cov", "circ", "repeat", "mult", "alt_group", "graph_path"] 
-        info_df = pd.read_csv(info_file, delimiter= '\t', index_col=False , names=col_list, skiprows=1) 
-        
-        contig_count = len(info_df['seq_name'])
+        long_only = self.long_only
+
+        fasta_file = os.path.join(out_dir, "assembly.fasta")
+
+        # get max contig length
+        max_length = 0
+        for record in SeqIO.parse(fasta_file, "fasta"):
+            sequence_length = len(record.seq)
+            if sequence_length > max_length:
+                max_length = sequence_length
+
+        # to say that the chromosome has been correctly identified 
+        chromosome_flag = True
+        if max_length < int(chromosome_len):  # no chromosome identified -> don't bother with the renaming
+            chromosome_flag = False
+        ### assuming chromosome identified
+        else:
+            # make bed file with plasmid contigs to extract mapping reads
+            bed_file =  open(os.path.join(out_dir, "non_chromosome.bed"), 'w')
+            bed_chrom_file =  open(os.path.join(out_dir, "chromosome.bed"), 'w')
+            with open(os.path.join(out_dir, "flye_renamed.fasta"), 'w') as rename_fa:
+                # for chromosome fasta too
+                with open(os.path.join(out_dir, "chromosome.fasta"), 'w') as chrom_fa:
+                    # for plasmid numbering
+                    i = 1
+                    # for chromosome numbering (chromids, multiple plasmid contigs)
+                    c = 1
+                    for dna_record in SeqIO.parse(os.path.join(out_dir, "assembly.fasta"), 'fasta'):
+                        # if the length is over chromosome length
+                        contig_len = len(dna_record.seq)
+                        if contig_len > int(chromosome_len): 
+                            # if the first chromosome (most cases), then just chromosome. Otherwise continue.
+                            if c == 1:
+                                dna_header = "chromosome"
+                            else:
+                                if c == "2":
+                                    message = "Multiple contigs above the specified chromosome length -c have been detected. \nIf you are hoping for plasmids from haploid bacteria, please check your value for -c."
+                                    print(message)
+                                    logger.info(message)        
+                                dna_header = "chromosome_" + str(c)
+                            dna_description = ""
+                            dna_record = SeqRecord(dna_record.seq, id=dna_header, description = dna_description)
+                            SeqIO.write(dna_record, rename_fa, 'fasta')
+                            SeqIO.write(dna_record, chrom_fa, 'fasta')
+                            bed_chrom_file.write(f'{dna_header}\t1\t{contig_len}\n')  # chromosome
+                            c += 1
+                        # plasmids
+                        else:
+                            dna_header = "plasmid_" + str(i)
+                            dna_description = ""
+                            # write the updated record
+                            dna_record = SeqRecord(dna_record.seq, id=dna_header, description = dna_description)
+                            SeqIO.write(dna_record, rename_fa, 'fasta')
+                            # get length for bed file
+                            # make bed file contig leng
+                            bed_file.write(f'{dna_header}\t1\t{contig_len}\n')  # Write read name
+                            i += 1
+            # if lony only is true, create new unicycler_output file (fake)
+            if long_only == True:
+                message = "Extracting possible plasmids from Raven assembly."
+                print(message)
+                logger.info(message)  
+                # make fake unicycler output file 
+                if not os.path.exists(os.path.join(out_dir,"unicycler_output")):
+                    os.mkdir(os.path.join(out_dir,"unicycler_output"))
+                # remove bed if exists
+                if os.path.exists(os.path.join(out_dir, "non_chromosome.bed")):
+                    os.remove(os.path.join(out_dir, "non_chromosome.bed"))
+                with open(os.path.join(out_dir,"unicycler_output", "assembly.fasta"), 'w') as rename_fa:
+                    # for plasmid numbering
+                    i = 1
+                    for dna_record in SeqIO.parse(os.path.join(out_dir, "assembly.fasta"), 'fasta'):
+                        # if the length is over chromosome length
+                        contig_len = len(dna_record.seq)
+                        if contig_len < int(chromosome_len): 
+                            dna_header = str(i)
+                            # get circularity
+                            # circ = info_df.circ.loc[info_df['seq_name'] == dna_record.id]
+                            # plas_circ =  str(circ.iloc[0])
+                            # if plas_circ == "Y":
+                            #     dna_description = "circular=true" 
+                            # else:
+                            #     dna_description = ""
+                            # get length for bed file
+
+                            # later add some circularity script
+
+                            # write the updated record
+                            dna_record = SeqRecord(dna_record.seq, id=dna_header, description = dna_description)
+                            SeqIO.write(dna_record, rename_fa, 'fasta')
+                            # get length for bed file
+                            # make bed file
+                            bed_file.write(f'{dna_header}\t1\t{contig_len}\n')  # Write read name
+                            i += 1
+        # add to object
+        self.chromosome_flag = chromosome_flag
+
 
 
     def identify_chromosome_process_flye(self,  chromosome_len, logger):

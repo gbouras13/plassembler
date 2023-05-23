@@ -12,7 +12,7 @@ import shutil
 # cleanup
 ##########################################################
 
-def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_only):
+def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_only, use_raven):
     """ removes intermediate files
     :param out_dir:  Output Directory
     :return: 
@@ -29,7 +29,7 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
     for file in files:
         remove_file(file)
     
-    if assembled_mode == False:
+    if long_only == True or use_raven == False:
         shutil.rmtree(os.path.join(out_dir,"00-assembly"))
         shutil.rmtree(os.path.join(out_dir,"10-consensus"))
         shutil.rmtree(os.path.join(out_dir,"20-repeat"))
@@ -37,6 +37,7 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
         shutil.rmtree(os.path.join(out_dir, "40-polishing"))
 
     if long_only == True:
+        # the fake unicycler directory
         shutil.rmtree(os.path.join(out_dir,"unicycler_output"))
 
     # delete intermediate mash file
@@ -48,7 +49,6 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
     remove_file(os.path.join(out_dir,"plasmids.fasta"))
 
     # delete fastq intermediate files
-    remove_file(os.path.join(out_dir,"final_filtered_long_reads.fastq.gz"))
     remove_file(os.path.join(out_dir,"chopper_long_reads.fastq.gz"))
     remove_file(os.path.join(out_dir, "multimap_plasmid_chromosome_long.fastq"))
 
@@ -60,25 +60,37 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
         remove_file(os.path.join(out_dir,"chromosome.fasta"))
 
 
-def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, assembled_mode, long_only):
+def move_and_copy_files(out_dir, prefix, unicycler_success_flag, keep_fastqs, assembled_mode, long_only, use_raven):
     """ moves and copies files
     :param out_dir:  Output Directory
     :param prefix: prefix
     :param unicycler_success_flag: whether or not unicycler worked
     :return: 
     """
-    # make flye dir 
-    flye_dir = os.path.join(out_dir,"flye_output")
-    if not os.path.exists(flye_dir):
-        os.mkdir(flye_dir)
 
-    # move flye files
-    if assembled_mode == False:
+    # long only
+    if long_only == True or use_raven == False:
+        # make flye dir 
+        flye_dir = os.path.join(out_dir,"flye_output")
+        if not os.path.exists(flye_dir):
+            os.mkdir(flye_dir)
+
         shutil.move(os.path.join(out_dir,"assembly.fasta"), flye_dir) 
         shutil.move(os.path.join(out_dir,"assembly_info.txt"), flye_dir)
         shutil.move(os.path.join(out_dir,"flye.log"), flye_dir)
         shutil.move(os.path.join(out_dir,"assembly_graph.gfa"), flye_dir)
         shutil.move(os.path.join(out_dir,"assembly_graph.gv"), flye_dir)
+
+    # normal use
+
+    if long_only == False and assembled_mode == False and use_raven == True:
+        # make raven dir 
+        raven_dir = os.path.join(out_dir,"raven_output")
+        if not os.path.exists(raven_dir):
+            os.mkdir(raven_dir)
+        # move gfa and 
+        shutil.move(os.path.join(out_dir,"assembly.fasta"), raven_dir) 
+        shutil.move(os.path.join(out_dir,"assembly_graph.gfa"), raven_dir) 
 
     if unicycler_success_flag == True:
         if long_only == False:

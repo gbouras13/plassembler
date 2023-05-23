@@ -184,20 +184,10 @@ cat tech_rep_2_illumina_reads/Klebsiella_variicola_INF345/INF345_S147_L001_R1_00
 cat tech_rep_2_illumina_reads/Klebsiella_variicola_INF345/INF345_S147_L001_R2_001.fastq.gz  tech_rep_1_illumina_reads/Klebsiella_variicola_INF345/plasmids-INF345_2.fastq.gz   > pooled_illumina/Klebsiella_variicola_2.fastq.gz
 ```
 
-  
-#### C222 
+Other Read Sets
+===========================
 
-
-* The original files of these reads can also be found on the SRA SAMN32360844 in BioProject PRJNA914892
-* These were my local reads hence not called SRR_..., but they are easy to download using [fastq-dl](https://github.com/rpetit3/fastq-dl).
-* I subsampled the long reads to 60x to match the other pathogens, and also 30x to illustrate how Plassembler's speedup will be higher at lower read depths (with this read set, a chromosome will be assembled down to around 15x - this may be even lower for reads with higher N50s).
-
-```
-conda install rasusa
-rasusa --coverage 30 --genome-size 2.5mb --input C222.fastq.gz | gzip > C222_subsampled30x.fastq.gz
-rasusa --coverage 60 --genome-size 2.5mb --input C222.fastq.gz | gzip > C222_subsampled60x.fastq.gz
-conda deactivate
-```
+I didn't end up including these in the benchmakring (due to the lack of independent ground truth), but here is how you would go about getting these.
 
 #### De Maio
 

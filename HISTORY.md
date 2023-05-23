@@ -1,10 +1,10 @@
 # History
 
-1.0.1 (2023-05-15)
+1.1.0 (2023-05-23)
 ------------------
 
-* Small but important change. Uses `--determinism` flag to ensure determinism with Flye after significant non-determinism was uncovered during benchmarking.
-* Will make Plassembler a bit slower (especially for higher values of `-s`), but ensures determinism (as far as Unicycler/SPAdes).
+* Adds Raven long read assembly option using `--use_raven`
+* Removes rasusa, `-s` and `--no_subsample` (to improve determinism). If users want faster runtimes, we recommend `--use_raven`.
 
 1.0.0 (2023-05-10)
 ------------------

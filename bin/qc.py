@@ -38,13 +38,13 @@ def chopper(input_long_reads, out_dir, min_length, min_quality, gzip_flag, threa
         except:
             sys.exit("Error with chopper\n")  
 
-def rasusa(out_dir, no_subset_flag, subsample_depth, chromosome_length, logger ):
+def rasusa(out_dir, subsample_flag, subsample_depth, chromosome_length, logger ):
     """Subsets long reads using rasusa for faster Flye
 
     :param input_long_reads: input ONT reads file
     :param out_dir: output directory
-    :param no_subset_flag: whether user turns off subsampling (will just return chopper reads)
-    :param subsample_depth:  depth of subsampling (defaults to 50x).
+    :param subsample_flag: whether user turns on subsampling (will just return chopper reads if False)
+    :param subsample_depth:  depth of subsampling (defaults to 30x).
     :param chromosome_length: int chromosome length input by user
     :param logger: logger
     :return:
@@ -54,7 +54,7 @@ def rasusa(out_dir, no_subset_flag, subsample_depth, chromosome_length, logger )
     subset_long_reads = os.path.join(out_dir, "final_filtered_long_reads.fastq.gz")
 
     # if chosen not to subset then just take chopper output
-    if no_subset_flag == True:
+    if subsample_flag == False:
         shutil.copy2( chopper_long_reads, subset_long_reads)
     # use rasusa to subset to 
     else:

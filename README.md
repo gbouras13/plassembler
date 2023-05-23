@@ -19,6 +19,7 @@ Table of Contents
   - [Automated Bacterial Plasmid Assembly Program](#automated-bacterial-plasmid-assembly-program)
   - [Table of Contents](#table-of-contents)
 - [Quick Start](#quick-start)
+- [Latest Version](#latest-version)
 - [Why Does Plassembler Exist?](#why-does-plassembler-exist)
 - [Why Not Just Use Unicycler?](#why-not-just-use-unicycler)
 - [Documentation](#documentation)
@@ -44,7 +45,7 @@ The easiest way to install plassembler is via conda:
 
 Followed by database download and installation:
 
-`install_database.py -d <path/to/databse_dir>`
+`install_database.py -d <databse directory>`
 
 And finally assembly:
 
@@ -52,15 +53,23 @@ And finally assembly:
 
 Please read the [Installation](#installation) section for more details, especially if you are an inexperienced command line user.
 
+# Latest Version
+
+Please use version 1.1.0, as it contains all recently added features.
+
+To force install this please use:
+
+`conda install -c bioconda plassembler==1.1.0`
+
 # Why Does Plassembler Exist?
 
-In long-read first assembled bacterial genomes, small plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated or missed (see [this](https://doi.org/10.1371/journal.pcbi.1010905) and [this](https://github.com/rrwick/Trycycler/wiki/Clustering-contigs) ).
+In long-read first assembled bacterial genomes, small plasmids are often difficult to assemble correctly with long read assemblers such as Flye. They often have circularisation issues and can be duplicated or missed (see [this](https://doi.org/10.1371/journal.pcbi.1010905), [this](https://f1000research.com/articles/8-2138) and [this](https://github.com/rrwick/Trycycler/wiki/Clustering-contigs) ).
 
-Plassembler was therefore created as an automated tool to ensure plasmids assemble correctly without duplicated regions for high-throughput uses - and to provide some useful statistics as well (such as estimate plasmid copy numbers for both long and short read sets). Plassembler will likely also recover small plasmids that long read assemblers like Flye simply miss.
+Plassembler was therefore created as an automated tool to ensure plasmids assemble correctly without duplicated regions for high-throughput uses - and to provide some useful statistics as well (such as estimate plasmid copy numbers for both long and short read sets). Plassembler will likely also recover small plasmids that long read assemblers like Flye  miss.
 
-As it turns out (though this wasn't a motivation for making it!), Plassembler also assembles plasmids more accurately than Unicycler. I think this is because subsampling short reads sets can improve assembly quality (see [this](https://doi.org/10.1093/bioinformatics/btv311) and [this](https://doi.org/10.1371/journal.pone.0060204) and [this](https://academic.oup.com/bioinformatics/article/27/4/479/198367) - thanks Michael Hall for the references!), so throwing away chromosomal reads probably has a similar effect.
+As it turns out (though this wasn't a motivation for making it!), Plassembler also recovers more small plasmids than the existing gold standard tool Unicycler. I think this is because it throws away chromosomal reads, similar to subsampling short reads sets which can improve assembly quality (see [this](https://doi.org/10.1093/bioinformatics/btv311) and [this](https://doi.org/10.1371/journal.pone.0060204) and [this](https://academic.oup.com/bioinformatics/article/27/4/479/198367) - thanks Michael Hall for the references!). In other words, there are more plasmid reads a proportion of the overall read set, so a higher chance of recovering smaller plasmids.
 
-You can see this increase in quality and speed in the benchmarking results for [simulated](docs/benchmarking_results_sim.md) and [real](docs/benchmarking_results_real.md) datasets.
+You can see this increase in accuracy and speed in the benchmarking results for [simulated](docs/benchmarking_results_sim.md) and [real](docs/benchmarking_results_real.md) datasets.
 
 Plassembler also uses [mash](https://github.com/marbl/Mash) as a quick way to determine whether each assembled contig has any similar hits in [PLSDB](https://doi.org/10.1093/nar/gkab1111). 
 
@@ -70,8 +79,8 @@ Additionally, due to its mapping approach, Plassembler can also be used as a qua
 
 Unicycler is awesome and still a good way to assemble plasmids from hybrid sequencing - plassembler uses it! But there are a few reasons to use plassembler instead:
 
-1. Time. Plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so it is much faster (4-20x, which will likely be even higher if you have lots of long reads). 
-2. Accuracy. Benchmarking has shown Plassembler is more accurate than Unicycler in terms of indels and mismatches. I honestly wasn't even aiming for this when I wrote Plassembler, just a big speed-up, but it is a nice result of course!
+1. Time. Plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so it is much faster (wall clock 3-10x faster generally). 
+2. Accuracy. Benchmarking has shown Plassembler is better than Unicycler in terms of recovering small plasmids.
 3. Plassembler will output only the likely plasmids, and can more easily be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://doi.org/10.1371/journal.pcbi.1010905) so Plassembler can get you only what is necessary from Unicycler.
 4. Plassembler will give you summary depth and copy number stats for both long and short reads.
 5. Plassembler can be used as a quality control to check if your short and long reads come from the same sample - if plassembler results in many non-circular contigs (particularly those that have no hits in PLSDB), it is likely because your read sets do not come from the same isolate! See [Quality Control](#quality-control).
@@ -85,37 +94,41 @@ Documentation can be found at http://plassembler.readthedocs.io/.
 
 # Method
 
-1. Long reads are filtered using [chopper](https://github.com/wdecoster/chopper) .
-2. Long reads are subsampled to 30x to reduce runtime (subsampling depth be changed with `-s` or skipped with `--no_subsample`).
-3. Long-read only assembly is conducted with [Flye](https://github.com/fenderglass/Flye).
-4. If the resulting assembly is checked. Contigs bigger than the provided chromosome size `-c`, are identified as chromosomal and extracted. Any other contigs are extracted as putative plasmid contigs, if Flye assembled any. If no contigs were larger than `-c`, plassembler will exit - you probably need to get some more long reads to complete your assembly (or check `-c` wasn't too big).
-5. Short reads are filtered using [fastp](https://github.com/OpenGene/fastp).
-6. Long and short reads are mapped to a reference containing the chromosomal contigs plus putative plasmid contigs using [minimap2](https://github.com/lh3/minimap2#uguide).
-7. All reads that map to the putative plasmid contigs and all reads that are unmapped are extracted and combined.
-8. These reads are assembled using the hybrid assembler [Unicycler](https://github.com/rrwick/Unicycler) to generate final plasmid contigs.
-9. Average read coverage depth for each plasmid is calculated using a modified version of code found [here](https://github.com/rrwick/Small-plasmid-Nanopore). See also this [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
-10. Plasmid copy number is calculated by dividing the plasmid read depth by the chromosome read depth.
-11. All plasmid contigs are compared against [PLSDB](https://doi.org/10.1093/nar/gkab1111) using [mash](https://github.com/marbl/Mash) with a cutoff maximum mash distance of 0.1.
+1. Long reads are filtered using [chopper](https://github.com/wdecoster/chopper) ..
+2. Long-read only assembly is conducted with [Flye](https://github.com/fenderglass/Flye) or optionally [Raven](https://github.com/lbcb-sci/raven) if `--use_raven` is specified.
+3. If the resulting assembly is checked. Contigs bigger than the provided chromosome size `-c`, are identified as chromosomal and extracted. Any other contigs are extracted as putative plasmid contigs, if Flye assembled any. If no contigs were larger than `-c`, plassembler will exit - you probably need to get some more long reads to complete your assembly (or check `-c` wasn't too big).
+4. Short reads are filtered using [fastp](https://github.com/OpenGene/fastp).
+5. Long and short reads are mapped to a reference containing the chromosomal contigs plus putative plasmid contigs using [minimap2](https://github.com/lh3/minimap2#uguide).
+6. All reads that map to the putative plasmid contigs and all reads that are unmapped are extracted and combined.
+7. These reads are assembled using the hybrid assembler [Unicycler](https://github.com/rrwick/Unicycler) to generate final plasmid contigs.
+8. Average read coverage depth for each plasmid is calculated using a modified version of code found [here](https://github.com/rrwick/Small-plasmid-Nanopore). See also this [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
+9.  Plasmid copy number is calculated by dividing the plasmid read depth by the chromosome read depth.
+10.  All plasmid contigs are compared against [PLSDB](https://doi.org/10.1093/nar/gkab1111) using [mash](https://github.com/marbl/Mash) with a cutoff maximum mash distance of 0.1.
 
 
 # Other Features 
 
 1. Assembled mode.
 
-* Thanks to a suggestion from @gaworj, assembled mode has been added to Plassembler from v1.0.0. This allows you to calculate the copy numbers of already assembled plasmids you may have, skipping assembly. You can specify this with the `-a` flag, along with your chromosome FASTA file using `--input-chromosome` and your plasmids FASTA file `--input_plasmids`.
+* Thanks to a suggestion from [gaworj](https://github.com/gaworj), assembled mode has been added to Plassembler. This allows you to calculate the copy numbers of already assembled plasmids you may have, skipping assembly. You can specify this with the `-a` flag, along with your chromosome FASTA file using `--input-chromosome` and your plasmids FASTA file `--input_plasmids`.
 
-2. Multi-mapped reads.
+1. Multi-mapped reads.
 
 * All long reads that map to multiple contigs (mostly, reads that map to both the chromosome and plasmids, but also to multiple putative plasmids) will be extracted when using the `--keep-fastqs` options. These may be of interest if you are looking at shared mobile genetic elements.
 
 3. Multiple chromosome bacteria/megaplasmids/chromids
 
 * Plassembler should work with bacteria with multiple chromosomes, megaplasmids or chromids. In this case, I would treat the megaplasmids etc like chromosomes and assemble them using a long-read first approach with Trycycler or Dragonflye, as they are of approximately chromosome size. 
-* However, I'd still use Plassembler to recover small plasmids - for example, for  it managed to recover a 5386bp plasmid in the _Vibrio campbellii DS40M4_ genome (see this [paper](https://doi.org/10.1128/MRA.01187-18) and this [bioproject](https://www.ncbi.nlm.nih.gov/bioproject/479421) ) that was missed with Unicycler v.0.4.4 (or at least it was not uploaded!).
-* I would recommend tweaking the parameters a bit in this use case. -c needs to be smaller than the size of the largest chromosome-like element, and I would increase the subsampling depth `-s` from 30 to something higher (e.g. `-s 100`), because this is based off the `-c` value. 
-* For example, for the vibrio example, which had approximately 1.8Mbp and 3.3Mbp chromosomes , I used `-c 1500000 -s 100`.
+* I'd still use Plassembler to recover small plasmids - for example, for  Plassembler v1.1.0 recovered the 77.5 kbp plasmiod along with a 5386bp contig (coresponding to phage phiX174, a common sequencing spike-in) in the _Vibrio campbellii DS40M4_  (see this [paper](https://doi.org/10.1128/MRA.01187-18) and this [bioproject](https://www.ncbi.nlm.nih.gov/bioproject/479421) ).
+* `-c` needs to be smaller than the size of the largest chromosome-like element.
+* For example, for the vibrio example, which had approximately 1.8Mbp and 3.3Mbp chromosomes , I used `-c 1500000`.
 
 Please see [here](docs/multiple_chromosomes.md) for more details and an example. 
+
+4. Phages, Phage-Plasmids and Other Extrachromosomal Replicons
+
+* If you have sufficient hybrid sequencing data, Plassembler will theoretically recover assemblies of all non-chromosomal replicons, including phages and phage-plasmids
+* A good example of this is the _Vibrio campbellii DS40M4_  example, where Plassembler recovered the assembly of phage phiX174, albeit was likely from sequencing spike-ing contamination in that case.
 
 # Quality Control
 
@@ -233,16 +246,21 @@ To overwrite an existing output directory, use -f
 
 ` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality> -f`
 
-To overwrite an existing output directory, use -f
 
-` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> -p <prefix> -m <min length> -q <min quality> -f`
+To use Raven instead of Flye as a long read assembler, use `--use_raven`.
+
+` plassembler.py -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> --use_raven `
 
 
 ```
-usage: plassembler.py [-h] -d DATABASE [-l LONGREADS] [-1 SHORT_ONE] [-2 SHORT_TWO] [-c CHROMOSOME] [-o OUTDIR] [-m MIN_LENGTH]
-                      [-q MIN_QUALITY] [-t THREADS] [-f] [-r] [-p PREFIX] [-s SUBSAMPLE_DEPTH] [--long_only]
-                      [--pacbio_model PACBIO_MODEL] [--no_subsample] [--keep_fastqs] [--keep_chromosome] [-a]
-                      [--input_chromosome INPUT_CHROMOSOME] [--input_plasmids INPUT_PLASMIDS] [-V]
+usage: plassembler.py [-h] -d DATABASE [-l LONGREADS] [-1 SHORT_ONE]
+                      [-2 SHORT_TWO] [-c CHROMOSOME] [-o OUTDIR]
+                      [-m MIN_LENGTH] [-q MIN_QUALITY] [-t THREADS] [-f]
+                      [-p PREFIX] [--pacbio_model PACBIO_MODEL] [-r]
+                      [--keep_fastqs] [--keep_chromosome] [-a]
+                      [--input_chromosome INPUT_CHROMOSOME]
+                      [--input_plasmids INPUT_PLASMIDS] [--long_only]
+                      [--use_raven] [-V]
 
 plassembler: automated bacterial plasmid assembly tool.
 
@@ -266,32 +284,21 @@ optional arguments:
   -q MIN_QUALITY, --min_quality MIN_QUALITY
                         minimum quality for filtering long reads with chopper. Defaults to 9.
   -t THREADS, --threads THREADS
-                        Number of threads. Defaults to 1.
+                        Number of threads. Defaults to 8. 
   -f, --force           Overwrites the output directory.
-  -r, --raw_flag        Use --nano-raw for Flye. 
-                         Designed for Guppy fast configuration reads. 
-                        By default, Flye will assume SUP or HAC reads and use --nano-hq
   -p PREFIX, --prefix PREFIX
                         Prefix for output files. This is not required. Defaults to plassembler.
-  -s SUBSAMPLE_DEPTH, --subsample_depth SUBSAMPLE_DEPTH
-                        Subsample long-read depth as an integer. 
-                        Used combined with the coverage of the chromosome length provided with -c. 
-                        Defaults to 30.
-  --long_only           Very high quality Nanopore R10.4 and above reads. 
-                        Takes Flye output, extracts contigs under size -c and runs the depth arguments. 
-                        No short reads required. 
-                        Experimental for now.
   --pacbio_model PACBIO_MODEL
-                        Pacbio Flye model. Must be pacbio-raw, pacbio-corr or pacbio-hifi. 
+                        Pacbio Flye model with --long_only. Must be pacbio-raw, pacbio-corr or pacbio-hifi. 
                         Use pacbio-raw for PacBio regular CLR reads (<20 percent error), 
                         pacbio-corr for PacBio reads that were corrected with other methods (<3 percent error) 
                         or pacbio-hifi for PacBio HiFi reads (<1 percent error).
-  --no_subsample        Turns off long-read sub-sampling. 
-                        Recommended if long-read sets have low N50s/N90s, 
-                        or are of a difficult-to-assemble species with lots of repeats.
+  -r, --raw_flag        Use --nano-raw for Flye with --long_only. 
+                        Designed for Guppy fast configuration reads. 
+                        By default, Flye will assume SUP or HAC reads and use --nano-hq
   --keep_fastqs         Whether you want to keep FASTQ files containing putative plasmid reads 
                         and long reads that map to multiple contigs (plasmid and chromosome).
-  --keep_chromosome     Whether you want to keep the polished Flye chromosome assembly.
+  --keep_chromosome     If you want to keep the chromosome assembly.
   -a, --assembled_mode  Activates assembled mode.
   --input_chromosome INPUT_CHROMOSOME
                         Input FASTA file consisting of already assembled chromosome with assembled mode. 
@@ -299,6 +306,12 @@ optional arguments:
   --input_plasmids INPUT_PLASMIDS
                         Input FASTA file consisting of already assembled plasmids with assembled mode. 
                         Requires FASTQ file input (short only, long only or long + short).
+  --long_only           Experimental for now. 
+                        Very high quality Nanopore R10.4 and above reads. 
+                        Assembly using Flye, extracts contigs under size -c and runs the depth arguments. 
+                        No short reads required.
+  --use_raven           Uses Raven instead of Flye for long read assembly. 
+                        May be useful if you want to reduce runtime.
   -V, --version         show plassembler version and exit.
 ```
 
@@ -310,7 +323,7 @@ Plassembler also outputs a `_summary.tsv` file, which gives the estimated copy n
 
 If plassembler fails to assemble any plasmids at all in `_plasmids.fasta`, all these files will still exist, but will be empty (to ensure plassembler can be easily integrated into workflow managers like Snakemake).
 
-plassembler will also output a log file, a `flye_output` directory, which contains the output from Flye (it may be useful to decide whether you need more sequencing reads, or some strange assembly artifact occured) and a `unicycler_output` directory containing the output from Unicycler.
+plassembler will also output a log file, a `flye_output` directory, which contains the output from Flye (it may be useful to decide whether you need more sequencing reads, or some strange assembly artifact occured) and a `unicycler_output` directory containing the output from Unicycler. If `--use_raven` is specified, a `raven_output` directory will be present instead.
 
 # Benchmarking
 
@@ -318,7 +331,7 @@ The benchmarking results for [simulated](docs/benchmarking_results_sim.md) and [
 
 All benchmarking was conducted on a Intel® Core™ i7-10700K CPU @ 3.80GHz on a machine running Ubuntu 20.04.6 LTS. 
 
-Tldr: Plassembler is much faster than Unicycler (4-20x usually), is more accurate (fewer indels and mismatches) and is more likely to recover low coverage plasmids that Unicycler might miss.
+Tldr: Plassembler is much faster than Unicycler (3-10x usually) and is more accurate because it is more likely to recover low coverage plasmids that Unicycler might miss.
 
 # Acknowledgements
 
@@ -334,7 +347,7 @@ If you come across bugs with Plassembler, or would like to make any suggestions 
 
 # Other Future Directions
 
-At the moment, plassembler is designed for users with hybrid long read and matching short read data. However, with the new Kit 14 chemistry, ONT long reads may be accurate enough that short read sequencing is not required to polish bacterial assemblies - it may already be there for Pacbio! However, I am not aware of any studies regarding the recovery of small plasmids - it is possible that Kit 14 chemistries may miss these, much like R9.4.1 chemistries, therefore necessitating short reads for plasmid recovery. If you want to try it out, use `--long_only` - Plassembler will just take the Flye output contigs below `-c` and treat them as contigs. This is experimental only and untested.
+At the moment, plassembler is designed for users with hybrid long read and matching short read data. However, with the new Kit 14 chemistry, ONT long reads may be accurate enough that short read sequencing is not required to polish bacterial assemblies - it may already be there for Pacbio! However, I am not aware of any studies regarding the recovery of small plasmids - it is possible or even likely that Kit 14 chemistries may miss these, much like R9.4.1 chemistries, therefore necessitating short reads for plasmid recovery. If you want to try it out, use `--long_only` - Plassembler will just take the Flye output contigs below `-c` and treat them as contigs. This is experimental only and untested.
 
 Further, other approaches may be more appropriate for Kit 14 long read only assemblies - see this [tweet](https://twitter.com/rrwick/status/1548926644085108738?cxt=HHwWhMClvfCk8v4qAAAA). 
 

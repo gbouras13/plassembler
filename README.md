@@ -57,9 +57,13 @@ Please read the [Installation](#installation) section for more details, especial
 
 Please use version 1.1.0, as it contains all recently added features.
 
-To force install this please use:
+Once on bioconda, to force install this please use:
 
 `conda install -c bioconda plassembler==1.1.0`
+
+But for now, you will need to install from source.
+
+`git clone https://github.com/gbouras13/plassembler.git`
 
 # Why Does Plassembler Exist?
 

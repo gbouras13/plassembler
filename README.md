@@ -63,7 +63,12 @@ Once on bioconda, to force install this please use:
 
 But for now, you will need to install from source.
 
-`git clone https://github.com/gbouras13/plassembler.git`
+```
+git clone https://github.com/gbouras13/plassembler.git
+
+
+
+```
 
 # Why Does Plassembler Exist?
 

@@ -3,35 +3,36 @@ import os
 import logging
 import time
 import datetime
-import input_commands
-import qc
-import mapping
-import assembly
-import cleanup
-import log
-import run_mash
-import install_database
-import bam
-from plass_class import Plass
-from plass_class import Assembly
-import sam_to_fastq
-import concat
-import test_incompatibility
-import run_unicycler
 
+from src import (
+    qc,
+    mapping,
+    assembly,
+    cleanup,
+    log,
+    run_mash,
+    install_database,
+    bam,
+    input_commands,
+    sam_to_fastq,
+    concat,
+    test_incompatibility,
+    run_unicycler,
+)
 
-from version import __version__
+from src.plass_class import Assembly, Plass
+
+from src.version import __version__
 
 v = __version__
 
 if __name__ == "__main__":
-
     # get start time
     start_time = time.perf_counter()
 
     start_cpu_time = time.process_time()
 
-    # getting time for log file 
+    # getting time for log file
     time_for_log = datetime.datetime.now().strftime("%m%d%Y_%H%M%S")
 
     # get inputs
@@ -44,19 +45,25 @@ if __name__ == "__main__":
         prefix = args.prefix
 
     # instiate the output directory
-    out_dir = input_commands.instantiate_dirs(args.outdir, args.force) # incase there is already an out_dir
+    out_dir = input_commands.instantiate_dirs(
+        args.outdir, args.force
+    )  # incase there is already an out_dir
 
     # beginning logging
     LOG_FILE = os.path.join(out_dir, prefix + "_" + str(time_for_log) + ".log")
     logger = logging.getLogger()
-    logging.basicConfig(level=logging.INFO,filename=LOG_FILE,format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(
+        level=logging.INFO,
+        filename=LOG_FILE,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )
     message = "Starting plassembler v" + v
     log.write_message(message, logger)
 
     # add the inputs to the log
     logging.info("Input args: %r", args)
 
-    # check deps 
+    # check deps
     message = "Checking dependencies."
     log.write_message(message, logger)
     input_commands.check_dependencies(logger)
@@ -72,19 +79,18 @@ if __name__ == "__main__":
         message = "\nPlease run install_database.py \n"
         log.print_and_exit(message, logger)
 
-#############################
-######### assembled_mode == true 
-#############################
+    #############################
+    ######### assembled_mode == true
+    #############################
 
     if args.assembled_mode == True:
-
         assembly = Assembly()
         assembly.out_dir = out_dir
         assembly.threads = args.threads
 
         message = "\n###########################"
         log.write_message(message, logger)
-        message ="You have chosen to specify an input assembly FASTA file containing plasmids to calculate depth and PLSDB type. \nNo assembly will be conducted."
+        message = "You have chosen to specify an input assembly FASTA file containing plasmids to calculate depth and PLSDB type. \nNo assembly will be conducted."
         log.write_message(message, logger)
         message = "###########################\nAssembled Mode Activated\n###########################\n"
         log.write_message(message, logger)
@@ -92,24 +98,39 @@ if __name__ == "__main__":
         # validation
         message = "Checking input FASTAs."
         log.write_message(message, logger)
-        input_commands.validate_fastas_assembled_mode(args.input_chromosome, args.input_plasmids)
+        input_commands.validate_fastas_assembled_mode(
+            args.input_chromosome, args.input_plasmids
+        )
 
         message = "Checking input FASTQs."
         log.write_message(message, logger)
-        (short_flag, long_flag, long_gzipped) = input_commands.validate_fastqs_assembled_mode(args.longreads, args.short_one, args.short_two)
+        (
+            short_flag,
+            long_flag,
+            long_gzipped,
+        ) = input_commands.validate_fastqs_assembled_mode(
+            args.longreads, args.short_one, args.short_two
+        )
 
-        # assign the 
+        # assign the
         assembly.short_flag = short_flag
         assembly.long_flag = long_flag
 
         if long_flag == True:
             message = "Filtering long reads."
             log.write_message(message, logger)
-            qc.chopper(args.longreads, out_dir, args.min_length, args.min_quality, long_gzipped, args.threads)
+            qc.chopper(
+                args.longreads,
+                out_dir,
+                args.min_length,
+                args.min_quality,
+                long_gzipped,
+                args.threads,
+            )
         if short_flag == True:
             message = "Trimming short reads."
             log.write_message(message, logger)
-            qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+            qc.trim_short_read(args.short_one, args.short_two, out_dir, logger)
 
         message = "Calculating Depths."
         log.write_message(message, logger)
@@ -117,8 +138,8 @@ if __name__ == "__main__":
         assembly.combine_input_fastas(args.input_chromosome, args.input_plasmids)
         assembly.get_depth(args.threads)
 
-        # runs mash 
-        message = 'Calculating mash distances to PLSDB.'
+        # runs mash
+        message = "Calculating mash distances to PLSDB."
         log.write_message(message, logger)
         run_mash.mash_sketch(out_dir, args.input_plasmids, logger)
         run_mash.run_mash(out_dir, args.database, logger)
@@ -129,35 +150,44 @@ if __name__ == "__main__":
         assembly.combine_depth_mash_tsvs(prefix)
 
         # rename contigs and update copy number with plsdb
-        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, True, args.long_only, args.use_raven)
-        cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, True, args.long_only, args.use_raven)
+        cleanup.move_and_copy_files(
+            out_dir,
+            prefix,
+            False,
+            args.keep_fastqs,
+            True,
+            args.long_only,
+            args.use_raven,
+        )
+        cleanup.remove_intermediate_files(
+            out_dir, args.keep_chromosome, True, args.long_only, args.use_raven
+        )
 
-
-#############################
-# not in assembled_mode -> main mode 
-#############################
+    #############################
+    # not in assembled_mode -> main mode
+    #############################
 
     else:
-        message = 'Checking input fastqs.'
+        message = "Checking input fastqs."
         log.write_message(message, logger)
 
-        if args.longreads == 'nothing':
-            message = 'ERROR:You have not input a long read FASTQ file with -l. Please check your input.'
+        if args.longreads == "nothing":
+            message = "ERROR:You have not input a long read FASTQ file with -l. Please check your input."
             log.print_and_exit(message, logger)
 
         # experimental long only - high quality long read only
         if args.long_only == False:
-            if args.short_one == 'nothing':
+            if args.short_one == "nothing":
                 message = "ERROR: You have not input a short read R1 FASTQ file with -1. Please check your input."
                 log.print_and_exit(message, logger)
-            if args.short_two == 'nothing':
+            if args.short_two == "nothing":
                 message = "ERROR: You have not input a short read R2 FASTQ file with -2. Please check your input."
                 log.print_and_exit(message, logger)
         else:
             message = "You have chosen --long_only with long reads only. Ignoring any short reads."
             log.write_message(message, logger)
-        
-        # checking fastq 
+
+        # checking fastq
         # if long reads
         long_zipped = input_commands.validate_fastq(args.longreads)
 
@@ -166,7 +196,7 @@ if __name__ == "__main__":
             s2_zipped = input_commands.validate_fastq(args.short_two)
 
         # filtering long readfastq
-        message ="Filtering long reads with chopper."
+        message = "Filtering long reads with chopper."
         log.write_message(message, logger)
         min_quality = args.min_quality
         if args.long_only == True:
@@ -174,29 +204,37 @@ if __name__ == "__main__":
                 message = "Increasing min quality to 15 in long only mode."
                 log.write_message(message, logger)
                 min_quality = str(15)
-        qc.chopper(args.longreads, out_dir, args.min_length, min_quality, long_zipped, args.threads)
-
+        qc.chopper(
+            args.longreads,
+            out_dir,
+            args.min_length,
+            min_quality,
+            long_zipped,
+            args.threads,
+        )
 
         # pacbio model check that the string is valid
         if args.pacbio_model != "nothing":
-            pacbio_model = input_commands.validate_pacbio_model(args.pacbio_model, logger)
+            pacbio_model = input_commands.validate_pacbio_model(
+                args.pacbio_model, logger
+            )
         else:
             pacbio_model = args.pacbio_model
-
-
 
         # Raven for long only or '--use_raven'
         if args.long_only == True or args.use_raven == True:
             if args.use_raven == True:
                 message = "You have specified --use_raven. Using Raven for long read assembly."
-                log.write_message(message, logger)               
+                log.write_message(message, logger)
             message = "Running Raven."
             log.write_message(message, logger)
-            assembly.run_raven(out_dir, args.threads,  logger)
+            assembly.run_raven(out_dir, args.threads, logger)
         else:
             message = "Running Flye."
             log.write_message(message, logger)
-            assembly.run_flye(out_dir, args.threads, args.raw_flag, pacbio_model, logger)
+            assembly.run_flye(
+                out_dir, args.threads, args.raw_flag, pacbio_model, logger
+            )
 
         # instanatiate the class with some of the commands
         plass = Plass()
@@ -214,92 +252,113 @@ if __name__ == "__main__":
         ####################################################################
 
         if plass.contig_count == 1:
-
             # no_plasmids_flag = True as no plasmids
             plass.no_plasmids_flag = True
 
             # identifies chromosome and renames contigs
             # just keep Flye as placeholder experimental for now
-            if args.use_raven == True :
+            if args.use_raven == True:
                 message = "Only one contig was assembled with Raven."
                 log.write_message(message, logger)
-                plass.identify_chromosome_process_raven( args.chromosome, logger)
+                plass.identify_chromosome_process_raven(args.chromosome, logger)
             else:
                 message = "Only one contig was assembled with Flye."
                 log.write_message(message, logger)
-                plass.identify_chromosome_process_flye( args.chromosome, logger)
+                plass.identify_chromosome_process_flye(args.chromosome, logger)
 
             # no chromosome identified - cleanup and exit
             ####################################################################
             if plass.chromosome_flag == False:
-                message = 'No chromosome was identified. Likely, there was insufficient long read depth for Flye to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. '
+                message = "No chromosome was identified. Likely, there was insufficient long read depth for Flye to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. "
                 log.write_message(message, logger)
-                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only, args.use_raven)
-                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_raven)
-            else: # chromosome identified -> move on 
+                cleanup.move_and_copy_files(
+                    out_dir,
+                    prefix,
+                    False,
+                    args.keep_fastqs,
+                    False,
+                    args.long_only,
+                    args.use_raven,
+                )
+                cleanup.remove_intermediate_files(
+                    out_dir, args.keep_chromosome, False, args.long_only, args.use_raven
+                )
+            else:  # chromosome identified -> move on
                 if args.long_only == False:
-                    message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
+                    message = "Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately."
                     log.write_message(message, logger)
 
-                    message = 'Trimming short reads.'
+                    message = "Trimming short reads."
                     log.write_message(message, logger)
-                    qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+                    qc.trim_short_read(args.short_one, args.short_two, out_dir, logger)
 
-                    message = 'Mapping long reads.'
+                    message = "Mapping long reads."
                     log.write_message(message, logger)
-                    mapping.minimap_long_reads(out_dir, args.threads, pacbio_model, logger)
+                    mapping.minimap_long_reads(
+                        out_dir, args.threads, pacbio_model, logger
+                    )
 
                     #### short reads mapping
-                    message = 'Mapping short reads.'
+                    message = "Mapping short reads."
                     log.write_message(message, logger)
                     mapping.minimap_short_reads(out_dir, args.threads, logger)
 
-                    message = 'Processing Sam/Bam Files and extracting Fastqs.'
+                    message = "Processing Sam/Bam Files and extracting Fastqs."
                     log.write_message(message, logger)
-                
+
                     # for long, custom function is quick enough
                     sam_to_fastq.extract_bin_long_fastqs(out_dir)
 
-                    # for short, too slow so use samtools 
+                    # for short, too slow so use samtools
                     bam.sam_to_bam_short(out_dir, args.threads, logger)
                     bam.split_bams(out_dir, args.threads, logger)
                     bam.bam_to_fastq_short(out_dir, args.threads, logger)
-                    concat.concatenate_short_fastqs(out_dir,logger)
+                    concat.concatenate_short_fastqs(out_dir, logger)
 
                     # running unicycler
-                    message = 'Running Unicycler.'
+                    message = "Running Unicycler."
                     log.write_message(message, logger)
 
-                    long_reads = os.path.join(out_dir, "plasmid_long.fastq")    
+                    long_reads = os.path.join(out_dir, "plasmid_long.fastq")
                     short_r1 = os.path.join(out_dir, "short_read_concat_R1.fastq")
                     short_r2 = os.path.join(out_dir, "short_read_concat_R2.fastq")
 
-                    run_unicycler.run_unicycler(False, args.threads, logger, short_r1, short_r2, long_reads, 
-                                                os.path.join(out_dir, "unicycler_output"))
+                    run_unicycler.run_unicycler(
+                        False,
+                        args.threads,
+                        logger,
+                        short_r1,
+                        short_r2,
+                        long_reads,
+                        os.path.join(out_dir, "unicycler_output"),
+                    )
 
                     # check for successful unicycler completion
                     plass.check_unicycler_success()
 
                     # if unicycler successfully finished, calculate the plasmid copy numbers
                     if plass.unicycler_success == True:
-
-                        message ='Unicycler identified plasmids. Calculating Plasmid Copy Numbers.'
+                        message = "Unicycler identified plasmids. Calculating Plasmid Copy Numbers."
                         log.write_message(message, logger)
 
-                        # get depth    
+                        # get depth
                         # as class so saves the depth dataframe nicely
-                        plass.get_depth( logger, args.threads)
+                        plass.get_depth(logger, args.threads)
 
                         # run mash
-                        message ='Calculating mash distances to PLSDB.'
+                        message = "Calculating mash distances to PLSDB."
                         log.write_message(message, logger)
 
                         # sketches the plasmids
-                        run_mash.mash_sketch(out_dir, os.path.join(out_dir,"unicycler_output", "assembly.fasta"), logger)
-                        # runs mash 
+                        run_mash.mash_sketch(
+                            out_dir,
+                            os.path.join(out_dir, "unicycler_output", "assembly.fasta"),
+                            logger,
+                        )
+                        # runs mash
                         run_mash.run_mash(out_dir, args.database, logger)
                         # processes output
-                        plass.process_mash_tsv( args.database)
+                        plass.process_mash_tsv(args.database)
                         # combine depth and mash tsvs
                         plass.combine_depth_mash_tsvs(prefix)
 
@@ -308,28 +367,56 @@ if __name__ == "__main__":
 
                         # heuristic check only if not long_only
                         if args.long_only == False:
-                        # heuristic check 
-                            test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
+                            # heuristic check
+                            test_incompatibility.incompatbility(
+                                plass.combined_depth_mash_df, logger
+                            )
 
-                        # cleanup files 
-                        cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only, args.use_raven)
-                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_raven)
-                    
+                        # cleanup files
+                        cleanup.move_and_copy_files(
+                            out_dir,
+                            prefix,
+                            True,
+                            args.keep_fastqs,
+                            False,
+                            args.long_only,
+                            args.use_raven,
+                        )
+                        cleanup.remove_intermediate_files(
+                            out_dir,
+                            args.keep_chromosome,
+                            False,
+                            args.long_only,
+                            args.use_raven,
+                        )
+
                     ####################################################################
                     # Case 4: where there are truly no plasmids even after unicycler runs
                     ####################################################################
-                    else: # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
+                    else:  # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
                         message = "No plasmids found."
                         log.write_message(message, logger)
-                        cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only, args.use_raven)
-                        cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_raven)
-                    
-          
-####################################################################
-        # where more than 1 contig was assembled
-####################################################################
-        else:
+                        cleanup.move_and_copy_files(
+                            out_dir,
+                            prefix,
+                            False,
+                            args.keep_fastqs,
+                            False,
+                            args.long_only,
+                            args.use_raven,
+                        )
+                        cleanup.remove_intermediate_files(
+                            out_dir,
+                            args.keep_chromosome,
+                            False,
+                            args.long_only,
+                            args.use_raven,
+                        )
 
+        ####################################################################
+        # where more than 1 contig was assembled
+        ####################################################################
+        else:
             # no_plasmids_flag = False as no plasmids
             plass.no_plasmids_flag = False
 
@@ -340,108 +427,140 @@ if __name__ == "__main__":
                 log.write_message(message, logger)
                 message = "Extracting Chromosome."
                 log.write_message(message, logger)
-                plass.identify_chromosome_process_raven( args.chromosome, logger)
+                plass.identify_chromosome_process_raven(args.chromosome, logger)
             else:
                 message = "More than one contig was assembled with Flye."
                 log.write_message(message, logger)
                 message = "Extracting Chromosome."
                 log.write_message(message, logger)
-                plass.identify_chromosome_process_flye( args.chromosome, logger)
+                plass.identify_chromosome_process_flye(args.chromosome, logger)
 
-            
             ####################################################################
             # Case 2 - where no chromosome was identified (likely below required depth) - need more long reads or user got chromosome parameter wrong - exit plassembler
             ####################################################################
             if plass.chromosome_flag == False:
-                message = 'No chromosome was idenfitied. please check your -c or --chromosome parameter, it may be too high. \nLikely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended.'
+                message = "No chromosome was idenfitied. please check your -c or --chromosome parameter, it may be too high. \nLikely, there was insufficient long read depth for Flye to assemble a chromosome. Increasing sequencing depth is recommended."
                 log.write_message(message, logger)
-                cleanup.move_and_copy_files(out_dir, prefix, False, args.keep_fastqs, False, args.long_only, args.use_raven)
-                cleanup.remove_intermediate_files(out_dir, args.keep_chromosome, False, args.long_only, args.use_raven)
+                cleanup.move_and_copy_files(
+                    out_dir,
+                    prefix,
+                    False,
+                    args.keep_fastqs,
+                    False,
+                    args.long_only,
+                    args.use_raven,
+                )
+                cleanup.remove_intermediate_files(
+                    out_dir, args.keep_chromosome, False, args.long_only, args.use_raven
+                )
 
             ####################################################################
             # Case 3 - where a chromosome and plasmids were identified in the Flye assembly -> get reads mappeed to plasmids, unmapped to chromosome and assemble
             ####################################################################
             else:
                 if args.long_only == False:
-                    message = 'Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately.'
+                    message = "Chromosome Identified. Plassembler will now use long and short reads to assemble plasmids accurately."
                     log.write_message(message, logger)
 
-                    message = 'Mapping Long Reads.'
+                    message = "Mapping Long Reads."
                     log.write_message(message, logger)
-                    mapping.minimap_long_reads( out_dir, args.threads, pacbio_model, logger)
+                    mapping.minimap_long_reads(
+                        out_dir, args.threads, pacbio_model, logger
+                    )
 
-                 #### short reads trimming and  mapping
-                    message = 'Trimming short reads.'
+                    #### short reads trimming and  mapping
+                    message = "Trimming short reads."
                     log.write_message(message, logger)
-                    qc.trim_short_read(args.short_one, args.short_two, out_dir,  logger)
+                    qc.trim_short_read(args.short_one, args.short_two, out_dir, logger)
 
-                    message = 'Mapping short reads.'
+                    message = "Mapping short reads."
                     log.write_message(message, logger)
                     mapping.minimap_short_reads(out_dir, args.threads, logger)
 
-                    message = 'Processing Sam/Bam Files and extracting Fastqs.'
+                    message = "Processing Sam/Bam Files and extracting Fastqs."
                     log.write_message(message, logger)
-            
+
                     # for long, custom function
                     # for short, too slow so use samtools
                     sam_to_fastq.extract_bin_long_fastqs(out_dir)
 
                     # short
-                    # for short, too slow so use samtools 
+                    # for short, too slow so use samtools
                     bam.sam_to_bam_short(out_dir, args.threads, logger)
                     bam.split_bams(out_dir, args.threads, logger)
                     bam.bam_to_fastq_short(out_dir, args.threads, logger)
-                    concat.concatenate_short_fastqs(out_dir,logger)
-
+                    concat.concatenate_short_fastqs(out_dir, logger)
 
                     # running unicycler
-                    message = 'Running Unicycler.'
+                    message = "Running Unicycler."
                     log.write_message(message, logger)
 
                     long_reads = os.path.join(out_dir, "plasmid_long.fastq")
                     short_r1 = os.path.join(out_dir, "short_read_concat_R1.fastq")
                     short_r2 = os.path.join(out_dir, "short_read_concat_R2.fastq")
 
-                    run_unicycler.run_unicycler(False, args.threads, logger, short_r1, short_r2, long_reads, 
-                                                 os.path.join(out_dir, "unicycler_output"))
+                    run_unicycler.run_unicycler(
+                        False,
+                        args.threads,
+                        logger,
+                        short_r1,
+                        short_r2,
+                        long_reads,
+                        os.path.join(out_dir, "unicycler_output"),
+                    )
 
-        
-####################################################################
-##### get copy number depths
-####################################################################
+                ####################################################################
+                ##### get copy number depths
+                ####################################################################
 
-                message = 'Calculating Plasmid Copy Numbers.'
+                message = "Calculating Plasmid Copy Numbers."
                 log.write_message(message, logger)
-                
+
                 # as class so saves the depth dataframe nicely
-                plass.get_depth( logger, args.threads)
+                plass.get_depth(logger, args.threads)
 
                 # run mash
-                message = 'Calculating mash distances to PLSDB.'
+                message = "Calculating mash distances to PLSDB."
                 log.write_message(message, logger)
 
                 # sketches the plasmids
-                run_mash.mash_sketch(out_dir, os.path.join(out_dir,"unicycler_output", "assembly.fasta"), logger)
+                run_mash.mash_sketch(
+                    out_dir,
+                    os.path.join(out_dir, "unicycler_output", "assembly.fasta"),
+                    logger,
+                )
 
-                # runs mash 
+                # runs mash
                 run_mash.run_mash(out_dir, args.database, logger)
 
                 # processes output
                 plass.process_mash_tsv(args.database)
 
-                # combine depth and mash tsvs 
+                # combine depth and mash tsvs
                 plass.combine_depth_mash_tsvs(prefix)
 
                 # rename contigs and update copy bumber with plsdb
                 plass.finalise_contigs(prefix)
 
-                # heuristic check 
+                # heuristic check
                 if args.long_only == False:
                     # incompatibility
-                    test_incompatibility.incompatbility(plass.combined_depth_mash_df, logger)
+                    test_incompatibility.incompatbility(
+                        plass.combined_depth_mash_df, logger
+                    )
 
-                cleanup.move_and_copy_files(out_dir, prefix, True, args.keep_fastqs, False, args.long_only, args.use_raven)
-                cleanup.remove_intermediate_files(out_dir,args.keep_chromosome, False, args.long_only, args.use_raven)
+                cleanup.move_and_copy_files(
+                    out_dir,
+                    prefix,
+                    True,
+                    args.keep_fastqs,
+                    False,
+                    args.long_only,
+                    args.use_raven,
+                )
+                cleanup.remove_intermediate_files(
+                    out_dir, args.keep_chromosome, False, args.long_only, args.use_raven
+                )
 
     # Determine elapsed time
     elapsed_wallclock_time = time.perf_counter() - start_time
@@ -451,11 +570,5 @@ if __name__ == "__main__":
     message = "Plassembler has finished."
     log.write_message(message, logger)
 
-    message = "Elapsed time: "+str(elapsed_wallclock_time)+" seconds."
+    message = "Elapsed time: " + str(elapsed_wallclock_time) + " seconds."
     log.write_message(message, logger)
-
-
-
-
-
-

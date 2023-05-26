@@ -1,4 +1,3 @@
-
 #########################################
 ##### some code taken from & modified
 ##### https://github.com/rrwick/Small-plasmid-Nanopore/blob/main/scripts/get_depths.py
@@ -10,49 +9,47 @@ import subprocess as sp
 import statistics
 import numpy as np
 import pandas as pd
-import mapping
-import concat
+from src import concat
 
 
-
-def concatenate_chrom_plasmids(out_dir,logger ):
-    """ concatenates chromosome and plasmids
+def concatenate_chrom_plasmids(out_dir, logger):
+    """concatenates chromosome and plasmids
     :param out_dir:  Output Directory
     :param logger: logger
-    :return: 
+    :return:
     """
-    chrom_fasta =os.path.join(out_dir,"chromosome.fasta")
-    plas_fasta = os.path.join(out_dir,"unicycler_output", "assembly.fasta")
+    chrom_fasta = os.path.join(out_dir, "chromosome.fasta")
+    plas_fasta = os.path.join(out_dir, "unicycler_output", "assembly.fasta")
     concat_fasta = open(os.path.join(out_dir, "combined.fasta"), "w")
     try:
         concat.concatenate_single(chrom_fasta, plas_fasta, concat_fasta, logger)
     except:
-        sys.exit("Error with concatenate_fastas\n")  
+        sys.exit("Error with concatenate_fastas\n")
+
 
 # get lengths of contigs
 def get_contig_lengths(out_dir):
-    """ gets contig lengths of combined chrom and plasmids fastas
+    """gets contig lengths of combined chrom and plasmids fastas
     :param out_dir:  Output Directory
     :return: contig_lengths: dictionary of headers and lengths
     """
     contig_lengths = {}
-    for dna_record in SeqIO.parse(os.path.join(out_dir, "combined.fasta"), 'fasta'):
+    for dna_record in SeqIO.parse(os.path.join(out_dir, "combined.fasta"), "fasta"):
         plas_len = len(dna_record.seq)
         dna_header = dna_record.id
         contig_lengths[dna_header] = plas_len
     return contig_lengths
 
 
-
 # get circular status of contigs
 def get_contig_circularity(out_dir):
-    """ gets circularity of contigs
+    """gets circularity of contigs
     :param out_dir:  Output Directory
     :return: circular_status: dictionary of contig header and circular status
     """
     circular_status = {}
     # add circularity
-    for dna_record in SeqIO.parse(os.path.join(out_dir, "combined.fasta"), 'fasta'):
+    for dna_record in SeqIO.parse(os.path.join(out_dir, "combined.fasta"), "fasta"):
         dna_header = dna_record.id
         # check if circular is in unicycler output description
         if "circular=true" in dna_record.description:
@@ -65,9 +62,8 @@ def get_contig_circularity(out_dir):
     return circular_status
 
 
-
 def minimap_depth_sort_long(out_dir, threads):
-    """ maps long reads using minimap2 to combined fasta and sorts bam
+    """maps long reads using minimap2 to combined fasta and sorts bam
     :param out_dir:  out_dir
     :param: threads: threads
     """
@@ -76,15 +72,23 @@ def minimap_depth_sort_long(out_dir, threads):
     fasta = os.path.join(out_dir, "combined.fasta")
     bam = os.path.join(out_dir, "combined_sorted_long.bam")
     try:
-        minimap = sp.Popen(["minimap2", "-ax", "map-ont", "-t", threads, fasta, input_long_reads ], stdout=sp.PIPE, stderr=sp.DEVNULL) 
-        samtools_sort = sp.Popen(["samtools", "sort", "-@", threads, "-o", bam, "-" ], stdin=minimap.stdout, stderr=sp.DEVNULL ) 
+        minimap = sp.Popen(
+            ["minimap2", "-ax", "map-ont", "-t", threads, fasta, input_long_reads],
+            stdout=sp.PIPE,
+            stderr=sp.DEVNULL,
+        )
+        samtools_sort = sp.Popen(
+            ["samtools", "sort", "-@", threads, "-o", bam, "-"],
+            stdin=minimap.stdout,
+            stderr=sp.DEVNULL,
+        )
         samtools_sort.communicate()[0]
     except:
-        sys.exit("Error with mapping and sorting\n")  
+        sys.exit("Error with mapping and sorting\n")
 
 
 def minimap_depth_sort_short(out_dir, threads):
-    """ maps short reads using minimap2 to combined fasta and sorts bam
+    """maps short reads using minimap2 to combined fasta and sorts bam
     :param out_dir:  out_dir
     :param: threads: threads
     """
@@ -93,14 +97,23 @@ def minimap_depth_sort_short(out_dir, threads):
     fasta = os.path.join(out_dir, "combined.fasta")
     bam = os.path.join(out_dir, "combined_sorted_short.bam")
     try:
-        minimap = sp.Popen(["minimap2", "-ax", "sr", "-t", threads, fasta, trim_one, trim_two ], stdout=sp.PIPE, stderr=sp.DEVNULL)
-        samtools_sort = sp.Popen(["samtools", "sort", "-@", threads, "-o", bam, "-" ], stdin=minimap.stdout, stderr=sp.DEVNULL ) 
+        minimap = sp.Popen(
+            ["minimap2", "-ax", "sr", "-t", threads, fasta, trim_one, trim_two],
+            stdout=sp.PIPE,
+            stderr=sp.DEVNULL,
+        )
+        samtools_sort = sp.Popen(
+            ["samtools", "sort", "-@", threads, "-o", bam, "-"],
+            stdin=minimap.stdout,
+            stderr=sp.DEVNULL,
+        )
         samtools_sort.communicate()[0]
     except:
-        sys.exit("Error with mapping and sorting\n")  
+        sys.exit("Error with mapping and sorting\n")
+
 
 def get_depths_from_bam(out_dir, shortFlag, contig_lengths):
-    """ maps runs samtools depth on bam
+    """maps runs samtools depth on bam
     :param out_dir:  out_dir
     :param: shortFlag: string either "short" or "long"
     :param: contig_lengths: dictionary of headers and contig lengths
@@ -109,22 +122,22 @@ def get_depths_from_bam(out_dir, shortFlag, contig_lengths):
     depths = {}
     if shortFlag == "short":
         filename = os.path.join(out_dir, "combined_sorted_short.bam")
-    else: # long
+    else:  # long
         filename = os.path.join(out_dir, "combined_sorted_long.bam")
     for repName, repLength in contig_lengths.items():
         depths[repName] = [0] * repLength
-    depthCommand = ['samtools', 'depth', filename]
-    with open(os.devnull, 'wb') as devNull:
+    depthCommand = ["samtools", "depth", filename]
+    with open(os.devnull, "wb") as devNull:
         depthOutput = sp.check_output(depthCommand, stderr=devNull).decode()
-    for line in depthOutput.splitlines(): # parse output
-        parts = line.strip().split('\t')
+    for line in depthOutput.splitlines():  # parse output
+        parts = line.strip().split("\t")
         repName = parts[0]
-        depths[repName][int(parts[1])-1] = int(parts[2])
+        depths[repName][int(parts[1]) - 1] = int(parts[2])
     return depths
 
 
 def collate_depths(depths, shortFlag, contig_lengths):
-    """ calculates summary statistics for all depths
+    """calculates summary statistics for all depths
     :param depths:  dictionary of contigs and depths from get_depths_from_bam
     :param: shortFlag: string either "short" or "long"
     :param: contig_lengths: dictionary of headers and contig lengths
@@ -132,7 +145,7 @@ def collate_depths(depths, shortFlag, contig_lengths):
     """
     # define the columns of dataframe
     contig_names = []
-    contig_length = []    
+    contig_length = []
     mean_depth_col = []
     sd_depth_col = []
     q25_depth = []
@@ -144,15 +157,15 @@ def collate_depths(depths, shortFlag, contig_lengths):
         for depth in enumerate(base_depths):
             unmaskedDepths.append(depth)
         try:
-            mean_depth = round(statistics.mean(base_depths),2)
-            depth_stdev = round(statistics.stdev(base_depths),2)
-            q25, q75 = np.percentile(base_depths, [25 ,75])
+            mean_depth = round(statistics.mean(base_depths), 2)
+            depth_stdev = round(statistics.stdev(base_depths), 2)
+            q25, q75 = np.percentile(base_depths, [25, 75])
             q25, q75 = int(q25), int(q75)
-            # save the chromosome depth 
+            # save the chromosome depth
             if replicon_name == "chromosome":
                 chromosome_depth = mean_depth
-        except statistics.StatisticsError: # if can't calculate
-            mean_depth, depth_stdev, q25, q75 = 'NA', 'NA', 'NA', 'NA'
+        except statistics.StatisticsError:  # if can't calculate
+            mean_depth, depth_stdev, q25, q75 = "NA", "NA", "NA", "NA"
         # append to list
         contig_names.append(replicon_name)
         contig_length.append(replicon_length)
@@ -160,32 +173,41 @@ def collate_depths(depths, shortFlag, contig_lengths):
         sd_depth_col.append(depth_stdev)
         q25_depth.append(q25)
         q75_depth.append(q75)
-    # make summary df    
+    # make summary df
     if shortFlag == "short":
         summary_df = pd.DataFrame(
-        {'contig': contig_names,
-        'length': contig_length,
-        'mean_depth_short': mean_depth_col,
-        'sd_depth_short': sd_depth_col, 
-        'q25_depth_short': q25_depth,
-        'q75_depth_short': q75_depth
-        })
-        summary_df['plasmid_copy_number_short'] = round(summary_df['mean_depth_short'] / chromosome_depth,2)
-    else: # long
+            {
+                "contig": contig_names,
+                "length": contig_length,
+                "mean_depth_short": mean_depth_col,
+                "sd_depth_short": sd_depth_col,
+                "q25_depth_short": q25_depth,
+                "q75_depth_short": q75_depth,
+            }
+        )
+        summary_df["plasmid_copy_number_short"] = round(
+            summary_df["mean_depth_short"] / chromosome_depth, 2
+        )
+    else:  # long
         summary_df = pd.DataFrame(
-        {'contig': contig_names,
-        'length': contig_length,
-        'mean_depth_long': mean_depth_col,
-        'sd_depth_long': sd_depth_col, 
-        'q25_depth_long': q25_depth,
-        'q75_depth_long': q75_depth
-        })
-        summary_df['plasmid_copy_number_long'] = round(summary_df['mean_depth_long'] / chromosome_depth,2)
-    # return df    
-    return(summary_df)
+            {
+                "contig": contig_names,
+                "length": contig_length,
+                "mean_depth_long": mean_depth_col,
+                "sd_depth_long": sd_depth_col,
+                "q25_depth_long": q25_depth,
+                "q75_depth_long": q75_depth,
+            }
+        )
+        summary_df["plasmid_copy_number_long"] = round(
+            summary_df["mean_depth_long"] / chromosome_depth, 2
+        )
+    # return df
+    return summary_df
 
-def combine_depth_dfs( df_short, df_long,  circular_status):
-    """ combines long and short depths
+
+def combine_depth_dfs(df_short, df_long, circular_status):
+    """combines long and short depths
     :param out_dir:  output directory
     :param df_short: short depth summary df
     :param df_long: long depth summary df
@@ -193,25 +215,22 @@ def combine_depth_dfs( df_short, df_long,  circular_status):
     :param: circular_status: dictionary of contig header and circular status
     """
     # drop double up len
-    df_long = df_long.drop(['length'], axis=1)
-    combined_df = pd.merge(df_short, df_long, on='contig', how='outer')
-    # add in circularity info 
-    combined_df['circularity'] = combined_df['contig'].map(circular_status)
+    df_long = df_long.drop(["length"], axis=1)
+    combined_df = pd.merge(df_short, df_long, on="contig", how="outer")
+    # add in circularity info
+    combined_df["circularity"] = combined_df["contig"].map(circular_status)
     return combined_df
-    
-def depth_df_single( df,  circular_status):
-    """ final output for kmer mode
+
+
+def depth_df_single(df, circular_status):
+    """final output for kmer mode
     :param out_dir:  output directory
     :param df: short or long depth summary df
     :param: prefix: prefix - default plassembler
     :param: circular_status: dictionary of contig header and circular status
     """
 
-    # add in circularity info 
+    # add in circularity info
 
-    df['circularity'] = df['contig'].map(circular_status)
+    df["circularity"] = df["contig"].map(circular_status)
     return df
-    
-
-
-

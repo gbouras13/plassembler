@@ -1,0 +1,2 @@
+recursive-include bin/ *
+global-exclude bin/ *

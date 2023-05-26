@@ -30,8 +30,6 @@ def main():
     # get start time
     start_time = time.perf_counter()
 
-    start_cpu_time = time.process_time()
-
     # getting time for log file
     time_for_log = datetime.datetime.now().strftime("%m%d%Y_%H%M%S")
 
@@ -313,7 +311,7 @@ def main():
                     bam.sam_to_bam_short(out_dir, args.threads, logger)
                     bam.split_bams(out_dir, args.threads, logger)
                     bam.bam_to_fastq_short(out_dir, args.threads, logger)
-                    concat.concatenate_short_fastqs(out_dir, logger)
+                    concat.concatenate_short_fastqs(out_dir)
 
                     # running unicycler
                     message = "Running Unicycler."
@@ -489,7 +487,7 @@ def main():
                     bam.sam_to_bam_short(out_dir, args.threads, logger)
                     bam.split_bams(out_dir, args.threads, logger)
                     bam.bam_to_fastq_short(out_dir, args.threads, logger)
-                    concat.concatenate_short_fastqs(out_dir, logger)
+                    concat.concatenate_short_fastqs(out_dir)
 
                     # running unicycler
                     message = "Running Unicycler."

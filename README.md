@@ -1,3 +1,8 @@
+[![CI](https://github.com/gbouras13/plassembler/actions/workflows/ci.yaml/badge.svg)](https://github.com/gbouras13/plassembler/actions/workflows/ci.yaml)
+
+[![codecov](https://codecov.io/gh/gbouras13/plassembler/branch/refactor/graph/badge.svg?token=4B1T2PGM9V)](https://codecov.io/gh/gbouras13/plassembler)
+
+
 plassembler
 ===============
 
@@ -63,7 +68,12 @@ Once on bioconda, to force install this please use:
 
 But for now, you will need to install from source.
 
-`git clone https://github.com/gbouras13/plassembler.git`
+```
+git clone https://github.com/gbouras13/plassembler.git
+
+
+
+```
 
 # Why Does Plassembler Exist?
 

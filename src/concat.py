@@ -2,9 +2,11 @@ import os
 import sys
 import subprocess as sp
 from src import log
+import gzip
+from Bio import SeqIO
 
 
-def concatenate_short_fastqs(out_dir, logger):
+def concatenate_short_fastqs(out_dir):
     """moves and copies files
     :param out_dir:  Output Directory
     :param logger: logger
@@ -22,16 +24,16 @@ def concatenate_short_fastqs(out_dir, logger):
 
     try:
         concatenate_single(
-            unmapped_fastq_one_short, non_chrom_fastq_one_short, short_one_file, logger
+            unmapped_fastq_one_short, non_chrom_fastq_one_short, short_one_file
         )
         concatenate_single(
-            unmapped_fastq_two_short, non_chrom_fastq_two_short, short_two_file, logger
+            unmapped_fastq_two_short, non_chrom_fastq_two_short, short_two_file
         )
     except:
         sys.exit("Error with concatenate_fastqs\n")
 
 
-def concatenate_single(fastq_in1, fastq_in2, fastq_out, logger):
+def concatenate_single(fastq_in1, fastq_in2, fastq_out):
     """concatenates 2 fastq files
     :param fastq_in1:  fastq_in1 input fastq 1
     :param fastq_in2: fastq_in1 input fastq 2
@@ -39,7 +41,26 @@ def concatenate_single(fastq_in1, fastq_in2, fastq_out, logger):
     :param logger: logger
     :return:
     """
-    concat_fastq = sp.Popen(
-        ["cat", fastq_in1, fastq_in2], stdout=fastq_out, stderr=sp.PIPE
-    )
-    log.write_to_log(concat_fastq.stderr, logger)
+    
+    records = []
+
+    # Read and append records from the first FASTQ file
+    if fastq_in1.endswith(".gz"):
+        with gzip.open(fastq_in1, "rt") as handle:
+            records.extend(SeqIO.parse(handle, "fastq"))
+    else:
+        with open(fastq_in1, "r") as handle:
+            records.extend(SeqIO.parse(handle, "fastq"))
+
+    # Read and append records from the second FASTQ file
+    if fastq_in2.endswith(".gz"):
+        with gzip.open(fastq_in2, "rt") as handle:
+            records.extend(SeqIO.parse(handle, "fastq"))
+    else:
+        with open(fastq_in2, "r") as handle:
+            records.extend(SeqIO.parse(handle, "fastq"))
+
+    # Write the concatenated records to the output FASTQ file
+    with open(fastq_out, "w") as handle:
+        SeqIO.write(records, handle, "fastq")
+

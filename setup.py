@@ -55,6 +55,7 @@ setup(
         "pyyaml>=6.0",
         "pytest-runner >= 5.0.0",
         "biopython >=1.76",
+        "pytest>=6.2.5",
         "pandas",
     ],
 )

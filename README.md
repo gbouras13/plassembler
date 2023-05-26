@@ -1,3 +1,8 @@
+[![CI](https://github.com/gbouras13/plassembler/actions/workflows/ci.yaml/badge.svg)](https://github.com/gbouras13/plassembler/actions/workflows/ci.yaml)
+
+[![codecov](https://codecov.io/gh/gbouras13/plassembler/branch/refactor/graph/badge.svg?token=4B1T2PGM9V)](https://codecov.io/gh/gbouras13/plassembler)
+
+
 plassembler
 ===============
 

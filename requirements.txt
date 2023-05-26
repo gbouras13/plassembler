@@ -3,4 +3,4 @@ pytest-runner >= 5.0.0
 biopython
 pandas
 numpy
-
+pytest>=6.2.5

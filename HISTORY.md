@@ -6,6 +6,7 @@
 * Adds Raven long read assembly option using `--use_raven`
 * Removes rasusa, `-s` and `--no_subsample` (to improve determinism). If users want faster runtimes, we recommend `--use_raven`.
 
+
 1.0.0 (2023-05-10)
 ------------------
 

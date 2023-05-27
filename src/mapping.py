@@ -7,7 +7,7 @@ from pathlib import Path
 #################################
 
 
-def minimap_long_reads(outdir, threads, pacbio_model, logdir):
+def minimap_long_reads(input_long_reads,fasta,sam, threads, pacbio_model, logdir):
     """maps long reads using minimap2
     :param threads: threads
     :param pacbio_model: pacbio_model
@@ -15,10 +15,6 @@ def minimap_long_reads(outdir, threads, pacbio_model, logdir):
     :param logdir: logdir
     :return:
     """
-
-    input_long_reads: Path =  outdir/ f"chopper_long_reads.fastq.gz"
-    fasta: Path =  outdir/ f"flye_renamed.fasta"
-    sam: Path = outdir/ f"long_read.sam"
 
     # ONT
     minimap2_model = "map-ont"
@@ -46,7 +42,7 @@ def minimap_long_reads(outdir, threads, pacbio_model, logdir):
 # short reads
 
 
-def minimap_short_reads(outdir, threads, logdir):
+def minimap_short_reads(r1, r2, fasta, sam, threads, logdir):
     """maps short reads using minimap2
     :param outdir: output directory path
     :param threads: threads
@@ -54,16 +50,11 @@ def minimap_short_reads(outdir, threads, logdir):
     :return:
     """
 
-    trim_one: Path =  outdir/ f"trimmed_R1.fastq"
-    trim_two: Path =  outdir/ f"trimmed_R2.fastq"
-    fasta: Path =  outdir/ f"flye_renamed.fasta"
-    sam: Path = outdir/ f"short_read.sam"
-
     minimap2 = ExternalTool(
         tool="minimap2",
         input=f"",
         output=f"",
-        params=f" -ax sr -t {threads} {fasta} {trim_one} {trim_two}",
+        params=f" -ax sr -t {threads} {fasta} {r1} {r2}",
         logdir=logdir,
         outfile = sam
     )

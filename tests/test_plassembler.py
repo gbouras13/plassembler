@@ -178,8 +178,7 @@ class test_depth(unittest.TestCase):
     # concat single
     def test_concatenate_chrom_plasmids_wrong_dir(self):
         with self.assertRaises(SystemExit):
-            logger = make_logger()
-            depth.concatenate_chrom_plasmids(val_data, logger)
+            depth.concatenate_chrom_plasmids(val_data)
 
     # good
     def test_get_contig_lengths_good_dir(self):

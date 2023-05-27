@@ -419,8 +419,11 @@ def run(
             qc.fastp(short_one, short_two, outdir, logdir)
 
             logger.info("Mapping long reads.")
+            input_long_reads: Path =  outdir/ f"chopper_long_reads.fastq.gz"
+            fasta: Path =  outdir/ f"flye_renamed.fasta"
+            sam: Path = outdir/ f"long_read.sam"
             mapping.minimap_long_reads(
-                outdir, threads, pacbio_model, logdir
+                input_long_reads,fasta,sam, threads, pacbio_model, logdir
             )
 
             #### short reads mapping
@@ -432,9 +435,11 @@ def run(
             sam_to_fastq.extract_bin_long_fastqs(outdir)
 
             # for short, too slow so use samtools
-            bam.sam_to_bam_short(outdir, threads, logdir)
+            sam: Path =  outdir/ f"short_read.sam"
+            bam: Path =  outdir/ f"short_read.bam"
+            bam.sam_to_bam(sam, bam, threads, logdir)
             bam.split_bams(outdir, threads, logdir)
-            bam. bam_to_fastq_short(outdir, threads, logdir)
+            bam.bam_to_fastq_short(outdir, threads, logdir)
             concat.concatenate_short_fastqs(outdir)
 
             # running unicycler
@@ -462,11 +467,14 @@ def run(
 
                 # get depth
                 # as class so saves the depth dataframe nicely
-                plass.get_depth(logdir, threads)
+                plass.get_depth(logdir,pacbio_model, threads)
+
+                ############
+                # continue writing tests for depth functions
+                #####
 
                 # run mash
-                message = "Calculating mash distances to PLSDB."
-                log.write_message(message, logger)
+                logger.info("Calculating mash distances to PLSDB.")
 
                 # sketches the plasmids
                 run_mash.mash_sketch(

@@ -4,16 +4,13 @@ from pathlib import Path
 # sam to bam
 
 
-def sam_to_bam_short(outdir, threads, logdir):
+def sam_to_bam(sam, bam, threads, logdir):
     """converts sam to bam with samtools
     :param outdir: output directory path
     :param threads: threads
     :param logdir: logdir
     :return:
     """
-
-    sam: Path =  outdir/ f"short_read.sam"
-    bam: Path =  outdir/ f"short_read.bam"
 
     samtools = ExternalTool(
         tool="samtools",
@@ -26,6 +23,27 @@ def sam_to_bam_short(outdir, threads, logdir):
 
     # need to write to stdout
     ExternalTool.run_tool(samtools, to_stdout = True)
+
+def sam_to_sorted_bam( sam, sorted_bam, threads, logdir):
+    """converts sam to sorted bam with samtools
+    :param outdir: output directory path
+    :param threads: threads
+    :param logdir: logdir
+    :return:
+    """
+
+    samtools = ExternalTool(
+        tool="samtools",
+        input=f"",
+        output=f"",
+        params=f" sort -h -@ {threads} {sam} -o {sorted_bam}",
+        logdir=logdir,
+        outfile = ""
+    )
+
+    # need to write to stdout
+    ExternalTool.run_tool(samtools, to_stdout = False)
+
 
 def split_bams(outdir, threads, logdir):
     """
@@ -118,7 +136,6 @@ def bam_to_fastq_short(outdir, threads, logdir):
     bam_to_fastq_non_chrom(outdir, threads, logdir)
 
 
-
 def bam_to_fastq_unmapped(outdir, threads, logdir):
     """gets fastq from unmapped bam
     :param outdir: output directory path
@@ -169,3 +186,5 @@ def bam_to_fastq_non_chrom(outdir, threads, logdir):
     # need to write to stdout
     ExternalTool.run_tool(samtools, to_stdout = False)
   
+
+

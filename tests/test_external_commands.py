@@ -21,7 +21,7 @@ from src import assembly
 from src.cleanup import remove_file
 from src.qc import (chopper, fastp)
 from src.mapping import (minimap_long_reads, minimap_short_reads)
-from src.bam import (sam_to_bam_short, split_bams, bam_to_fastq_short)
+from src.bam import (sam_to_bam, split_bams, bam_to_fastq_short)
 from src.run_unicycler import (run_unicycler)
 
 test_data = Path("tests/test_data")
@@ -39,9 +39,12 @@ def tmp_dir(tmpdir_factory):
 class test_bam(unittest.TestCase):
     """Tests for bam.py"""
     # sam to bam
-    def test_sam_to_bam_short(self):
+    def test_sam_to_bam(self):
         expected_return = True
-        sam_to_bam_short(map_dir, threads = 1, logdir = logdir)
+        threads = 1 
+        sam : Path = Path(f"{map_dir}/test.sam") 
+        bam : Path = Path(f"{map_dir}/test.bam") 
+        sam_to_bam(sam, bam, threads, logdir)
         self.assertEqual(expected_return, True)
 
     def test_split(self):
@@ -61,13 +64,22 @@ class test_mapping(unittest.TestCase):
     def test_minimap_long_reads(self):
         expected_return = True
         pacbio_model = ""
-        minimap_long_reads(map_dir, 1, pacbio_model, logdir)
+        input_long_reads : Path = Path(f"{map_dir}/chopper_long_reads.fastq.gz") 
+        fasta : Path = Path(f"{map_dir}/flye_renamed.fasta") 
+        sam : Path = Path(f"{map_dir}/test.sam") 
+        threads = 1
+        minimap_long_reads(input_long_reads, fasta, sam, threads, pacbio_model, logdir)
         self.assertEqual(expected_return, True)
 
         # short read map
     def test_minimap_short_reads(self):
         expected_return = True
-        minimap_short_reads(map_dir, 1, logdir)
+        r1 : Path = Path(f"{map_dir}/trimmed_R1.fastq") 
+        r2 : Path = Path(f"{map_dir}/trimmed_R2.fastq") 
+        fasta : Path = Path(f"{map_dir}/flye_renamed.fasta") 
+        sam : Path = Path(f"{map_dir}/test.sam") 
+        threads = 1
+        minimap_short_reads(r1, r2, fasta, sam, threads, logdir)
         self.assertEqual(expected_return, True)
 
 

@@ -6,6 +6,8 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from loguru import logger
 from pathlib import Path
+from src import mapping
+from src import bam
 
 
 class Plass:
@@ -13,7 +15,7 @@ class Plass:
 
     def __init__(
         self,
-        out_dir: str = "output/",
+        outdir: str = "output/",
         contig_count: int = 1,
         no_plasmids_flag: bool = False,
         chromosome_flag: bool = True,
@@ -29,7 +31,7 @@ class Plass:
         """
         Parameters
         --------
-        out_dir: int, required
+        outdir: int, required
             output directory
         contig_count: int, required
             the number of contigs assembled by flye assembly
@@ -48,7 +50,7 @@ class Plass:
         unicycler_success: bool, required
             whether unicycler succeeded
         """
-        self.out_dir = out_dir
+        self.outdir = outdir
         self.contig_count = contig_count
         self.no_plasmids_flag = no_plasmids_flag
         self.chromosome_flag = chromosome_flag
@@ -63,8 +65,8 @@ class Plass:
         """Counts the number of contigs assembled
         :return:
         """
-        out_dir = self.out_dir
-        fasta_file = os.path.join(out_dir, "assembly.fasta")
+        outdir = self.outdir
+        fasta_file = os.path.join(outdir, "assembly.fasta")
         contig_count = 0
         for record in SeqIO.parse(fasta_file, "fasta"):
             contig_count += 1
@@ -74,15 +76,15 @@ class Plass:
     def identify_chromosome_process_raven(self, chromosome_len):
         """Identified chromosome and processes Raven output - renames chromosome contig and the others as plasmid_1, plasmid_2 etc
         Also makes the chromosome bed file for downstream samtools mapping
-        :param out_dir: output directory
+        :param outdir: output directory
         :param chromosome_len: lower bound on length of chromosome from input command
         :param keep_chromosome: whether the user wants to keep the chromosome as chromosome.fasta
         :return chromosome_flag: bool whether chromosome assembles
         """
-        out_dir = self.out_dir
+        outdir = self.outdir
         long_only = self.long_only
 
-        fasta_file = os.path.join(out_dir, "assembly.fasta")
+        fasta_file = os.path.join(outdir, "assembly.fasta")
 
         # get max contig length
         max_length = 0
@@ -100,17 +102,17 @@ class Plass:
         ### assuming chromosome identified
         else:
             # make bed file with plasmid contigs to extract mapping reads
-            bed_file = open(os.path.join(out_dir, "non_chromosome.bed"), "w")
-            bed_chrom_file = open(os.path.join(out_dir, "chromosome.bed"), "w")
-            with open(os.path.join(out_dir, "flye_renamed.fasta"), "w") as rename_fa:
+            bed_file = open(os.path.join(outdir, "non_chromosome.bed"), "w")
+            bed_chrom_file = open(os.path.join(outdir, "chromosome.bed"), "w")
+            with open(os.path.join(outdir, "flye_renamed.fasta"), "w") as rename_fa:
                 # for chromosome fasta too
-                with open(os.path.join(out_dir, "chromosome.fasta"), "w") as chrom_fa:
+                with open(os.path.join(outdir, "chromosome.fasta"), "w") as chrom_fa:
                     # for plasmid numbering
                     i = 1
                     # for chromosome numbering (chromids, multiple plasmid contigs)
                     c = 1
                     for dna_record in SeqIO.parse(
-                        os.path.join(out_dir, "assembly.fasta"), "fasta"
+                        os.path.join(outdir, "assembly.fasta"), "fasta"
                     ):
                         # if the length is over chromosome length
                         contig_len = len(dna_record.seq)
@@ -157,18 +159,18 @@ class Plass:
                 message = "Extracting possible plasmids from Raven assembly."
                 logger.info(message)
                 # make fake unicycler output file
-                if not os.path.exists(os.path.join(out_dir, "unicycler_output")):
-                    os.mkdir(os.path.join(out_dir, "unicycler_output"))
+                if not os.path.exists(os.path.join(outdir, "unicycler_output")):
+                    os.mkdir(os.path.join(outdir, "unicycler_output"))
                 # remove bed if exists
-                if os.path.exists(os.path.join(out_dir, "non_chromosome.bed")):
-                    os.remove(os.path.join(out_dir, "non_chromosome.bed"))
+                if os.path.exists(os.path.join(outdir, "non_chromosome.bed")):
+                    os.remove(os.path.join(outdir, "non_chromosome.bed"))
                 with open(
-                    os.path.join(out_dir, "unicycler_output", "assembly.fasta"), "w"
+                    os.path.join(outdir, "unicycler_output", "assembly.fasta"), "w"
                 ) as rename_fa:
                     # for plasmid numbering
                     i = 1
                     for dna_record in SeqIO.parse(
-                        os.path.join(out_dir, "assembly.fasta"), "fasta"
+                        os.path.join(outdir, "assembly.fasta"), "fasta"
                     ):
                         # if the length is over chromosome length
                         contig_len = len(dna_record.seq)
@@ -193,14 +195,14 @@ class Plass:
     def identify_chromosome_process_flye(self, chromosome_len):
         """Identified chromosome and processes Flye output - renames chromosome contig and the others as plasmid_1, plasmid_2 etc
         Also makes the chromosome bed file for downstream samtools mapping
-        :param out_dir: output directory
+        :param outdir: output directory
         :param chromosome_len: lower bound on length of chromosome from input command
         :param keep_chromosome: whether the user wants to keep the chromosome as chromosome.fasta
         :return chromosome_flag: bool whether chromosome assembles
         """
-        out_dir = self.out_dir
+        outdir = self.outdir
         long_only = self.long_only
-        info_file = os.path.join(out_dir, "assembly_info.txt")
+        info_file = os.path.join(outdir, "assembly_info.txt")
         col_list = [
             "seq_name",
             "length",
@@ -231,17 +233,17 @@ class Plass:
         ### assuming chromosome identified
         else:
             # make bed file with plasmid contigs to extract mapping reads
-            bed_file = open(os.path.join(out_dir, "non_chromosome.bed"), "w")
-            bed_chrom_file = open(os.path.join(out_dir, "chromosome.bed"), "w")
-            with open(os.path.join(out_dir, "flye_renamed.fasta"), "w") as rename_fa:
+            bed_file = open(os.path.join(outdir, "non_chromosome.bed"), "w")
+            bed_chrom_file = open(os.path.join(outdir, "chromosome.bed"), "w")
+            with open(os.path.join(outdir, "flye_renamed.fasta"), "w") as rename_fa:
                 # for chromosome fasta too
-                with open(os.path.join(out_dir, "chromosome.fasta"), "w") as chrom_fa:
+                with open(os.path.join(outdir, "chromosome.fasta"), "w") as chrom_fa:
                     # for plasmid numbering
                     i = 1
                     # for chromosome numbering (chromids, multiple plasmid contigs)
                     c = 1
                     for dna_record in SeqIO.parse(
-                        os.path.join(out_dir, "assembly.fasta"), "fasta"
+                        os.path.join(outdir, "assembly.fasta"), "fasta"
                     ):
                         # if the length is over chromosome length
                         contig_len = len(dna_record.seq)
@@ -291,18 +293,18 @@ class Plass:
                 message = "Extracting possible plasmids from Flye assembly."
                 logger.info(message)
                 # make fake unicycler output file
-                if not os.path.exists(os.path.join(out_dir, "unicycler_output")):
-                    os.mkdir(os.path.join(out_dir, "unicycler_output"))
+                if not os.path.exists(os.path.join(outdir, "unicycler_output")):
+                    os.mkdir(os.path.join(outdir, "unicycler_output"))
                 # remove bed if exists
-                if os.path.exists(os.path.join(out_dir, "non_chromosome.bed")):
-                    os.remove(os.path.join(out_dir, "non_chromosome.bed"))
+                if os.path.exists(os.path.join(outdir, "non_chromosome.bed")):
+                    os.remove(os.path.join(outdir, "non_chromosome.bed"))
                 with open(
-                    os.path.join(out_dir, "unicycler_output", "assembly.fasta"), "w"
+                    os.path.join(outdir, "unicycler_output", "assembly.fasta"), "w"
                 ) as rename_fa:
                     # for plasmid numbering
                     i = 1
                     for dna_record in SeqIO.parse(
-                        os.path.join(out_dir, "assembly.fasta"), "fasta"
+                        os.path.join(outdir, "assembly.fasta"), "fasta"
                     ):
                         # if the length is over chromosome length
                         contig_len = len(dna_record.seq)
@@ -347,55 +349,74 @@ class Plass:
             unicycler_success = False
         self.unicycler_success = unicycler_success
 
-    def get_depth(self, logdir, threads):
+    def get_depth(self, logdir, pacbio_model, threads):
         """wrapper function to get depth of each plasmid in kmer mode
-        :param prefix: prefix (default plassembler)
-        :param out_dir:  Output Directory
+        :param pacbio_model:  pacbio_model
         :param threads: threads
-        :param logger: logger
+        :param logdir: logdir
         :return:
         """
-        out_dir = self.out_dir
-        depth.concatenate_chrom_plasmids(out_dir)
-        depth.minimap_depth_sort_long(out_dir, threads)
-        if self.long_only == False:
-            depth.minimap_depth_sort_short(out_dir, threads)
+        outdir = self.outdir
+        depth.concatenate_chrom_plasmids(outdir)
 
-        contig_lengths = depth.get_contig_lengths(out_dir)
-        if self.long_only == False:
-            depthsShort = depth.get_depths_from_bam(out_dir, "short", contig_lengths)
-        depthsLong = depth.get_depths_from_bam(out_dir, "long", contig_lengths)
-        circular_status = depth.get_contig_circularity(out_dir)
-        if self.long_only == False:
-            summary_depth_df_short = depth.collate_depths(
-                depthsShort, "short", contig_lengths
-            )
+        input_long_reads: Path =  outdir/ f"chopper_long_reads.fastq.gz"
+        fasta: Path =  outdir/ f"combined.fasta"
+        sam: Path = outdir/ f"combined_long.sam"
+        sorted_bam: Path = outdir/ f"combined_sorted_long.bam"
+
+        # map
+        mapping.minimap_long_reads(input_long_reads, fasta, sam, threads, pacbio_model, logdir)
+        # sort
+        bam.sam_to_sorted_bam( sam, sorted_bam, threads, logdir)
+
+        # short reads
+        r1: Path =  outdir/ f"trimmed_R1.fastq"
+        r2: Path =  outdir/ f"trimmed_R2.fastq"
+        fasta: Path =  outdir/ f"combined.fasta"
+        sam: Path = outdir/ f"combined_short.sam"
+        sorted_bam: Path = outdir/ f"combined_sorted_short.bam"
+
+        #map
+        mapping.minimap_short_reads(r1, r2, fasta, sam, threads, pacbio_model, logdir)
+        # sort
+        bam.sam_to_sorted_bam( sam, sorted_bam, threads, logdir)
+
+        contig_lengths = depth.get_contig_lengths(outdir)
+
+        # depths
+        depthsShort = depth.get_depths_from_bam(outdir, "short", contig_lengths)
+        depthsLong = depth.get_depths_from_bam(outdir, "long", contig_lengths)
+        # circular status
+        circular_status = depth.get_contig_circularity(outdir)
+
+
+        summary_depth_df_short = depth.collate_depths(
+            depthsShort, "short", contig_lengths
+        )
+
         summary_depth_df_long = depth.collate_depths(depthsLong, "long", contig_lengths)
+        
         # save the depth df in the class
-        if self.long_only == False:
-            self.depth_df = depth.combine_depth_dfs(
-                summary_depth_df_short, summary_depth_df_long, circular_status
-            )
-        else:
-            self.depth_df = depth.depth_df_single(
-                summary_depth_df_long, circular_status
-            )
+        self.depth_df = depth.combine_depth_dfs(
+            summary_depth_df_short, summary_depth_df_long, circular_status
+        )
+
 
     def process_mash_tsv(self, plassembler_db_dir):
         """
         Process mash output
-        :param out_dir: output directory
+        :param outdir: output directory
         :return: mash_empty: boolean whether there was a mash hit
         """
-        out_dir = self.out_dir
+        outdir = self.outdir
         # contig count of the unicycler assembly
         contig_count = run_mash.get_contig_count(
-            os.path.join(out_dir, "unicycler_output", "assembly.fasta")
+            os.path.join(outdir, "unicycler_output", "assembly.fasta")
         )
         # update with final plasmid count number
         self.contig_count = contig_count
         # get mash tsv output contig
-        mash_tsv = os.path.join(out_dir, "mash.tsv")
+        mash_tsv = os.path.join(outdir, "mash.tsv")
         col_list = [
             "contig",
             "ACC_NUCCORE",
@@ -554,10 +575,10 @@ class Plass:
     def combine_depth_mash_tsvs(self, prefix):
         """
         Combine depth and mash dataframes
-        :param out_dir: output directory
+        :param outdir: output directory
         :return: mash_empty: boolean whether there was a mash hit
         """
-        out_dir = self.out_dir
+        outdir = self.outdir
         self.depth_df["contig"] = self.depth_df["contig"].astype("str")
         self.mash_df["contig"] = self.mash_df["contig"].astype("str")
         combined_depth_mash_df = self.depth_df.merge(
@@ -568,7 +589,7 @@ class Plass:
             combined_depth_mash_df["contig"].str.contains("chromosome"), "PLSDB_hit"
         ] = ""
         combined_depth_mash_df.to_csv(
-            os.path.join(out_dir, prefix + "_summary.tsv"), sep="\t", index=False
+            os.path.join(outdir, prefix + "_summary.tsv"), sep="\t", index=False
         )
         self.combined_depth_mash_df = combined_depth_mash_df
 
@@ -576,16 +597,16 @@ class Plass:
         """
         Renames the contigs of unicycler with the new plasmid copy numbers and outputs finalised file
         """
-        out_dir = self.out_dir
+        outdir = self.outdir
 
         combined_depth_mash_df = self.combined_depth_mash_df
         combined_depth_mash_df = combined_depth_mash_df.loc[
             combined_depth_mash_df["contig"] != "chromosome"
         ].reset_index(drop=True)
         # get contigs only
-        plasmid_fasta = os.path.join(out_dir, "unicycler_output", "assembly.fasta")
+        plasmid_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
         i = 0
-        with open(os.path.join(out_dir, prefix + "_plasmids.fasta"), "w") as dna_fa:
+        with open(os.path.join(outdir, prefix + "_plasmids.fasta"), "w") as dna_fa:
             for dna_record in SeqIO.parse(plasmid_fasta, "fasta"):
                 if "circular" in dna_record.description:  # circular contigs
                     if self.long_only == False:
@@ -637,9 +658,9 @@ class Plass:
         """
         Combine combined df and multimer df
         """
-        out_dir = self.out_dir
+        outdir = self.outdir
 
-        paf_file = os.path.join(out_dir, "mapping.paf")
+        paf_file = os.path.join(outdir, "mapping.paf")
         if os.path.exists(paf_file):
             # if dimer file exists
             col_list = [
@@ -713,7 +734,7 @@ class Plass:
         combined_depth_mash_df = combined_depth_mash_df.reindex(columns=cols)
 
         combined_depth_mash_df.to_csv(
-            os.path.join(out_dir, prefix + "_summary.tsv"), sep="\t", index=False
+            os.path.join(outdir, prefix + "_summary.tsv"), sep="\t", index=False
         )
         self.combined_depth_mash_df = combined_depth_mash_df
 
@@ -723,7 +744,7 @@ class Assembly:
 
     def __init__(
         self,
-        out_dir: str = "output/",
+        outdir: str = "output/",
         long_flag: bool = True,
         short_flag: bool = True,
         chromosome_name: str = "chromosome",
@@ -739,7 +760,7 @@ class Assembly:
         """
         Parameters
         --------
-        out_dir: int, required
+        outdir: int, required
             output directory
         contig_count: int, required
             the number of contigs assembled by flye assembly
@@ -754,7 +775,7 @@ class Assembly:
         short_flag: bool, required
             whether there's short read FASTQs
         """
-        self.out_dir = out_dir
+        self.outdir = outdir
         self.contig_count = contig_count
         self.threads = threads
         self.depth_df = depth_df
@@ -766,13 +787,13 @@ class Assembly:
     def combine_input_fastas(self, chromosome_fasta, plasmids_fasta):
         """wrapper function to get depth of each plasmid
         :param prefix: prefix (default plassembler)
-        :param out_dir:  Output Directory
+        :param outdir:  Output Directory
         :param threads: threads
         :param logger: logger
         :return:
         """
         # combined input fasta
-        combined_fasta = os.path.join(self.out_dir, "combined.fasta")
+        combined_fasta = os.path.join(self.outdir, "combined.fasta")
 
         chromosome_name = ""
 
@@ -806,22 +827,22 @@ class Assembly:
         self.plasmid_names = plasmid_names
 
     def get_depth(self, threads):
-        out_dir = self.out_dir
+        outdir = self.outdir
 
         if self.long_flag == True:
-            depth.minimap_depth_sort_long(out_dir, threads)
+            depth.minimap_depth_sort_long(outdir, threads)
         if self.short_flag == True:
-            depth.minimap_depth_sort_short(out_dir, threads)
+            depth.minimap_depth_sort_short(outdir, threads)
 
-        contig_lengths = depth.get_contig_lengths(out_dir)
+        contig_lengths = depth.get_contig_lengths(outdir)
 
         if self.long_flag == True:
-            depthsLong = depth.get_depths_from_bam(out_dir, "long", contig_lengths)
+            depthsLong = depth.get_depths_from_bam(outdir, "long", contig_lengths)
         if self.short_flag == True:
-            depthsShort = depth.get_depths_from_bam(out_dir, "short", contig_lengths)
+            depthsShort = depth.get_depths_from_bam(outdir, "short", contig_lengths)
 
         # circular status
-        circular_status = depth.get_contig_circularity(out_dir)
+        circular_status = depth.get_contig_circularity(outdir)
 
         if self.long_flag == True:
             summary_depth_df_long = depth.collate_depths(
@@ -849,17 +870,17 @@ class Assembly:
     def process_mash_tsv(self, plassembler_db_dir, plasmid_fasta):
         """
         Process mash output
-        :param out_dir: output directory
+        :param outdir: output directory
         :return: mash_empty: boolean whether there was a mash hit
         """
-        out_dir = self.out_dir
+        outdir = self.outdir
         # contig count of the unicycler assembly
         contig_count = run_mash.get_contig_count(plasmid_fasta)
         # update with final plasmid count number
         self.contig_count = contig_count
 
         # get mash tsv output contig
-        mash_tsv = os.path.join(out_dir, "mash.tsv")
+        mash_tsv = os.path.join(outdir, "mash.tsv")
         col_list = [
             "contig",
             "ACC_NUCCORE",
@@ -1018,10 +1039,10 @@ class Assembly:
     def combine_depth_mash_tsvs(self, prefix):
         """
         Combine depth and mash dataframes
-        :param out_dir: output directory
+        :param outdir: output directory
         :return: mash_empty: boolean whether there was a mash hit
         """
-        out_dir = self.out_dir
+        outdir = self.outdir
         self.depth_df["contig"] = self.depth_df["contig"].astype("str")
         self.mash_df["contig"] = self.mash_df["contig"].astype("str")
         combined_depth_mash_df = self.depth_df.merge(
@@ -1032,6 +1053,6 @@ class Assembly:
             combined_depth_mash_df["contig"].str.contains("chromosome"), "PLSDB_hit"
         ] = ""
         combined_depth_mash_df.to_csv(
-            os.path.join(out_dir, prefix + "_summary.tsv"), sep="\t", index=False
+            os.path.join(outdir, prefix + "_summary.tsv"), sep="\t", index=False
         )
         self.combined_depth_mash_df = combined_depth_mash_df

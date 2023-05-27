@@ -74,20 +74,40 @@ def minimap_depth_sort_long(outdir, threads):
     input_long_reads = os.path.join(outdir, "chopper_long_reads.fastq.gz")
     fasta = os.path.join(outdir, "combined.fasta")
     bam = os.path.join(outdir, "combined_sorted_long.bam")
-    try:
-        minimap = sp.Popen(
-            ["minimap2", "-ax", "map-ont", "-t", threads, fasta, input_long_reads],
-            stdout=sp.PIPE,
-            stderr=sp.DEVNULL,
-        )
-        samtools_sort = sp.Popen(
-            ["samtools", "sort", "-@", threads, "-o", bam, "-"],
-            stdin=minimap.stdout,
-            stderr=sp.DEVNULL,
-        )
-        samtools_sort.communicate()[0]
-    except:
-        sys.exit("Error with mapping and sorting\n")
+
+    minimap = sp.Popen(
+        ["minimap2", "-ax", "map-ont", "-t", threads, fasta, input_long_reads],
+        stdout=sp.PIPE,
+        stderr=sp.DEVNULL,
+    )
+    samtools_sort = sp.Popen(
+        ["samtools", "sort", "-@", threads, "-o", bam, "-"],
+        stdin=minimap.stdout,
+        stderr=sp.DEVNULL,
+    )
+    samtools_sort.communicate()[0]
+
+
+
+    input_long_reads: Path =  outdir/ f"chopper_long_reads.fastq.gz"
+    fasta: Path =  outdir/ f"combined.fasta"
+    bam: Path = outdir/ f"combined_long.bam"
+
+
+    minimap2 = ExternalTool(
+        tool="minimap2",
+        input=f"",
+        output=f"",
+        params=f" -ax {minimap2_model} -t {threads} {fasta} {input_long_reads}",
+        logdir=logdir,
+        outfile = sam
+    )
+
+    # need to write to stdout
+    ExternalTool.run_tool(minimap2, to_stdout = True)
+
+
+
 
 
 def minimap_depth_sort_short(outdir, threads):

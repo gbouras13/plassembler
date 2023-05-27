@@ -1,5 +1,3 @@
-import os
-import sys
 from src.external_tools import ExternalTool
 from pathlib import Path
 

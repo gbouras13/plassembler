@@ -21,7 +21,7 @@ from src import assembly
 from src.cleanup import remove_file
 from src.qc import (chopper, fastp)
 from src.mapping import (minimap_long_reads, minimap_short_reads)
-
+from src.bam import (sam_to_bam_short)
 
 
 test_data = Path("tests/test_data")
@@ -35,6 +35,17 @@ map_dir = Path(f"{test_data}/map_dir")
 @pytest.fixture(scope="session")
 def tmp_dir(tmpdir_factory):
     return tmpdir_factory.mktemp("tmp")
+
+class test_bam(unittest.TestCase):
+    """Tests for bam.py"""
+    # sam to bam
+    def test_sam_to_bam_short(self):
+        expected_return = True
+        sam_to_bam_short(map_dir, threads, logdir)
+        self.assertEqual(expected_return, True)
+
+
+
 
 
 class test_mapping(unittest.TestCase):

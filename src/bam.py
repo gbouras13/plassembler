@@ -1,49 +1,50 @@
-import os
-import sys
-import subprocess as sp
-from src import log
+from src.external_tools import ExternalTool
+from pathlib import Path
 
 # sam to bam
 
 
-def sam_to_bam_short(out_dir, threads, logger):
-    """converts sam to bam using pysam
-    :param long_short: "long" or "short"
-        :param out_dir: output directory path
+def sam_to_bam_short(outdir, threads, logdir):
+    """converts sam to bam with samtools
+    :param outdir: output directory path
     :param threads: threads
-    :param logger: logger
+    :param logdir: logdir
     :return:
     """
-    sam = os.path.join(out_dir, "short_read.sam")
-    bam = os.path.join(out_dir, "short_read.bam")
-    outFile = open(bam, "w")
-    try:
-        sam_to_bam = sp.Popen(
-            ["samtools", "view", "-h", "-@", threads, "-b", sam],
-            stdout=outFile,
-            stderr=sp.PIPE,
-        )
-        log.write_to_log(sam_to_bam.stderr, logger)
-    except:
-        sys.exit("Error with samtools view.\n")
+
+    sam: Path =  outdir/ f"short_read.sam"
+    bam: Path =  outdir/ f"short_read.bam"
+
+    minimap2 = ExternalTool(
+        tool="samtools",
+        input=f"",
+        output=f"",
+        params=f" view -h -@ {threads} -b {sam}",
+        logdir=logdir,
+        outfile = bam
+    )
+
+    # need to write to stdout
+    ExternalTool.run_tool(minimap2, to_stdout = True)
 
 
-def split_bams(out_dir, threads, logger):
+
+def split_bams(outdir, threads, logger):
     """gets all relevant fastqs from bams
     :param long_short: "long" or "short"
-        :param out_dir: output directory path
+        :param outdir: output directory path
     :param threads: threads
     :param logger: logger
     :return:
     """
 
-    non_chrom_bed = os.path.join(out_dir, "non_chromosome.bed")
-    chrom_bed = os.path.join(out_dir, "chromosome.bed")
-    bam = os.path.join(out_dir, "short_read.bam")
+    non_chrom_bed = os.path.join(outdir, "non_chromosome.bed")
+    chrom_bed = os.path.join(outdir, "chromosome.bed")
+    bam = os.path.join(outdir, "short_read.bam")
 
-    unmapped_bam_file = os.path.join(out_dir, "unmapped_bam_file.bam")
-    non_chrom_bam_file = os.path.join(out_dir, "non_chromosome.bam")
-    chrom_bam_file = os.path.join(out_dir, "chromosome.bam")
+    unmapped_bam_file = os.path.join(outdir, "unmapped_bam_file.bam")
+    non_chrom_bam_file = os.path.join(outdir, "non_chromosome.bam")
+    chrom_bam_file = os.path.join(outdir, "chromosome.bam")
 
     non_chrom_bam = open(non_chrom_bam_file, "w")
     chrom_bam = open(chrom_bam_file, "w")
@@ -71,10 +72,10 @@ def split_bams(out_dir, threads, logger):
         sys.exit("Error with samtools view.\n")
 
 
-def bam_to_fastq_short(out_dir, threads, logger):
+def bam_to_fastq_short(outdir, threads, logger):
     """gets all relevant fastqs from bams
     :param long_short: "long" or "short"
-        :param out_dir: output directory path
+        :param outdir: output directory path
     :param threads: threads
     :param logger: logger
     :return:
@@ -82,18 +83,18 @@ def bam_to_fastq_short(out_dir, threads, logger):
 
     # reads that don't map to chromosome
     try:
-        unmapped_bam_file = os.path.join(out_dir, "unmapped_bam_file.bam")
-        non_chrom_bam_file = os.path.join(out_dir, "non_chromosome.bam")
+        unmapped_bam_file = os.path.join(outdir, "unmapped_bam_file.bam")
+        non_chrom_bam_file = os.path.join(outdir, "non_chromosome.bam")
 
-        unmap_fastq_one = os.path.join(out_dir, "unmapped_R1.fastq")
-        unmap_fastq_two = os.path.join(out_dir, "unmapped_R2.fastq")
+        unmap_fastq_one = os.path.join(outdir, "unmapped_R1.fastq")
+        unmap_fastq_two = os.path.join(outdir, "unmapped_R2.fastq")
 
-        non_chrom_fastq_one = os.path.join(out_dir, "mapped_non_chromosome_R1.fastq")
-        non_chrom_fastq_two = os.path.join(out_dir, "mapped_non_chromosome_R2.fastq")
+        non_chrom_fastq_one = os.path.join(outdir, "mapped_non_chromosome_R1.fastq")
+        non_chrom_fastq_two = os.path.join(outdir, "mapped_non_chromosome_R2.fastq")
 
-        # chrom_bam_file = os.path.join(out_dir, "chromosome.bam")
-        # chrom_fastq_one = os.path.join(out_dir, "mapped_chromosome_R1.fastq")
-        # chrom_fastq_two = os.path.join(out_dir, "mapped_chromosome_R2.fastq")
+        # chrom_bam_file = os.path.join(outdir, "chromosome.bam")
+        # chrom_fastq_one = os.path.join(outdir, "mapped_chromosome_R1.fastq")
+        # chrom_fastq_two = os.path.join(outdir, "mapped_chromosome_R2.fastq")
 
         extract_unmap_short_fastq = sp.Popen(
             [

@@ -1,7 +1,6 @@
 from Bio import SeqIO
 import os
 import subprocess as sp
-from src import log
 import sys
 import shutil
 

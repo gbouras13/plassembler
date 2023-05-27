@@ -1,4 +1,0 @@
-Usage: raven [options]
-
-raven: error: no such option: -t
-Command line: raven -t 8 tests/test_data/chopper_long_reads.fastq.gz --graphical-fragment-assembly tests/test_data/assembly_graph.gfa

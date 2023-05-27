@@ -21,8 +21,8 @@ from src import assembly
 from src.cleanup import remove_file
 from src.qc import (chopper, fastp)
 from src.mapping import (minimap_long_reads, minimap_short_reads)
-from src.bam import (sam_to_bam_short)
-
+from src.bam import (sam_to_bam_short, split_bams, bam_to_fastq_short)
+from src.run_unicycler import (run_unicycler)
 
 test_data = Path("tests/test_data")
 val_data = Path(f"{test_data}/validation") 
@@ -41,11 +41,18 @@ class test_bam(unittest.TestCase):
     # sam to bam
     def test_sam_to_bam_short(self):
         expected_return = True
-        sam_to_bam_short(map_dir, threads, logdir)
+        sam_to_bam_short(map_dir, threads = 1, logdir = logdir)
         self.assertEqual(expected_return, True)
 
+    def test_split(self):
+        expected_return = True
+        split_bams(map_dir, threads = 1, logdir = logdir)
+        self.assertEqual(expected_return, True)
 
-
+    def test_bam_to_fastq_short(self):
+        expected_return = True
+        bam_to_fastq_short(map_dir, threads = 1, logdir = logdir)
+        self.assertEqual(expected_return, True)
 
 
 class test_mapping(unittest.TestCase):
@@ -107,8 +114,8 @@ class test_qc_gzip(unittest.TestCase):
 
 
 
-# class test_assemblers(unittest.TestCase):
-#     """Test for assembles"""
+class test_assemblers(unittest.TestCase):
+    """Test for assembles"""
 
 #     def test_flye(self):
 #         expected_return = True
@@ -138,22 +145,29 @@ class test_qc_gzip(unittest.TestCase):
         self.assertEqual(expected_return, True)
         
 
+    # def test_unicycler_good(self):
+    #     expected_return = True
+    #     # C11 sim reads
+    #     short_one = Path(f"{test_data}/short_read_concat_good_R1.fastq") 
+    #     short_two = Path(f"{test_data}/short_read_concat_good_R2.fastq") 
+    #     longreads = Path(f"{test_data}/plasmid_long_good.fastq") 
+    #     unicycler_output_dir = Path(f"{test_data}/unicycler_output") 
+    #     threads = 1
+    #     run_unicycler(threads, logdir, short_one, short_two, longreads, unicycler_output_dir)
+    #     self.assertEqual(expected_return, True)
+        
+    # def test_unicycler_bad(self):
+    #     expected_return = True
+    #     # C11 sim reads
+    #     short_one = Path(f"{test_data}/C11_subsetsim_R1.fastq") 
+    #     short_two = Path(f"{test_data}/C11_subsetsim_R2.fastq") 
+    #     longreads = Path(f"{test_data}/plasmid_long_good.fastq") 
+    #     unicycler_output_dir = Path(f"{test_data}/unicycler_output_bad") 
+    #     threads = 1
+    #     run_unicycler(threads, logdir, short_one, short_two, longreads, unicycler_output_dir)
+    #     self.assertEqual(expected_return, True)
 
  
-
-
-
-
-
-
-
-    # def test_minimap_depth_sort_long(self):
-    #     """test minimap depth sort long"""
-    #     tmp = 1
-    #     depth.minimap_depth_sort_long(out_dir, threads)
-    #     assert tmp == 1
-
-
 
 
 

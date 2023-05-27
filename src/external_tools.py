@@ -26,6 +26,7 @@ class ExternalTool:
         self.out_log = f"{logfile_prefix}.out"
         self.err_log = f"{logfile_prefix}.err"
         self.outfile = outfile
+        self.tool_str = tool
 
     @property
     def command_as_str(self) -> str:
@@ -92,15 +93,20 @@ class ExternalTool:
             else: # if writes to a file
                 tool.run_to_stdout()
         except subprocess.CalledProcessError as error:
-            logger.error(
-                f"Error calling {tool.command_as_str} (return code {error.returncode})"
+            if tool.tool_str == "unicycler": # for unicycler errors
+                logger.warning(
+                f"Unicycler has failed. This usually means that you have no plasmids. Checking."
             )
-            logger.error(f"Please check stdout log file: {tool.out_log}")
-            logger.error(f"Please check stderr log file: {tool.err_log}")
-            logger.error("Temporary files are preserved for debugging")
-            logger.error("Exiting...")
-
-            if ctx:
-                ctx.exit(1)
             else:
-                sys.exit(1)
+                logger.error(
+                    f"Error calling {tool.command_as_str} (return code {error.returncode})"
+                )
+                logger.error(f"Please check stdout log file: {tool.out_log}")
+                logger.error(f"Please check stderr log file: {tool.err_log}")
+                logger.error("Temporary files are preserved for debugging")
+                logger.error("Exiting...")
+
+                if ctx:
+                    ctx.exit(1)
+                else:
+                    sys.exit(1)

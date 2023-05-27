@@ -1,0 +1,32 @@
+Command line: /Users/a1667917/mambaforge/envs/plassembler_env/bin/spades.py	-o	/Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output_bad/spades_assembly	-k	27	--threads	1	--isolate	-1	/Users/a1667917/Documents/plassembler/tests/test_data/C11_subsetsim_R1.fastq	-2	/Users/a1667917/Documents/plassembler/tests/test_data/C11_subsetsim_R2.fastq	-m	1024	
+
+System information:
+  SPAdes version: 3.15.2
+  Python version: 3.8.10
+  OS: macOS-10.16-x86_64-i386-64bit
+
+Output dir: /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output_bad/spades_assembly
+Mode: ONLY assembling (without read error correction)
+Debug mode is turned OFF
+
+Dataset parameters:
+  Isolate mode
+  Reads:
+    Library number: 1, library type: paired-end
+      orientation: fr
+      left reads: ['/Users/a1667917/Documents/plassembler/tests/test_data/C11_subsetsim_R1.fastq']
+      right reads: ['/Users/a1667917/Documents/plassembler/tests/test_data/C11_subsetsim_R2.fastq']
+      interlaced reads: not specified
+      single reads: not specified
+      merged reads: not specified
+Assembly parameters:
+  k: [27]
+  Repeat resolution is enabled
+  Mismatch careful mode is turned OFF
+  MismatchCorrector will be SKIPPED
+  Coverage cutoff is turned OFF
+Other parameters:
+  Dir for temp files: /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output_bad/spades_assembly/tmp
+  Threads: 1
+  Memory limit (in Gb): 1024
+

@@ -10,31 +10,34 @@ import statistics
 import numpy as np
 import pandas as pd
 from src import concat
+from src.external_tools import ExternalTool
+from pathlib import Path
+from loguru import logger
 
 
-def concatenate_chrom_plasmids(out_dir, logger):
+def concatenate_chrom_plasmids(outdir):
     """concatenates chromosome and plasmids
-    :param out_dir:  Output Directory
+    :param outdir:  Output Directory
     :param logger: logger
     :return:
     """
-    chrom_fasta = os.path.join(out_dir, "chromosome.fasta")
-    plas_fasta = os.path.join(out_dir, "unicycler_output", "assembly.fasta")
-    concat_fasta = open(os.path.join(out_dir, "combined.fasta"), "w")
+    chrom_fasta = os.path.join(outdir, "chromosome.fasta")
+    plas_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
+    concat_fasta = open(os.path.join(outdir, "combined.fasta"), "w")
     try:
-        concat.concatenate_single(chrom_fasta, plas_fasta, concat_fasta, logger)
+        concat.concatenate_single(chrom_fasta, plas_fasta, concat_fasta)
     except:
         sys.exit("Error with concatenate_fastas\n")
 
 
 # get lengths of contigs
-def get_contig_lengths(out_dir):
+def get_contig_lengths(outdir):
     """gets contig lengths of combined chrom and plasmids fastas
-    :param out_dir:  Output Directory
+    :param outdir:  Output Directory
     :return: contig_lengths: dictionary of headers and lengths
     """
     contig_lengths = {}
-    for dna_record in SeqIO.parse(os.path.join(out_dir, "combined.fasta"), "fasta"):
+    for dna_record in SeqIO.parse(os.path.join(outdir, "combined.fasta"), "fasta"):
         plas_len = len(dna_record.seq)
         dna_header = dna_record.id
         contig_lengths[dna_header] = plas_len
@@ -42,14 +45,14 @@ def get_contig_lengths(out_dir):
 
 
 # get circular status of contigs
-def get_contig_circularity(out_dir):
+def get_contig_circularity(outdir):
     """gets circularity of contigs
-    :param out_dir:  Output Directory
+    :param outdir:  Output Directory
     :return: circular_status: dictionary of contig header and circular status
     """
     circular_status = {}
     # add circularity
-    for dna_record in SeqIO.parse(os.path.join(out_dir, "combined.fasta"), "fasta"):
+    for dna_record in SeqIO.parse(os.path.join(outdir, "combined.fasta"), "fasta"):
         dna_header = dna_record.id
         # check if circular is in unicycler output description
         if "circular=true" in dna_record.description:
@@ -62,15 +65,15 @@ def get_contig_circularity(out_dir):
     return circular_status
 
 
-def minimap_depth_sort_long(out_dir, threads):
+def minimap_depth_sort_long(outdir, threads):
     """maps long reads using minimap2 to combined fasta and sorts bam
-    :param out_dir:  out_dir
+    :param outdir:  outdir
     :param: threads: threads
     """
     # use chopper reads - no subsetting
-    input_long_reads = os.path.join(out_dir, "chopper_long_reads.fastq.gz")
-    fasta = os.path.join(out_dir, "combined.fasta")
-    bam = os.path.join(out_dir, "combined_sorted_long.bam")
+    input_long_reads = os.path.join(outdir, "chopper_long_reads.fastq.gz")
+    fasta = os.path.join(outdir, "combined.fasta")
+    bam = os.path.join(outdir, "combined_sorted_long.bam")
     try:
         minimap = sp.Popen(
             ["minimap2", "-ax", "map-ont", "-t", threads, fasta, input_long_reads],
@@ -87,15 +90,15 @@ def minimap_depth_sort_long(out_dir, threads):
         sys.exit("Error with mapping and sorting\n")
 
 
-def minimap_depth_sort_short(out_dir, threads):
+def minimap_depth_sort_short(outdir, threads):
     """maps short reads using minimap2 to combined fasta and sorts bam
-    :param out_dir:  out_dir
+    :param outdir:  outdir
     :param: threads: threads
     """
-    trim_one = os.path.join(out_dir, "trimmed_R1.fastq")
-    trim_two = os.path.join(out_dir, "trimmed_R2.fastq")
-    fasta = os.path.join(out_dir, "combined.fasta")
-    bam = os.path.join(out_dir, "combined_sorted_short.bam")
+    trim_one = os.path.join(outdir, "trimmed_R1.fastq")
+    trim_two = os.path.join(outdir, "trimmed_R2.fastq")
+    fasta = os.path.join(outdir, "combined.fasta")
+    bam = os.path.join(outdir, "combined_sorted_short.bam")
     try:
         minimap = sp.Popen(
             ["minimap2", "-ax", "sr", "-t", threads, fasta, trim_one, trim_two],
@@ -112,18 +115,18 @@ def minimap_depth_sort_short(out_dir, threads):
         sys.exit("Error with mapping and sorting\n")
 
 
-def get_depths_from_bam(out_dir, shortFlag, contig_lengths):
+def get_depths_from_bam(outdir, shortFlag, contig_lengths):
     """maps runs samtools depth on bam
-    :param out_dir:  out_dir
+    :param outdir:  outdir
     :param: shortFlag: string either "short" or "long"
     :param: contig_lengths: dictionary of headers and contig lengths
     :return: depths: dictionary of contigs and depths
     """
     depths = {}
     if shortFlag == "short":
-        filename = os.path.join(out_dir, "combined_sorted_short.bam")
+        filename = os.path.join(outdir, "combined_sorted_short.bam")
     else:  # long
-        filename = os.path.join(out_dir, "combined_sorted_long.bam")
+        filename = os.path.join(outdir, "combined_sorted_long.bam")
     for repName, repLength in contig_lengths.items():
         depths[repName] = [0] * repLength
     depthCommand = ["samtools", "depth", filename]
@@ -208,7 +211,7 @@ def collate_depths(depths, shortFlag, contig_lengths):
 
 def combine_depth_dfs(df_short, df_long, circular_status):
     """combines long and short depths
-    :param out_dir:  output directory
+    :param outdir:  output directory
     :param df_short: short depth summary df
     :param df_long: long depth summary df
     :param: prefix: prefix - default plassembler
@@ -224,7 +227,7 @@ def combine_depth_dfs(df_short, df_long, circular_status):
 
 def depth_df_single(df, circular_status):
     """final output for kmer mode
-    :param out_dir:  output directory
+    :param outdir:  output directory
     :param df: short or long depth summary df
     :param: prefix: prefix - default plassembler
     :param: circular_status: dictionary of contig header and circular status

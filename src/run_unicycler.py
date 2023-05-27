@@ -1,49 +1,31 @@
-import sys
-import subprocess as sp
-from src import log
+from loguru import logger
+from pathlib import Path
+from src.external_tools import ExternalTool
 
 
 ### unicycler and deduplicating
 
 
 def run_unicycler(
-    long_only, threads, logger, short_one, short_two, long, unicycler_output_dir
+        threads, logdir, short_one, short_two, longreads, unicycler_output_dir
 ):
     """runs Unicycler
-    :param long_only: boolean flag whether or not this is short read only
-        :param short_one: R1 short read fastq
+    :param short_one: R1 short read fastq
     :param short_two: R2 short read fastq
     :param long: long read fastq
     :param unicycler_output_dir: unicycler Output Directory
     :param threads: threads
-    :param logger: logger
+    :param logdir: logdir
     :return:
     """
-    try:
-        if long_only == False:
-            unicycler = sp.Popen(
-                [
-                    "unicycler",
-                    "-1",
-                    short_one,
-                    "-2",
-                    short_two,
-                    "-l",
-                    long,
-                    "-t",
-                    threads,
-                    "-o",
-                    unicycler_output_dir,
-                ],
-                stdout=sp.PIPE,
-                stderr=sp.PIPE,
-            )
-        else:
-            unicycler = sp.Popen(
-                ["unicycler", "-s", long, "-t", threads, "-o", unicycler_output_dir],
-                stdout=sp.PIPE,
-                stderr=sp.PIPE,
-            )
-        log.write_to_log(unicycler.stdout, logger)
-    except:
-        sys.exit("Error with Unicycler.\n")
+
+    unicycler = ExternalTool(
+        tool="unicycler",
+        input=f"",
+        output=f"",
+        params=f" -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir}",
+        logdir=logdir,
+        outfile = ""
+    )
+
+    ExternalTool.run_tool(unicycler, to_stdout = False)

@@ -1,0 +1,352 @@
+
+[93m[1m[4mStarting Unicycler[0m [2m(2023-05-27 13:15:42)[0m
+[2m    Welcome to Unicycler, an assembly pipeline for bacterial genomes. Since you[0m
+[2mprovided both short and long reads, Unicycler will perform a hybrid assembly.[0m
+[2mIt will first use SPAdes to make a short-read assembly graph, and then it will[0m
+[2muse various methods to scaffold that graph with the long reads.[0m
+[2m    For more information, please see https://github.com/rrwick/Unicycler[0m
+
+Command: [1m/Users/a1667917/mambaforge/envs/plassembler_env/bin/unicycler -1 tests/test_data/short_read_concat_good_R1.fastq -2 tests/test_data/short_read_concat_good_R2.fastq -l tests/test_data/plasmid_long_good.fastq -t 1 -o tests/test_data/unicycler_output[0m
+
+Unicycler version: v0.5.0
+Using 1 thread
+
+The output directory already exists and files may be reused or overwritten:
+  /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output
+
+Dependencies:
+  [4mProgram       Version   Status[0m
+  spades.py     3.15.2    [32mgood[0m  
+  racon         1.5.0     [32mgood[0m  
+  makeblastdb   2.12.0+   [32mgood[0m  
+  tblastn       2.12.0+   [32mgood[0m  
+
+
+[93m[1m[4mChoosing k-mer range for assembly[0m [2m(2023-05-27 13:15:44)[0m
+[2m    Unicycler chooses a k-mer range for SPAdes based on the length of the input[0m
+[2mreads. It uses a wide range of many k-mer sizes to maximise the chance of[0m
+[2mfinding an ideal assembly.[0m
+
+K-mer range already exists:
+  /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/spades_assembly/kmer_range
+
+Will use this existing range:
+  27, 53, 71, 87, 99, 111, 119, 127
+
+
+[93m[1m[4mSPAdes assemblies[0m [2m(2023-05-27 13:15:44)[0m
+[2m    Unicycler now uses SPAdes to assemble the short reads. It scores the[0m
+[2massembly graph for each k-mer using the number of contigs (fewer is better) and[0m
+[2mthe number of dead ends (fewer is better). The score function is 1/(c*(d+2)),[0m
+[2mwhere c is the contig count and d is the dead end count.[0m
+
+spades.py -o /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/spades_assembly -k 27 --threads 1 --isolate -1 /Users/a1667917/Documents/plassembler/tests/test_data/short_read_concat_good_R1.fastq -2 /Users/a1667917/Documents/plassembler/tests/test_data/short_read_concat_good_R2.fastq -m 1024
+
+spades.py -o /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/spades_assembly -k 27,53 --threads 1 --restart-from k27 -m 1024
+
+spades.py -o /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/spades_assembly -k 27,53,71 --threads 1 --restart-from k53 -m 1024
+
+spades.py -o /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/spades_assembly -k 27,53,71,87 --threads 1 --restart-from k71 -m 1024
+
+spades.py -o /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/spades_assembly -k 27,53,71,87,99 --threads 1 --restart-from k87 -m 1024
+
+spades.py -o /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/spades_assembly -k 27,53,71,87,99,111 --threads 1 --restart-from k99 -m 1024
+
+spades.py -o /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/spades_assembly -k 27,53,71,87,99,111,119 --threads 1 --restart-from k111 -m 1024
+
+spades.py -o /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/spades_assembly -k 27,53,71,87,99,111,119,127 --threads 1 --restart-from k119 -m 1024
+
+[4mK-mer   Contigs   Dead ends   Score   [0m
+   27        48           5   2.98e-03
+   53        13           5   1.10e-02
+[32m   71        10           5   1.43e-02 ← best[0m
+   87        10           5   1.43e-02
+   99        10           5   1.43e-02
+  111        10           5   1.43e-02
+  119        10           5   1.43e-02
+  127        10           5   1.43e-02
+
+Read depth filter: removed 46 contigs totalling 12488 bp
+Deleting /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/spades_assembly/
+
+
+[93m[1m[4mDetermining graph multiplicity[0m [2m(2023-05-27 13:18:39)[0m
+[2m    Multiplicity is the number of times a sequence occurs in the underlying[0m
+[2msequence. Single-copy contigs (those with a multiplicity of one, occurring only[0m
+[2monce in the underlying sequence) are particularly useful.[0m
+
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/002_depth_filter.gfa
+
+
+[93m[1m[4mCleaning graph[0m [2m(2023-05-27 13:18:39)[0m
+[2m    Unicycler now performs various cleaning procedures on the graph to remove[0m
+[2moverlaps and simplify the graph structure. The end result is a graph ready for[0m
+[2mbridging.[0m
+
+Graph overlaps removed
+
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/003_overlaps_removed.gfa
+
+[2m    Unicycler now selects a set of anchor contigs from the single-copy contigs.[0m
+[2mThese are the contigs which will be connected via bridges to form the final[0m
+[2massembly.[0m
+
+5 anchor segments (119,917 bp) out of 10 total segments (121,807 bp)
+
+
+[93m[1m[4mCreating SPAdes contig bridges[0m [2m(2023-05-27 13:18:39)[0m
+[2m    SPAdes uses paired-end information to perform repeat resolution (RR) and[0m
+[2mproduce contigs from the assembly graph. SPAdes saves the graph paths[0m
+[2mcorresponding to these contigs in the contigs.paths file. When one of these[0m
+[2mpaths contains two or more anchor contigs, Unicycler can create a bridge from[0m
+[2mthe path.[0m
+
+                                Bridge[0m
+[4mStart       Path       End     quality[0m
+   -3   8 → -9 → -7    6          63.1
+    6   7 → -10 → -8   1          63.2
+
+
+[93m[1m[4mCreating loop unrolling bridges[0m [2m(2023-05-27 13:18:39)[0m
+[2m    When a SPAdes contig path connects an anchor contig with the middle contig[0m
+[2mof a simple loop, Unicycler concludes that the sequences are contiguous (i.e.[0m
+[2mthe loop is not a separate piece of DNA). It then uses the read depth of the[0m
+[2mmiddle and repeat contigs to guess the number of times to traverse the loop and[0m
+[2mmakes a bridge.[0m
+
+No loop unrolling bridges made
+
+
+[93m[1m[4mLoading reads[0m [2m(2023-05-27 13:18:39)[0m
+0 / 250 (0.0%)3 / 250 (1.2%) - 12,476 bp5 / 250 (2.0%) - 27,911 bp8 / 250 (3.2%) - 49,966 bp10 / 250 (4.0%) - 67,567 bp13 / 250 (5.2%) - 108,948 bp15 / 250 (6.0%) - 135,368 bp18 / 250 (7.2%) - 155,797 bp20 / 250 (8.0%) - 191,126 bp23 / 250 (9.2%) - 217,174 bp25 / 250 (10.0%) - 225,033 bp28 / 250 (11.2%) - 267,609 bp30 / 250 (12.0%) - 286,050 bp33 / 250 (13.2%) - 344,732 bp35 / 250 (14.0%) - 355,823 bp38 / 250 (15.2%) - 365,634 bp40 / 250 (16.0%) - 393,032 bp43 / 250 (17.2%) - 422,710 bp45 / 250 (18.0%) - 430,287 bp48 / 250 (19.2%) - 494,209 bp50 / 250 (20.0%) - 525,765 bp53 / 250 (21.2%) - 554,042 bp55 / 250 (22.0%) - 557,023 bp58 / 250 (23.2%) - 604,959 bp60 / 250 (24.0%) - 616,244 bp63 / 250 (25.2%) - 628,869 bp65 / 250 (26.0%) - 636,932 bp68 / 250 (27.2%) - 666,378 bp70 / 250 (28.0%) - 694,404 bp73 / 250 (29.2%) - 704,548 bp75 / 250 (30.0%) - 723,424 bp78 / 250 (31.2%) - 750,220 bp80 / 250 (32.0%) - 773,271 bp83 / 250 (33.2%) - 781,946 bp85 / 250 (34.0%) - 787,213 bp88 / 250 (35.2%) - 819,097 bp90 / 250 (36.0%) - 843,857 bp93 / 250 (37.2%) - 874,688 bp95 / 250 (38.0%) - 887,475 bp98 / 250 (39.2%) - 909,100 bp100 / 250 (40.0%) - 946,549 bp103 / 250 (41.2%) - 986,404 bp105 / 250 (42.0%) - 1,009,949 bp108 / 250 (43.2%) - 1,075,293 bp110 / 250 (44.0%) - 1,115,865 bp113 / 250 (45.2%) - 1,175,785 bp115 / 250 (46.0%) - 1,195,304 bp118 / 250 (47.2%) - 1,226,735 bp120 / 250 (48.0%) - 1,238,412 bp123 / 250 (49.2%) - 1,262,424 bp125 / 250 (50.0%) - 1,293,665 bp128 / 250 (51.2%) - 1,375,397 bp130 / 250 (52.0%) - 1,386,864 bp133 / 250 (53.2%) - 1,410,879 bp135 / 250 (54.0%) - 1,442,455 bp138 / 250 (55.2%) - 1,460,737 bp140 / 250 (56.0%) - 1,469,652 bp143 / 250 (57.2%) - 1,524,392 bp145 / 250 (58.0%) - 1,541,723 bp148 / 250 (59.2%) - 1,613,559 bp150 / 250 (60.0%) - 1,627,706 bp153 / 250 (61.2%) - 1,663,592 bp155 / 250 (62.0%) - 1,702,305 bp158 / 250 (63.2%) - 1,708,370 bp160 / 250 (64.0%) - 1,719,643 bp163 / 250 (65.2%) - 1,767,639 bp165 / 250 (66.0%) - 1,792,286 bp168 / 250 (67.2%) - 1,817,598 bp170 / 250 (68.0%) - 1,846,295 bp173 / 250 (69.2%) - 1,866,605 bp175 / 250 (70.0%) - 1,896,751 bp178 / 250 (71.2%) - 1,937,111 bp180 / 250 (72.0%) - 1,946,919 bp183 / 250 (73.2%) - 1,962,411 bp185 / 250 (74.0%) - 1,969,731 bp188 / 250 (75.2%) - 1,982,268 bp190 / 250 (76.0%) - 2,003,577 bp193 / 250 (77.2%) - 2,025,753 bp195 / 250 (78.0%) - 2,038,810 bp198 / 250 (79.2%) - 2,054,673 bp200 / 250 (80.0%) - 2,088,235 bp203 / 250 (81.2%) - 2,113,898 bp205 / 250 (82.0%) - 2,128,492 bp208 / 250 (83.2%) - 2,166,076 bp210 / 250 (84.0%) - 2,167,661 bp213 / 250 (85.2%) - 2,241,639 bp215 / 250 (86.0%) - 2,249,540 bp218 / 250 (87.2%) - 2,275,528 bp220 / 250 (88.0%) - 2,311,953 bp223 / 250 (89.2%) - 2,368,776 bp225 / 250 (90.0%) - 2,385,846 bp228 / 250 (91.2%) - 2,434,328 bp230 / 250 (92.0%) - 2,453,029 bp233 / 250 (93.2%) - 2,464,303 bp235 / 250 (94.0%) - 2,472,992 bp238 / 250 (95.2%) - 2,495,665 bp240 / 250 (96.0%) - 2,507,300 bp243 / 250 (97.2%) - 2,518,567 bp245 / 250 (98.0%) - 2,527,859 bp248 / 250 (99.2%) - 2,550,786 bp250 / 250 (100.0%) - 2,578,779 bp250 / 250 (100.0%) - 2,578,779 bp
+
+
+[93m[1m[4mAssembling contigs and long reads with miniasm[0m [2m(2023-05-27 13:18:39)[0m
+[2m    Unicycler uses miniasm to construct a string graph assembly using both the[0m
+[2mshort read contigs and the long reads. It will then use the resulting string[0m
+[2mgraph to produce bridges between contigs. This method requires decent coverage[0m
+[2mof long reads and therefore may not be fruitful if long reads are sparse.[0m
+[2mHowever, it does not rely on the short read assembly graph having good[0m
+[2mconnectivity and is able to bridge an assembly graph even when it contains many[0m
+[2mdead ends.[0m
+[2m    Unicycler uses two types of "reads" as assembly input: anchor contigs from[0m
+[2mthe short-read assembly and actual long reads which overlap two or more of[0m
+[2mthese contigs. It then assembles them with miniasm.[0m
+
+Aligning long reads to graph using minimap
+
+Saving to /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/miniasm_assembly/01_assembly_reads.fastq:
+  5 short-read contigs
+  56 long reads
+
+Finding overlaps with minimap... [32msuccess[0m
+  1,084 overlaps
+
+Assembling reads with miniasm... [32msuccess[0m
+  9 segments, 8 links
+
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/miniasm_assembly/11_branching_paths_removed.gfa
+Merging segments into unitigs:
+  1 linear unitig
+  total size = 86,111 bp
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/miniasm_assembly/12_unitig_graph.gfa
+
+
+[93m[1m[4mPolishing miniasm assembly with Racon[0m [2m(2023-05-27 13:18:39)[0m
+[2m    Unicycler now uses Racon to polish the miniasm assembly. It does multiple[0m
+[2mrounds of polishing to get the best consensus. Circular unitigs are rotated[0m
+[2mbetween rounds such that all parts (including the ends) are polished well.[0m
+
+Saving to /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/miniasm_assembly/racon_polish/polishing_reads.fastq:
+  5 short-read contigs
+  250 long reads
+
+Polish       Assembly          Mapping[0m
+[4mround            size          quality[0m
+begin          86,111            59.06
+1              86,531            69.90
+
+Best polish: /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/miniasm_assembly/racon_polish/006_rotated.fasta
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/miniasm_assembly/13_racon_polished.gfa
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/004_long_read_assembly.gfa
+
+[2m    Contigs in the short-read assembly graph which end in dead ends may contain[0m
+[2mbogus sequence near the dead end. Unicycler therefore uses the read clipping[0m
+[2mvalues from the miniasm assembly to trim these dead ends to only the parts[0m
+[2mwhich aligned well to long reads.[0m
+
+                       Trimmed   Trimmed             [0m
+            Previous      from      from        Final[0m
+[4mSegment       length     start       end       length[0m
+1             49,550         -         4       49,546
+3             18,306         -         1       18,305
+
+[2m    Unicycler now places the single copy contigs back into the unitig graph.[0m
+[2mThis serves two purposes: a) it replaces long read assembly sequences (which[0m
+[2mmay be error prone) with Illumina assembly sequence (which is probably quite[0m
+[2maccurate), improving the assembly quality, and b) it defines inter-contig[0m
+[2msequences for use in building bridges.[0m
+
+Searching for contigs using 5,000 bp of contig ends.
+
+[4mContig   Result      Start pos   End pos   Strand[0m
+     1   [31mnot found[0m                               
+     2   [31mnot found[0m                               
+     3   [31mnot found[0m                               
+     4   [31mnot found[0m                               
+     6   [31mnot found[0m                               
+
+Searching for contigs using 2,500 bp of contig ends.
+
+[4mContig   Result      Start pos   End pos   Strand[0m
+     1   [31mnot found[0m                               
+     2   [31mnot found[0m                               
+     3   [31mnot found[0m                               
+     4   [31mnot found[0m                               
+     6   [31mnot found[0m                               
+
+Searching for contigs using 1,000 bp of contig ends.
+
+[4mContig   Result      Start pos   End pos   Strand[0m
+     1   [31mnot found[0m                               
+     2   [31mnot found[0m                               
+     3   [31mnot found[0m                               
+     4   [31mnot found[0m                               
+     6   [31mnot found[0m                               
+
+Searching for contigs using 500 bp of contig ends.
+
+[4mContig   Result      Start pos   End pos   Strand[0m
+     1   [31mnot found[0m                               
+     2   [31mnot found[0m                               
+     3   [31mnot found[0m                               
+     4   [31mnot found[0m                               
+     6   [31mnot found[0m                               
+
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/miniasm_assembly/14_contigs_placed.gfa
+
+
+[93m[1m[4mCreating miniasm/Racon bridges[0m [2m(2023-05-27 13:18:44)[0m
+[2m    Now that the miniasm/Racon string graph is complete, Unicycler will use it[0m
+[2mto build bridges between anchor segments.[0m
+
+[4m     Start → end    Best path                                 Quality[0m
+
+
+[93m[1m[4mCreating simple long read bridges[0m [2m(2023-05-27 13:18:44)[0m
+[2m    Unicycler uses long read alignments (from minimap) to resolve simple repeat[0m
+[2mstructures in the graph. This takes care of some "low-hanging fruit" of the[0m
+[2mgraph simplification.[0m
+
+Aligning long reads to graph using minimap
+
+[2m    Two-way junctions are defined as cases where two graph contigs (A and B)[0m
+[2mjoin together (C) and then split apart again (D and E). This usually represents[0m
+[2ma simple 2-copy repeat, and there are two possible options for its resolution:[0m
+[2m(A→C→D and B→C→E) or (A→C→E and B→C→D). Each read which spans such a junction[0m
+[2mgets to "vote" for option 1, option 2 or neither. Unicycler creates a bridge at[0m
+[2meach junction for the most voted for option.[0m
+
+No suitable two-way junctions present
+
+[2m    Simple loops are parts of the graph where two contigs (A and B) are[0m
+[2mconnected via a repeat (C) which loops back to itself (via D). It is possible[0m
+[2mto traverse the loop zero times (A→C→B), one time (A→C→D→C→B), two times[0m
+[2m(A→C→D→C→D→C→B), etc. Long reads which span the loop inform which is the[0m
+[2mcorrect number of times through. In this step, such reads are found and each is[0m
+[2maligned against alternative loop counts. A reads casts its "vote" for the loop[0m
+[2mcount it agrees best with, and Unicycler creates a bridge using the most voted[0m
+[2mfor count.[0m
+
+No suitable simple loops present
+
+
+[93m[1m[4mDetermining low score threshold[0m [2m(2023-05-27 13:18:44)[0m
+[2m    Before conducting semi-global alignment of the long reads to the assembly[0m
+[2mgraph, Unicycler must determine a minimum alignment score threshold such that[0m
+[2mnonsense alignments are excluded. To choose a threshold automatically, it[0m
+[2mexamines alignments between random sequences and selects a score a few standard[0m
+[2mdeviations above the mean.[0m
+
+Automatically choosing a threshold using random alignment scores.
+
+Random alignment mean score: 61.66
+         standard deviation:  1.31
+        Low score threshold: 61.66 + (7 x 1.31) = 70.86
+
+
+[93m[1m[4mAligning reads[0m [2m(2023-05-27 13:18:44)[0m
+0 / 250 (0.0%)1 / 250 (0.4%)2 / 250 (0.8%)3 / 250 (1.2%)4 / 250 (1.6%)5 / 250 (2.0%)6 / 250 (2.4%)7 / 250 (2.8%)8 / 250 (3.2%)9 / 250 (3.6%)10 / 250 (4.0%)11 / 250 (4.4%)12 / 250 (4.8%)13 / 250 (5.2%)14 / 250 (5.6%)15 / 250 (6.0%)16 / 250 (6.4%)17 / 250 (6.8%)18 / 250 (7.2%)19 / 250 (7.6%)20 / 250 (8.0%)21 / 250 (8.4%)22 / 250 (8.8%)23 / 250 (9.2%)24 / 250 (9.6%)25 / 250 (10.0%)26 / 250 (10.4%)27 / 250 (10.8%)28 / 250 (11.2%)29 / 250 (11.6%)30 / 250 (12.0%)31 / 250 (12.4%)32 / 250 (12.8%)33 / 250 (13.2%)34 / 250 (13.6%)35 / 250 (14.0%)36 / 250 (14.4%)37 / 250 (14.8%)38 / 250 (15.2%)39 / 250 (15.6%)40 / 250 (16.0%)41 / 250 (16.4%)42 / 250 (16.8%)43 / 250 (17.2%)44 / 250 (17.6%)45 / 250 (18.0%)46 / 250 (18.4%)47 / 250 (18.8%)48 / 250 (19.2%)49 / 250 (19.6%)50 / 250 (20.0%)51 / 250 (20.4%)52 / 250 (20.8%)53 / 250 (21.2%)54 / 250 (21.6%)55 / 250 (22.0%)56 / 250 (22.4%)57 / 250 (22.8%)58 / 250 (23.2%)59 / 250 (23.6%)60 / 250 (24.0%)61 / 250 (24.4%)62 / 250 (24.8%)63 / 250 (25.2%)64 / 250 (25.6%)65 / 250 (26.0%)66 / 250 (26.4%)67 / 250 (26.8%)68 / 250 (27.2%)69 / 250 (27.6%)70 / 250 (28.0%)71 / 250 (28.4%)72 / 250 (28.8%)73 / 250 (29.2%)74 / 250 (29.6%)75 / 250 (30.0%)76 / 250 (30.4%)77 / 250 (30.8%)78 / 250 (31.2%)79 / 250 (31.6%)80 / 250 (32.0%)81 / 250 (32.4%)82 / 250 (32.8%)83 / 250 (33.2%)84 / 250 (33.6%)85 / 250 (34.0%)86 / 250 (34.4%)87 / 250 (34.8%)88 / 250 (35.2%)89 / 250 (35.6%)90 / 250 (36.0%)91 / 250 (36.4%)92 / 250 (36.8%)93 / 250 (37.2%)94 / 250 (37.6%)95 / 250 (38.0%)96 / 250 (38.4%)97 / 250 (38.8%)98 / 250 (39.2%)99 / 250 (39.6%)100 / 250 (40.0%)101 / 250 (40.4%)102 / 250 (40.8%)103 / 250 (41.2%)104 / 250 (41.6%)105 / 250 (42.0%)106 / 250 (42.4%)107 / 250 (42.8%)108 / 250 (43.2%)109 / 250 (43.6%)110 / 250 (44.0%)111 / 250 (44.4%)112 / 250 (44.8%)113 / 250 (45.2%)114 / 250 (45.6%)115 / 250 (46.0%)116 / 250 (46.4%)117 / 250 (46.8%)118 / 250 (47.2%)119 / 250 (47.6%)120 / 250 (48.0%)121 / 250 (48.4%)122 / 250 (48.8%)123 / 250 (49.2%)124 / 250 (49.6%)125 / 250 (50.0%)126 / 250 (50.4%)127 / 250 (50.8%)128 / 250 (51.2%)129 / 250 (51.6%)130 / 250 (52.0%)131 / 250 (52.4%)132 / 250 (52.8%)133 / 250 (53.2%)134 / 250 (53.6%)135 / 250 (54.0%)136 / 250 (54.4%)137 / 250 (54.8%)138 / 250 (55.2%)139 / 250 (55.6%)140 / 250 (56.0%)141 / 250 (56.4%)142 / 250 (56.8%)143 / 250 (57.2%)144 / 250 (57.6%)145 / 250 (58.0%)146 / 250 (58.4%)147 / 250 (58.8%)148 / 250 (59.2%)149 / 250 (59.6%)150 / 250 (60.0%)151 / 250 (60.4%)152 / 250 (60.8%)153 / 250 (61.2%)154 / 250 (61.6%)155 / 250 (62.0%)156 / 250 (62.4%)157 / 250 (62.8%)158 / 250 (63.2%)159 / 250 (63.6%)160 / 250 (64.0%)161 / 250 (64.4%)162 / 250 (64.8%)163 / 250 (65.2%)164 / 250 (65.6%)165 / 250 (66.0%)166 / 250 (66.4%)167 / 250 (66.8%)168 / 250 (67.2%)169 / 250 (67.6%)170 / 250 (68.0%)171 / 250 (68.4%)172 / 250 (68.8%)173 / 250 (69.2%)174 / 250 (69.6%)175 / 250 (70.0%)176 / 250 (70.4%)177 / 250 (70.8%)178 / 250 (71.2%)179 / 250 (71.6%)180 / 250 (72.0%)181 / 250 (72.4%)182 / 250 (72.8%)183 / 250 (73.2%)184 / 250 (73.6%)185 / 250 (74.0%)186 / 250 (74.4%)187 / 250 (74.8%)188 / 250 (75.2%)189 / 250 (75.6%)190 / 250 (76.0%)191 / 250 (76.4%)192 / 250 (76.8%)193 / 250 (77.2%)194 / 250 (77.6%)195 / 250 (78.0%)196 / 250 (78.4%)197 / 250 (78.8%)198 / 250 (79.2%)199 / 250 (79.6%)200 / 250 (80.0%)201 / 250 (80.4%)202 / 250 (80.8%)203 / 250 (81.2%)204 / 250 (81.6%)205 / 250 (82.0%)206 / 250 (82.4%)207 / 250 (82.8%)208 / 250 (83.2%)209 / 250 (83.6%)210 / 250 (84.0%)211 / 250 (84.4%)212 / 250 (84.8%)213 / 250 (85.2%)214 / 250 (85.6%)215 / 250 (86.0%)216 / 250 (86.4%)217 / 250 (86.8%)218 / 250 (87.2%)219 / 250 (87.6%)220 / 250 (88.0%)221 / 250 (88.4%)222 / 250 (88.8%)223 / 250 (89.2%)224 / 250 (89.6%)225 / 250 (90.0%)226 / 250 (90.4%)227 / 250 (90.8%)228 / 250 (91.2%)229 / 250 (91.6%)230 / 250 (92.0%)231 / 250 (92.4%)232 / 250 (92.8%)233 / 250 (93.2%)234 / 250 (93.6%)235 / 250 (94.0%)236 / 250 (94.4%)237 / 250 (94.8%)238 / 250 (95.2%)239 / 250 (95.6%)240 / 250 (96.0%)241 / 250 (96.4%)242 / 250 (96.8%)243 / 250 (97.2%)244 / 250 (97.6%)245 / 250 (98.0%)246 / 250 (98.4%)247 / 250 (98.8%)248 / 250 (99.2%)249 / 250 (99.6%)250 / 250 (100.0%)250 / 250 (100.0%)
+
+
+[93m[1m[4mRead alignment summary[0m [2m(2023-05-27 13:19:23)[0m
+Total read count:            250
+Fully aligned reads:          54
+Partially aligned reads:      50
+Unaligned reads:             146
+Total bases aligned:     669,423 bp
+Mean alignment identity:      94.4%
+
+Deleting /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/read_alignment/
+
+
+[93m[1m[4mBuilding long read bridges[0m [2m(2023-05-27 13:19:23)[0m
+[2m    Unicycler uses the long read alignments to produce bridges between anchor[0m
+[2msegments. These bridges can be formed using as few as one long read, giving[0m
+[2mUnicycler the ability to bridge the graph even when long-read depth is low.[0m
+
+[4m     Start → end    Best path                                 Quality[0m
+1/5     -3 → 6      8, -9, -7                                  49.387
+2/5     -1 → 3      8, 10, -7, -6, 7, 9, -8                    47.499
+3/5      2 → 2                                                 21.919
+4/5      3 → -1                                                95.095
+5/5      6 → 1      7, -10, -8                                 55.462
+
+
+[93m[1m[4mApplying bridges[0m [2m(2023-05-27 13:19:24)[0m
+[2m    Unicycler now applies to the graph in decreasing order of quality. This[0m
+[2mensures that when multiple, contradictory bridges exist, the most supported[0m
+[2moption is used.[0m
+
+[4mBridge type   Start → end   Path         Quality[0m
+long read         3 → -1                  95.095
+long read         6 → 1     7, -10, -8    55.462
+long read        -3 → 6     8, -9, -7     49.387
+long read         2 → 2                   21.919
+
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/005_bridges_applied.gfa
+
+
+[93m[1m[4mBridged assembly graph[0m [2m(2023-05-27 13:19:24)[0m
+[2m    The assembly is now mostly finished and no more structural changes will be[0m
+[2mmade. Ideally the assembly graph should now have one contig per replicon and no[0m
+[2merroneous contigs (i.e. a complete assembly). If there are more contigs, then[0m
+[2mthe assembly is not complete.[0m
+
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/006_final_clean.gfa
+
+[4mComponent   Segments   Links   Length    N50      Longest segment   Status    [0m
+    total          3       2   123,840   70,606            70,606             
+        1          1       1    70,606   70,606            70,606    [32m complete[0m
+        2          1       1    44,016   44,016            44,016    [32m complete[0m
+        3          1       0     9,218    9,218             9,218  [31m incomplete[0m
+
+
+[93m[1m[4mRotating completed replicons[0m [2m(2023-05-27 13:19:24)[0m
+[2m    Any completed circular contigs (i.e. single contigs which have one link[0m
+[2mconnecting end to start) can have their start position changed without altering[0m
+[2mthe sequence. For consistency, Unicycler now searches for a starting gene (dnaA[0m
+[2mor repA) in each such contig, and if one is found, the contig is rotated to[0m
+[2mstart with that gene on the forward strand.[0m
+
+[4mSegment   Length   Depth   Starting gene         Position   Strand    Identity   Coverage[0m
+      1   70,606   1.00x   UniRef90_A0A0E3KI91     10,901   reverse      99.7%     100.0%
+      2   44,016   1.02x   [31mnone found[0m                                                    
+
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/007_rotated.gfa
+
+
+[93m[1m[4mAssembly complete[0m [2m(2023-05-27 13:19:53)[0m
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/assembly.gfa
+Saving /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output/assembly.fasta
+

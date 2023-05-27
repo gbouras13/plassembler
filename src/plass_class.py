@@ -5,6 +5,7 @@ from src import run_mash
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from loguru import logger
+from pathlib import Path
 
 
 class Plass:
@@ -335,9 +336,8 @@ class Plass:
         # add to object
         self.chromosome_flag = chromosome_flag
 
-    def check_unicycler_success(self):
-        out_dir = self.out_dir
-        unicycler_file = os.path.join(out_dir, "unicycler_output", "assembly.fasta")
+    def check_unicycler_success(self, unicycler_dir):
+        unicycler_file: Path =  Path(unicycler_dir, "assembly.fasta")
         # check if unicycler succeded according to the output (it won't if no plasmids)
         unicycler_success = os.path.isfile(unicycler_file)
         if (
@@ -347,7 +347,7 @@ class Plass:
             unicycler_success = False
         self.unicycler_success = unicycler_success
 
-    def get_depth(self, logger, threads):
+    def get_depth(self, logdir, threads):
         """wrapper function to get depth of each plasmid in kmer mode
         :param prefix: prefix (default plassembler)
         :param out_dir:  Output Directory
@@ -356,7 +356,7 @@ class Plass:
         :return:
         """
         out_dir = self.out_dir
-        depth.concatenate_chrom_plasmids(out_dir, logger)
+        depth.concatenate_chrom_plasmids(out_dir)
         depth.minimap_depth_sort_long(out_dir, threads)
         if self.long_only == False:
             depth.minimap_depth_sort_short(out_dir, threads)

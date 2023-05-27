@@ -1,0 +1,3 @@
+Error: SPAdes encountered an error:
+
+Command line: unicycler -1 tests/test_data/C11_subsetsim_R1.fastq -2 tests/test_data/C11_subsetsim_R2.fastq -l tests/test_data/chopper_long_reads.fastq.gz -t 1 -o tests/test_data/unicycler_output

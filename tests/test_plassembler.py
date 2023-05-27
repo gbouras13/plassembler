@@ -18,7 +18,7 @@ from src import input_commands
 from src import concat
 from src import depth
 from src.sam_to_fastq import (extract_bin_long_fastqs)
-
+from src.plass_class import Assembly, Plass
 
 # data
 test_data = Path("tests/test_data")
@@ -37,6 +37,24 @@ def tmp_dir(tmpdir_factory):
 def make_logger():
     logger = logging.getLogger()
     return logger
+
+class test_unicycler_success(unittest.TestCase):
+    """Test for validate_pacbio_model"""
+
+    # bad pacbio model
+    def test_unicycler_success_bad(self):
+        plass = Plass()
+        expected_return = False
+        unicycler_output_dir = Path(f"{test_data}/unicycler_output_bad") 
+        plass.check_unicycler_success(unicycler_output_dir)
+        self.assertEqual(expected_return, False)
+
+    def test_unicycler_success_good(self):
+        plass = Plass()
+        expected_return = True
+        unicycler_output_dir = Path(f"{test_data}/unicycler_output") 
+        plass.check_unicycler_success(unicycler_output_dir)
+        self.assertEqual(expected_return, True)
 
 
 class test_sam_to_fastq_long(unittest.TestCase):

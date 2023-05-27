@@ -1,0 +1,7 @@
+- "left reads":
+  - "/Users/a1667917/Documents/plassembler/tests/test_data/C11_subsetsim_R1.fastq"
+  "number": !!int "1"
+  "orientation": "fr"
+  "right reads":
+  - "/Users/a1667917/Documents/plassembler/tests/test_data/C11_subsetsim_R2.fastq"
+  "type": "paired-end"

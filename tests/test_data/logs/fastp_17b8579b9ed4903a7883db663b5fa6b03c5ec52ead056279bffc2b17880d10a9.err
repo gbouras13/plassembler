@@ -1,0 +1,42 @@
+Read1 before filtering:
+total reads: 2500
+total bases: 377500
+Q20 bases: 368395(97.5881%)
+Q30 bases: 363374(96.258%)
+
+Read2 before filtering:
+total reads: 2500
+total bases: 377500
+Q20 bases: 355198(94.0922%)
+Q30 bases: 342818(90.8127%)
+
+Read1 after filtering:
+total reads: 2500
+total bases: 377437
+Q20 bases: 368337(97.589%)
+Q30 bases: 363316(96.2587%)
+
+Read2 after filtering:
+total reads: 2500
+total bases: 377437
+Q20 bases: 355141(94.0928%)
+Q30 bases: 342763(90.8133%)
+
+Filtering result:
+reads passed filter: 5000
+reads failed due to low quality: 0
+reads failed due to too many N: 0
+reads failed due to too short: 0
+reads with adapter trimmed: 2
+bases trimmed due to adapters: 126
+
+Duplication rate: 0%
+
+Insert size peak (evaluated by paired-end reads): 0
+
+JSON report: fastp.json
+HTML report: fastp.html
+
+fastp --out1 tests/test_data/fake_out_dir/trimmed_R1.fastq --out2 tests/test_data/fake_out_dir/trimmed_R2.fastq --in1 tests/test_data/C11_subsetsim_R1.fastq --in2 tests/test_data/C11_subsetsim_R2.fastq 
+fastp v0.22.0, time used: 0 seconds
+Command line: fastp --out1 tests/test_data/fake_out_dir/trimmed_R1.fastq --out2 tests/test_data/fake_out_dir/trimmed_R2.fastq --in1 tests/test_data/C11_subsetsim_R1.fastq --in2 tests/test_data/C11_subsetsim_R2.fastq

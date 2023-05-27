@@ -1,0 +1,2 @@
+[bioparser::Parser::Create] error: unable to open file tests/test_data/fake_out_dir/chopper_long_reads.fastq.gz
+Command line: raven -t 8 tests/test_data/fake_out_dir/chopper_long_reads.fastq.gz --graphical-fragment-assembly tests/test_data/fake_out_dir/assembly_graph.gfa

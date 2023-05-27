@@ -1,0 +1,24 @@
+[raven::] loaded 1250 sequences 0.081067s
+[raven::Graph::Construct] minimized 0 - 1250 / 1250 0.227197s
+[raven::Graph::Construct] mapped sequences 0.267972s
+[raven::Graph::Construct] annotated piles 0.003406s
+[raven::Graph::Construct] removed contained sequences 0.000110s
+[raven::Graph::Construct] removed chimeric sequences 0.000095s
+[raven::Graph::Construct] reached checkpoint 0.005796s
+[raven::Graph::Construct] minimized 0 - 97 / 97 0.060935s
+[raven::Graph::Construct] mapped valid sequences 0.069355s
+[raven::Graph::Construct] updated overlaps 0.000036s
+[raven::Graph::Construct] removed false overlaps 0.001267s
+[raven::Graph::Construct] stored 188 nodes 0.001729s
+[raven::Graph::Construct] stored 126 edges 0.000000s
+[raven::Graph::Construct] reached checkpoint 0.008581s
+[raven::Graph::Construct] 0.648169s
+[raven::Graph::Assemble] removed transitive edges 0.000293s
+[raven::Graph::Assemble] reached checkpoint 0.008826s
+[raven::Graph::Assemble] removed tips and bubbles 0.000022s
+[raven::Graph::Assemble] reached checkpoint 0.009641s
+[raven::Graph::Assemble] removed long edges 0.000331s
+[raven::Graph::Assemble] reached checkpoint 0.008598s
+[raven::Graph::Assemble] 0.029486s
+[raven::] 0.768536s
+Command line: raven -t 1 tests/test_data/chopper_long_reads.fastq.gz --graphical-fragment-assembly tests/test_data/assembly_graph.gfa

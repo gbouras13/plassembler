@@ -1,7 +1,6 @@
 import os
 import sys
 import subprocess as sp
-from src import log
 import gzip
 from Bio import SeqIO
 

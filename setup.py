@@ -1,5 +1,5 @@
 """
-conda mambabuild . --variants "{python: [3.6,3.7,3.8,3.9,3.10,3.11]}"
+conda mambabuild . --variants "{python: [3.8,3.9,3.10,3.11]}"
 """
 
 from setuptools import setup, find_packages
@@ -49,7 +49,7 @@ setup(
     scripts=["plassembler"],
     entry_points={"console_scripts": ["install_database = src.install_database:main"]},
     url="https://github.com/gbouras13/plassembler",
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     classifiers=CLASSIFIERS,
     install_requires=[
         "pyyaml>=6.0",
@@ -57,5 +57,9 @@ setup(
         "biopython >=1.76",
         "pytest>=6.2.5",
         "pandas",
+        "loguru>=0.5.3", 
+        "Click>=8.0.0",
+        "pytest-cov>=3.0.0",
+        "pysam>=0.16.0"
     ],
 )

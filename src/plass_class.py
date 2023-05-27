@@ -4,6 +4,7 @@ from src import depth
 from src import run_mash
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
+from loguru import logger
 
 
 class Plass:
@@ -57,7 +58,7 @@ class Plass:
         self.long_only = long_only
         self.unicycler_success = unicycler_success
 
-    def get_contig_count(self, logger):
+    def get_contig_count(self):
         """Counts the number of contigs assembled
         :return:
         """
@@ -66,12 +67,10 @@ class Plass:
         contig_count = 0
         for record in SeqIO.parse(fasta_file, "fasta"):
             contig_count += 1
-        message = "Raven assembled " + str(contig_count) + " contigs."
-        print(message)
-        logger.info(message)
+        logger.info(f"Raven assembled {contig_count} contigs.")
         self.contig_count = contig_count
 
-    def identify_chromosome_process_raven(self, chromosome_len, logger):
+    def identify_chromosome_process_raven(self, chromosome_len):
         """Identified chromosome and processes Raven output - renames chromosome contig and the others as plasmid_1, plasmid_2 etc
         Also makes the chromosome bed file for downstream samtools mapping
         :param out_dir: output directory
@@ -121,7 +120,6 @@ class Plass:
                             else:
                                 if c == "2":
                                     message = "Multiple contigs above the specified chromosome length -c have been detected. \nIf you are hoping for plasmids from haploid bacteria, please check your value for -c."
-                                    print(message)
                                     logger.info(message)
                                 dna_header = "chromosome_" + str(c)
                             dna_description = ""
@@ -156,7 +154,6 @@ class Plass:
             # if lony only is true, create new unicycler_output file (fake)
             if long_only == True:
                 message = "Extracting possible plasmids from Raven assembly."
-                print(message)
                 logger.info(message)
                 # make fake unicycler output file
                 if not os.path.exists(os.path.join(out_dir, "unicycler_output")):
@@ -176,17 +173,6 @@ class Plass:
                         contig_len = len(dna_record.seq)
                         if contig_len < int(chromosome_len):
                             dna_header = str(i)
-                            # get circularity
-                            # circ = info_df.circ.loc[info_df['seq_name'] == dna_record.id]
-                            # plas_circ =  str(circ.iloc[0])
-                            # if plas_circ == "Y":
-                            #     dna_description = "circular=true"
-                            # else:
-                            #     dna_description = ""
-                            # get length for bed file
-
-                            # later add some circularity script
-
                             # write the updated record
                             dna_record = SeqRecord(
                                 dna_record.seq,
@@ -203,7 +189,7 @@ class Plass:
         # add to object
         self.chromosome_flag = chromosome_flag
 
-    def identify_chromosome_process_flye(self, chromosome_len, logger):
+    def identify_chromosome_process_flye(self, chromosome_len):
         """Identified chromosome and processes Flye output - renames chromosome contig and the others as plasmid_1, plasmid_2 etc
         Also makes the chromosome bed file for downstream samtools mapping
         :param out_dir: output directory
@@ -265,7 +251,6 @@ class Plass:
                             else:
                                 if c == "2":
                                     message = "Multiple contigs above the specified chromosome length -c have been detected. \nIf you are hoping for plasmids from haploid bacteria, please check your value for -c."
-                                    print(message)
                                     logger.info(message)
                                 dna_header = "chromosome_" + str(c)
                             dna_description = ""
@@ -303,7 +288,6 @@ class Plass:
             # if lony only is true, create new unicycler_output file (fake)
             if long_only == True:
                 message = "Extracting possible plasmids from Flye assembly."
-                print(message)
                 logger.info(message)
                 # make fake unicycler output file
                 if not os.path.exists(os.path.join(out_dir, "unicycler_output")):

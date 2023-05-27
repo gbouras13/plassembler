@@ -1,159 +1,13 @@
-import argparse
 import os
 import sys
 import gzip
-from argparse import RawTextHelpFormatter
 from Bio import SeqIO
 import shutil
 import subprocess as sp
-from src.version import __version__
-from src import log
+from loguru import logger
 
-
-v = __version__
 
 ### GLOBAL VARIABLES
-
-
-def get_input():
-    """gets input for plassembler
-    :return: args
-    """
-    parser = argparse.ArgumentParser(
-        description="plassembler: automated bacterial plasmid assembly tool.",
-        formatter_class=RawTextHelpFormatter,
-    )
-    parser.add_argument(
-        "-d",
-        "--database",
-        action="store",
-        help="Directory of PLSDB database downloaded using install_database.py.",
-        required=True,
-    )
-    parser.add_argument(
-        "-l",
-        "--longreads",
-        action="store",
-        help="FASTQ file of long reads.",
-        default="nothing",
-    )
-    parser.add_argument(
-        "-1",
-        "--short_one",
-        action="store",
-        help="R1 short read FASTQ file.",
-        default="nothing",
-    )
-    parser.add_argument(
-        "-2",
-        "--short_two",
-        action="store",
-        help="R2 short read FASTQ file.",
-        default="nothing",
-    )
-    parser.add_argument(
-        "-c",
-        "--chromosome",
-        action="store",
-        help="Approximate lower-bound chromosome length of bacteria. \nDefaults to 1000000.",
-        default=1000000,
-    )
-    parser.add_argument(
-        "-o",
-        "--outdir",
-        action="store",
-        help="Directory to write the output to. Defaults to output/",
-        default=os.path.join(os.getcwd(), "output/"),
-    )
-    parser.add_argument(
-        "-m",
-        "--min_length",
-        action="store",
-        help="minimum length for filtering long reads with chopper. Defaults to 500.",
-        default="500",
-    )
-    parser.add_argument(
-        "-q",
-        "--min_quality",
-        action="store",
-        help="minimum quality for filtering long reads with chopper. Defaults to 9.",
-        default=str(9),
-    )
-    parser.add_argument(
-        "-t",
-        "--threads",
-        help="Number of threads. Defaults to 1. \n",
-        action="store",
-        default=str(1),
-    )
-    parser.add_argument(
-        "-f", "--force", help="Overwrites the output directory.", action="store_true"
-    )
-    parser.add_argument(
-        "-p",
-        "--prefix",
-        action="store",
-        help="Prefix for output files. This is not required. Defaults to plassembler.",
-        default="Default",
-    )
-    parser.add_argument(
-        "--pacbio_model",
-        help="Pacbio Flye model. \nMust be one of pacbio-raw, pacbio-corr or pacbio-hifi. \nUse pacbio-raw for PacBio regular CLR reads (<20 percent error), pacbio-corr for PacBio reads that were corrected with other methods (<3 percent error) or pacbio-hifi for PacBio HiFi reads (<1 percent error).",
-        action="store",
-        default="nothing",
-    )
-    parser.add_argument(
-        "-r",
-        "--raw_flag",
-        help="Use --nano-raw for Flye. \nDesigned for Guppy fast configuration reads. \nBy default, Flye will assume SUP or HAC reads and use --nano-hq",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--keep_fastqs",
-        help="Whether you want to keep FASTQ files containing putative plasmid reads \nand long reads that map to multiple contigs (plasmid and chromosome).",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--keep_chromosome",
-        help="If you want to keep the chromosome assembly.",
-        action="store_true",
-    )
-    parser.add_argument(
-        "-a", "--assembled_mode", help="Activates assembled mode.", action="store_true"
-    )
-    parser.add_argument(
-        "--input_chromosome",
-        help="Input FASTA file consisting of already assembled chromosome with assembled mode. \nMust be 1 complete contig.",
-        action="store",
-        default="nothing",
-    )
-    parser.add_argument(
-        "--input_plasmids",
-        help="Input FASTA file consisting of already assembled plasmids with assembled mode. \nRequires FASTQ file input (short only, long only or long + short).",
-        action="store",
-        default="nothing",
-    )
-    parser.add_argument(
-        "--long_only",
-        help="Experimental for now. \nVery high quality Nanopore R10.4 and above reads. \nAssembly using Flye, extracts contigs under size -c and runs the depth arguments. \nNo short reads required.",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--use_raven",
-        help="Uses Raven instead of Flye for long read assembly. \nMay be useful if you want to reduce runtime.",
-        action="store_true",
-    )
-    parser.add_argument(
-        "-V",
-        "--version",
-        action="version",
-        help="show plassembler version and exit.",
-        version=v,
-    )
-    args = parser.parse_args()
-
-    return args
-
 
 def instantiate_dirs(output_dir, force):
     """checks that the output directory doesn't already exist, overwrites if forced
@@ -166,9 +20,7 @@ def instantiate_dirs(output_dir, force):
         if os.path.isdir(output_dir) == True:
             shutil.rmtree(output_dir)
         else:
-            print(
-                "\n--force was specified even though the outdir does not already exist. Continuing \n"
-            )
+            logger.info(f"--force was specified even though the outdir does not already exist. Continuing ")
     else:
         if os.path.isdir(output_dir) == True:
             sys.exit(
@@ -286,7 +138,7 @@ def validate_fastqs_assembled_mode(longreads, short_one, short_two):
     return (short_flag, long_flag, long_gzipped)
 
 
-def check_dependencies(logger):
+def check_dependencies():
     """Checks the version of Unicycler, spades and Raven
     :return:
     """
@@ -311,7 +163,7 @@ def check_dependencies(logger):
         + flye_minorest_version
         + "."
     )
-    log.write_message(message, logger)
+    logger.info(message)
 
     if flye_major_version != 2:
         sys.exit(
@@ -323,7 +175,7 @@ def check_dependencies(logger):
         )
 
     message = "Flye version is ok."
-    log.write_message(message, logger)
+    logger.info(message)
 
     # raven
     try:
@@ -332,9 +184,9 @@ def check_dependencies(logger):
         raven_version = raven_out.decode()
         raven_version = raven_version.split("\n")[0]
         message = "Raven v" + str(raven_version) + " found."
-        log.write_message(message, logger)
+        logger.info(message)
         message = "Raven version is ok."
-        log.write_message(message, logger)
+        logger.info(message)
     except:
         sys.exit("Raven not found.\n")
 
@@ -364,7 +216,7 @@ def check_dependencies(logger):
         + str(unicycler_minorest_version)
         + "."
     )
-    log.write_message(message, logger)
+    logger.info(message)
 
     if unicycler_minor_version < 4:
         sys.exit(
@@ -376,10 +228,10 @@ def check_dependencies(logger):
         )
     elif unicycler_minor_version == 4 and unicycler_minorest_version >= 8:
         message = "Unicycler version is older than v0.5.0 - Plassembler will continue but please consider installing Unicycler v0.5.0. See instructions at https://github.com/gbouras13/plassembler."
-        log.write_message(message, logger)
+        logger.info(message)
     else:
         message = "Unicycler version is ok."
-        log.write_message(message, logger)
+        logger.info(message)
 
     # spades
     try:
@@ -389,7 +241,7 @@ def check_dependencies(logger):
         spades_version = spades_out.split(" ")[3]
         spades_version = spades_version.split("\n")[0]
         message = "SPAdes " + str(spades_version) + " found."
-        log.write_message(message, logger)
+        logger.info(message)
     except:
         sys.exit("SPAdes not found.\n")
 
@@ -402,7 +254,7 @@ def check_dependencies(logger):
             1
         ]  # get second line, and then second component of line
         message = "Samtools v" + str(samtools_version) + " found."
-        log.write_message(message, logger)
+        logger.info(message)
     except:
         sys.exit("Samtools not found.\n")
 
@@ -413,7 +265,7 @@ def check_dependencies(logger):
         minimap2_version = minimap2_out.decode()
         minimap2_version = minimap2_version.split("\n")[0]
         message = "minimap2 v" + str(minimap2_version) + " found."
-        log.write_message(message, logger)
+        logger.info(message)
     except:
         sys.exit("minimap2 not found.\n")
 
@@ -424,7 +276,7 @@ def check_dependencies(logger):
         fastp_version = fastp_out.decode()
         fastp_version = fastp_version.split("\n")[0].split(" ")[1]
         message = "fastp v" + str(fastp_version) + " found."
-        log.write_message(message, logger)
+        logger.info(message)
     except:
         sys.exit("fastp not found.\n")
 
@@ -435,7 +287,7 @@ def check_dependencies(logger):
         chopper_version = chopper_out.decode()
         chopper_version = chopper_version.split("\n")[0].split(" ")[1]
         message = "chopper v" + str(chopper_version) + " found."
-        log.write_message(message, logger)
+        logger.info(message)
     except:
         sys.exit("chopper not found.\n")
 
@@ -450,7 +302,7 @@ def check_dependencies(logger):
                 version_line.append(line)
         mash_version = version_line[0].split(" ")[2]
         message = "mash v" + str(mash_version) + " found."
-        log.write_message(message, logger)
+        logger.info(message)
     except:
         sys.exit("mash not found.\n")
 
@@ -459,28 +311,28 @@ def check_dependencies(logger):
     logger.info("All dependencies found.")
 
 
-def validate_pacbio_model(pacbio_model, logger):
+def validate_pacbio_model(pacbio_model):
     """Checks the input insta is really a fasta
         :param file: fasta file
     :return:
     """
 
     message = "You have specified using a pacbio model for Flye with --pacbio_model. Checking the input."
-    log.write_message(message, logger)
+    logger.info(message)
 
     if pacbio_model == "pacbio-raw":
         message = "You have selected pacbio-raw designed for PacBio regular CLR reads (<20% error)."
-        log.write_message(message, logger)
+        logger.info(message)
         pacbio_model = "--pacbio-raw"
     elif pacbio_model == "pacbio-corr":
         message = "You have selected pacbio-corr designed for PacBio reads that were corrected with other methods (<3% error)."
-        log.write_message(message, logger)
+        logger.info(message)
         pacbio_model = "--pacbio-corr"
     elif pacbio_model == "pacbio-hifi":
         message = (
             "You have selected pacbio-hifi designed for PacBio HiFi reads (<1% error)."
         )
-        log.write_message(message, logger)
+        logger.info(message)
         pacbio_model = "--pacbio-hifi"
     else:
         sys.exit(

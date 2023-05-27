@@ -1,7 +1,6 @@
-from src import log
+from loguru import logger
 
-
-def incompatbility(combined_depth_mash_df, logger):
+def incompatbility(combined_depth_mash_df):
     """Quick heuristic check whether there is likely differences between long and short read sets
 
     :param combined_depth_mash_df: combined output dataframe
@@ -21,4 +20,4 @@ def incompatbility(combined_depth_mash_df, logger):
             + str(count)
             + " non-circular contigs with no PLSDB mash hits were detected. \nThis indicates your long and short read sets may come from different bacterial isolates. \nPlease check this!"
         )
-        log.write_message(message, logger)
+        logger.info(message)

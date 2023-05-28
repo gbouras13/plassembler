@@ -11,5 +11,5 @@ dependencies:
   - chopper >=0.5.0
   - mash >=2.2
   - raven-assembler >=1.8
-  - samtools >=1.7,<1.10
+  - samtools >= 0.15.0
 # remove pysam biopython pandas and do with pip

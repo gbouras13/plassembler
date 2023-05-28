@@ -315,6 +315,7 @@ def run(
     keep_chromosome,
     **kwargs
 ):
+    """Runs Plassembler"""
 
     # start times
     start_time = begin_plassembler(outdir)
@@ -802,6 +803,7 @@ def assembled(
     pacbio_model,
     **kwargs
 ):
+    """Runs assembled mode"""
 
     # start times
     start_time = begin_plassembler(outdir)
@@ -956,6 +958,8 @@ def download(
     database,
     **kwargs
 ):
+    """Downloads Plassembler DB"""
+
     logger.add(lambda _: sys.exit(1), level="ERROR")
     database = Path(database)
     db.instantiate_db_dir(database)
@@ -1098,6 +1102,9 @@ def long(
     keep_chromosome,
     **kwargs
 ):
+    """
+    Plassembler with long reads only - experimental and untested
+    """
 
     # start times
     start_time = begin_plassembler(outdir)

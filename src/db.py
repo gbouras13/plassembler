@@ -1,33 +1,19 @@
 #!/usr/bin/env python3
-import argparse
 import os
-from argparse import RawTextHelpFormatter
 import subprocess as sp
-import sys
 from pathlib import Path
 from loguru import logger
+import shutil
+import urllib
+import hashlib
+import tarfile
 
 
 # define the 2 output files in the mash database
 MASH_DB_NAMES = ["plsdb.msh", "plsdb.tsv"]
 
 
-def get_db_input():
-    """gets input for install_database.py
-    :return: args
-    """
-    parser = argparse.ArgumentParser(
-        description="script to download required PLSDB databases",
-        formatter_class=RawTextHelpFormatter,
-    )
-    parser.add_argument(
-        "-d", "--database", action="store", required=True, help="Database Directory."
-    )
-    args = parser.parse_args()
-    return args
-
-
-def instantiate_db_dir(db_dir):
+def instantiate_db_dir(db_dir: Path):
     """instatiate database dir
         :param db_dir: database directory
     :return:
@@ -36,7 +22,7 @@ def instantiate_db_dir(db_dir):
         os.mkdir(db_dir)
 
 
-def check_db_installation(db_dir: Path):
+def check_db_installation(db_dir: Path, install_flag: bool):
     """checks database is installed correctly
         :param db_dir: database directory
     :return: downloaded_flag: boolean whether database is correctly downloaded.
@@ -46,50 +32,48 @@ def check_db_installation(db_dir: Path):
     for file_name in MASH_DB_NAMES:
         file_path: Path  = db_dir/f"{file_name}"
         if file_path.exists() == False:
-            log.error("Databases are missing. Plassembler database needs to be downloaded using plassembler install.")
+            if install_flag == True:
+                logger.info(f"Database directory is missing {file_path}. Plassembler will be installed.")
+                downloaded_flag = False
+            else:
+                logger.error(f"Database directory is missing {file_path}. Plassembler database needs to be downloaded using the plassembler download command.")
     return downloaded_flag
 
 
-def get_database_zenodo(db_dir):
+
+def get_database_zenodo(db_dir: Path):
     print("Downloading Plassembler Database.")
     tarball = "plsdb_110222_plassembler_v0.1.4_databases.tar.gz"
+    tar_path = os.path.join(db_dir, tarball)
     url = "https://zenodo.org/record/7499200/files/plsdb_110222_plassembler_v0.1.4_databases.tar.gz"
     try:
         # remvoe the directory
-        sp.call(["rm", "-rf", os.path.join(db_dir)])
+        if os.path.exists(db_dir):
+            shutil.rmtree(db_dir)
+
         # make db dir
-        sp.call(["mkdir", "-p", os.path.join(db_dir)])
+        if not os.path.exists(db_dir):
+            os.mkdir(db_dir)
         # download the tarball
-        sp.call(["curl", url, "-o", os.path.join(db_dir, tarball)])
+        urllib.request.urlretrieve(url=url, filename=tar_path)
+
         # untar tarball into database directory
-        sp.call(
-            [
-                "tar",
-                "-xzf",
-                os.path.join(db_dir, tarball),
-                "-C",
-                db_dir,
-                "--strip-components=1",
-            ]
-        )
+        with tarfile.open(tar_path, "r:gz") as tar:
+            tar.extractall(path=db_dir)
+
+        # move files around
+        shutil.move(os.path.join(db_dir, "plsdb_110222_plassembler_v0.1.4_databases", "plsdb.msh"), db_dir)
+        shutil.move(os.path.join(db_dir, "plsdb_110222_plassembler_v0.1.4_databases", "plsdb.tsv"), db_dir)
+        shutil.rmtree(os.path.join(db_dir, "plsdb_110222_plassembler_v0.1.4_databases"))
+
         # remove tarball
-        sp.call(["rm", "-f", os.path.join(db_dir, tarball)])
+        if os.path.exists(tar_path):
+            os.remove(tar_path)
     except:
-        sys.stderr.write(
-            "Error: Plassembler Database Install Failed. \n Please try again or use the manual option detailed at https://github.com/gbouras13/plassembler.git \n to download the database from https://zenodo.org/record/7499200/files/plsdb_110222_plassembler_v0.1.4_databases.tar.gzz"
+        logger.error(
+            "Plassembler Database Install Failed. \n Please try again or use the manual option detailed at https://github.com/gbouras13/plassembler.git \n to download the database from https://zenodo.org/record/7499200/files/plsdb_110222_plassembler_v0.1.4_databases.tar.gz"
         )
-        return 0
 
 
-def main():
-    args = get_db_input()
-    instantiate_db_dir(args.database)
-    downloaded_flag = check_db_installation(args.database)
-    if downloaded_flag == True:
-        print("PLSDB Database has already been Downloaded and Checked.")
-    else:
-        get_database_zenodo(args.database)
 
 
-if __name__ == "__main__":
-    main()

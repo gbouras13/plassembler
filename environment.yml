@@ -12,6 +12,4 @@ dependencies:
   - mash >=2.2
   - raven-assembler >=1.8
   - samtools >=1.7,<1.10
-  - curl
-  - tar
 # remove pysam biopython pandas and do with pip

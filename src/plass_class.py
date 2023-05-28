@@ -158,14 +158,11 @@ class Plass:
             if long_only == True:
                 message = "Extracting possible plasmids from Raven assembly."
                 logger.info(message)
-                # make fake unicycler output file
-                if not os.path.exists(os.path.join(outdir, "unicycler_output")):
-                    os.mkdir(os.path.join(outdir, "unicycler_output"))
                 # remove bed if exists
                 if os.path.exists(os.path.join(outdir, "non_chromosome.bed")):
                     os.remove(os.path.join(outdir, "non_chromosome.bed"))
                 with open(
-                    os.path.join(outdir, "unicycler_output", "assembly.fasta"), "w"
+                    os.path.join(outdir, "plasmids_initial.fasta"), "w"
                 ) as rename_fa:
                     # for plasmid numbering
                     i = 1
@@ -292,14 +289,11 @@ class Plass:
             if long_only == True:
                 message = "Extracting possible plasmids from Flye assembly."
                 logger.info(message)
-                # make fake unicycler output file
-                if not os.path.exists(os.path.join(outdir, "unicycler_output")):
-                    os.mkdir(os.path.join(outdir, "unicycler_output"))
                 # remove bed if exists
                 if os.path.exists(os.path.join(outdir, "non_chromosome.bed")):
                     os.remove(os.path.join(outdir, "non_chromosome.bed"))
                 with open(
-                    os.path.join(outdir, "unicycler_output", "assembly.fasta"), "w"
+                    os.path.join(outdir, "plasmids_initial.fasta"), "w"
                 ) as rename_fa:
                     # for plasmid numbering
                     i = 1
@@ -350,7 +344,7 @@ class Plass:
         self.unicycler_success = unicycler_success
 
     def get_depth(self, logdir, pacbio_model, threads):
-        """wrapper function to get depth of each plasmid in kmer mode
+        """wrapper function to get depth of each plasmid 
         :param pacbio_model:  pacbio_model
         :param threads: threads
         :param logdir: logdir
@@ -403,6 +397,45 @@ class Plass:
             summary_depth_df_short, summary_depth_df_long, circular_status
         )
 
+    def get_depth_long(self, logdir, pacbio_model, threads):
+        """wrapper function to get depth of each plasmid 
+        :param pacbio_model:  pacbio_model
+        :param threads: threads
+        :param logdir: logdir
+        :return:
+        """
+        outdir = self.outdir
+
+        input_long_reads: Path =  Path(outdir)/ f"chopper_long_reads.fastq.gz"
+        fasta: Path =  Path(outdir)/ f"flye_renamed.fasta"
+        sam_file: Path = Path(outdir)/ f"combined_long.sam"
+        sorted_bam: Path = Path(outdir)/ f"combined_sorted_long.bam"
+
+        # map
+        mapping.minimap_long_reads(input_long_reads, fasta, sam_file, threads, pacbio_model, logdir)
+        # sort
+        bam.sam_to_sorted_bam( sam_file, sorted_bam, threads, logdir)
+
+        # get contig lengths
+
+        fasta: Path = Path(outdir)/ f"flye_renamed.fasta"
+        contig_lengths = depth.get_contig_lengths(fasta)
+
+        # depths
+        long_bam_file: Path = Path(outdir)/ f"combined_sorted_long.bam"
+        depthsLong = depth.get_depths_from_bam(long_bam_file, contig_lengths)
+
+        # circular status
+        circular_status = depth.get_contig_circularity(fasta)
+        summary_depth_df_long = depth.collate_depths(depthsLong, "long", contig_lengths)
+
+        # save the depth df in the class
+        self.depth_df = depth.depth_df_single(
+            summary_depth_df_long, circular_status
+        )
+
+
+
     def process_mash_tsv(self, plassembler_db_dir):
         """
         Process mash output
@@ -410,10 +443,16 @@ class Plass:
         :return: mash_empty: boolean whether there was a mash hit
         """
         outdir = self.outdir
+
         # contig count of the unicycler assembly
-        contig_count = run_mash.get_contig_count(
-            os.path.join(outdir, "unicycler_output", "assembly.fasta")
-        )
+        if self.long_only == False:
+            contig_count = run_mash.get_contig_count(
+                os.path.join(outdir, "unicycler_output", "assembly.fasta")
+            )
+        else: # for long only, just assembly.fasta
+            contig_count = run_mash.get_contig_count(
+                os.path.join(outdir, "assembly.fasta")
+            )
         # update with final plasmid count number
         self.contig_count = contig_count
         # get mash tsv output contig
@@ -610,51 +649,67 @@ class Plass:
         with open(os.path.join(outdir, prefix + "_plasmids.fasta"), "w") as dna_fa:
             for dna_record in SeqIO.parse(plasmid_fasta, "fasta"):
                 if "circular" in dna_record.description:  # circular contigs
-                    if self.long_only == False:
-                        id_updated = (
-                            dna_record.description.split(" ")[0]
-                            + " "
-                            + dna_record.description.split(" ")[1]
-                            + " plasmid_copy_number_short="
-                            + str(combined_depth_mash_df.plasmid_copy_number_short[i])
-                            + "x plasmid_copy_number_long="
-                            + str(combined_depth_mash_df.plasmid_copy_number_long[i])
-                            + "x "
-                            + "circular=true"
-                        )
-                    else:  # long only
-                        id_updated = (
-                            dna_record.description.split(" ")[0]
-                            + " "
-                            + " plasmid_copy_number_long="
-                            + str(combined_depth_mash_df.plasmid_copy_number_long[i])
-                            + "x "
-                            + "circular=true"
-                        )
+                    id_updated = (
+                        dna_record.description.split(" ")[0]
+                        + " "
+                        + dna_record.description.split(" ")[1]
+                        + " plasmid_copy_number_short="
+                        + str(combined_depth_mash_df.plasmid_copy_number_short[i])
+                        + "x plasmid_copy_number_long="
+                        + str(combined_depth_mash_df.plasmid_copy_number_long[i])
+                        + "x "
+                        + "circular=true"
+                    )
                 else:  # non circular contigs
-                    if self.long_only == False:
-                        id_updated = (
-                            dna_record.description.split(" ")[0]
-                            + " "
-                            + dna_record.description.split(" ")[1]
-                            + " plasmid_copy_number_short="
-                            + str(combined_depth_mash_df.plasmid_copy_number_short[i])
-                            + "x plasmid_copy_number_long="
-                            + str(combined_depth_mash_df.plasmid_copy_number_long[i])
-                            + "x "
-                        )
-                    else:  # long only
-                        id_updated = (
-                            dna_record.description.split(" ")[0]
-                            + " "
-                            + " plasmid_copy_number_long="
-                            + str(combined_depth_mash_df.plasmid_copy_number_long[i])
-                            + "x "
-                        )
+                    id_updated = (
+                        dna_record.description.split(" ")[0]
+                        + " "
+                        + dna_record.description.split(" ")[1]
+                        + " plasmid_copy_number_short="
+                        + str(combined_depth_mash_df.plasmid_copy_number_short[i])
+                        + "x plasmid_copy_number_long="
+                        + str(combined_depth_mash_df.plasmid_copy_number_long[i])
+                        + "x "
+                    )
                 i += 1
                 record = SeqRecord(dna_record.seq, id=id_updated, description="")
                 SeqIO.write(record, dna_fa, "fasta")
+        
+    def finalise_contigs_long(self, prefix):
+        """
+        Renames the contigs of assembly with new ones
+        """
+        outdir = self.outdir
 
+        combined_depth_mash_df = self.combined_depth_mash_df
+        combined_depth_mash_df = combined_depth_mash_df.loc[
+            combined_depth_mash_df["contig"] != "chromosome"
+        ].reset_index(drop=True)
+        # get contigs only
+        plasmid_fasta = os.path.join(outdir, "plasmids.fasta")
+        i = 0
+        with open(os.path.join(outdir, prefix + "_plasmids.fasta"), "w") as dna_fa:
+            for dna_record in SeqIO.parse(plasmid_fasta, "fasta"):
+                if "circular" in dna_record.description:  # circular contigs
+                    id_updated = (
+                        dna_record.description.split(" ")[0]
+                        + " "
+                        + " plasmid_copy_number_long="
+                        + str(combined_depth_mash_df.plasmid_copy_number_long[i])
+                        + "x "
+                        + "circular=true"
+                    )
+                else:  # long only
+                    id_updated = (
+                        dna_record.description.split(" ")[0]
+                        + " "
+                        + " plasmid_copy_number_long="
+                        + str(combined_depth_mash_df.plasmid_copy_number_long[i])
+                        + "x "
+                    )
+                i += 1
+                record = SeqRecord(dna_record.seq, id=id_updated, description="")
+                SeqIO.write(record, dna_fa, "fasta")
 
 class Assembly:
     """Plassembler Assembly Mode Output Class"""

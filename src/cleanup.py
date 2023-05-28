@@ -37,6 +37,7 @@ def remove_intermediate_files(
     if long_only == True:
         # the fake unicycler directory only in long only mode
         remove_directory(os.path.join(out_dir, "unicycler_output"))
+        remove_file(os.path.join(out_dir, "plasmids_initial.fasta") )
 
     if assembled_mode == True:
         remove_directory(os.path.join(out_dir, "flye_output"))
@@ -82,7 +83,7 @@ def move_and_copy_files(
 
     # move the flye outputs
     if assembled_mode == False:
-        if long_only == True or use_raven == False:
+        if  use_raven == False:
             # make flye dir
             flye_dir = os.path.join(out_dir, "flye_output")
             if not os.path.exists(flye_dir):
@@ -92,31 +93,30 @@ def move_and_copy_files(
             shutil.move(os.path.join(out_dir, "flye.log"), flye_dir)
             shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), flye_dir)
             shutil.move(os.path.join(out_dir, "assembly_graph.gv"), flye_dir)
+        else:
+            # make raven dir
+            raven_dir = os.path.join(out_dir, "raven_output")
+            if not os.path.exists(raven_dir):
+                os.mkdir(raven_dir)
+            # move gfa and
+            shutil.move(os.path.join(out_dir, "assembly.fasta"), raven_dir)
+            shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), raven_dir)
 
-    # move raven output
-    if long_only == False and assembled_mode == False and use_raven == True:
-        # make raven dir
-        raven_dir = os.path.join(out_dir, "raven_output")
-        if not os.path.exists(raven_dir):
-            os.mkdir(raven_dir)
-        # move gfa and
-        shutil.move(os.path.join(out_dir, "assembly.fasta"), raven_dir)
-        shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), raven_dir)
 
-    if unicycler_success_flag == True:
-        if long_only == False:
+    if  long_only == False:
+        if unicycler_success_flag == True :
             # move unicycler graph output to main directory
             shutil.copy2(
                 os.path.join(out_dir, "unicycler_output", "assembly.gfa"),
                 os.path.join(out_dir, prefix + "_plasmids.gfa"),
             )
-    else:
-        # to touch empty versions of the output files if no plasmids
-        touch_output_fail_files(out_dir, prefix)
+        else:
+            # to touch empty versions of the output files if no plasmids
+            touch_output_fail_files(out_dir, prefix)
 
     # put kept fastqs into separate directory
     # make fastqs dir
-    if keep_fastqs == True and long_only == False:
+    if keep_fastqs == True:
         fastqs_dir = os.path.join(out_dir, "plasmid_fastqs")
         if not os.path.exists(fastqs_dir):
             os.mkdir(fastqs_dir)

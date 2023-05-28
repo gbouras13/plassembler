@@ -70,7 +70,7 @@ class Plass:
         contig_count = 0
         for record in SeqIO.parse(fasta_file, "fasta"):
             contig_count += 1
-        logger.info(f"Raven assembled {contig_count} contigs.")
+        logger.info(f"Assembled {contig_count} contigs.")
         self.contig_count = contig_count
 
     def identify_chromosome_process_raven(self, chromosome_len):
@@ -359,48 +359,49 @@ class Plass:
         outdir = self.outdir
         depth.concatenate_chrom_plasmids(outdir)
 
-        input_long_reads: Path =  outdir/ f"chopper_long_reads.fastq.gz"
-        fasta: Path =  outdir/ f"combined.fasta"
-        sam: Path = outdir/ f"combined_long.sam"
-        sorted_bam: Path = outdir/ f"combined_sorted_long.bam"
+        input_long_reads: Path =  Path(outdir)/ f"chopper_long_reads.fastq.gz"
+        fasta: Path =  Path(outdir)/ f"combined.fasta"
+        sam_file: Path = Path(outdir)/ f"combined_long.sam"
+        sorted_bam: Path = Path(outdir)/ f"combined_sorted_long.bam"
 
         # map
-        mapping.minimap_long_reads(input_long_reads, fasta, sam, threads, pacbio_model, logdir)
+        mapping.minimap_long_reads(input_long_reads, fasta, sam_file, threads, pacbio_model, logdir)
         # sort
-        bam.sam_to_sorted_bam( sam, sorted_bam, threads, logdir)
+        bam.sam_to_sorted_bam( sam_file, sorted_bam, threads, logdir)
 
         # short reads
-        r1: Path =  outdir/ f"trimmed_R1.fastq"
-        r2: Path =  outdir/ f"trimmed_R2.fastq"
-        fasta: Path =  outdir/ f"combined.fasta"
-        sam: Path = outdir/ f"combined_short.sam"
-        sorted_bam: Path = outdir/ f"combined_sorted_short.bam"
+        r1: Path =  Path(outdir)/ f"trimmed_R1.fastq"
+        r2: Path =  Path(outdir)/ f"trimmed_R2.fastq"
+        fasta: Path =  Path(outdir)/ f"combined.fasta"
+        sam_file: Path = Path(outdir)/ f"combined_short.sam"
+        sorted_bam: Path = Path(outdir)/ f"combined_sorted_short.bam"
 
         #map
-        mapping.minimap_short_reads(r1, r2, fasta, sam, threads, pacbio_model, logdir)
+        mapping.minimap_short_reads(r1, r2, fasta, sam_file, threads, logdir)
         # sort
-        bam.sam_to_sorted_bam( sam, sorted_bam, threads, logdir)
+        bam.sam_to_sorted_bam( sam_file, sorted_bam, threads, logdir)
 
-        contig_lengths = depth.get_contig_lengths(outdir)
+        # get contig lengths
+
+        fasta: Path = Path(outdir)/ f"combined.fasta"
+        contig_lengths = depth.get_contig_lengths(fasta)
 
         # depths
-        depthsShort = depth.get_depths_from_bam(outdir, "short", contig_lengths)
-        depthsLong = depth.get_depths_from_bam(outdir, "long", contig_lengths)
+        short_bam_file: Path = Path(outdir)/ f"combined_sorted_short.bam"
+        long_bam_file: Path = Path(outdir)/ f"combined_sorted_long.bam"
+        depthsShort = depth.get_depths_from_bam(short_bam_file, contig_lengths)
+        depthsLong = depth.get_depths_from_bam(long_bam_file, contig_lengths)
+
         # circular status
-        circular_status = depth.get_contig_circularity(outdir)
+        circular_status = depth.get_contig_circularity(fasta)
 
-
-        summary_depth_df_short = depth.collate_depths(
-            depthsShort, "short", contig_lengths
-        )
-
+        summary_depth_df_short = depth.collate_depths(depthsShort, "short", contig_lengths)
         summary_depth_df_long = depth.collate_depths(depthsLong, "long", contig_lengths)
-        
+
         # save the depth df in the class
         self.depth_df = depth.combine_depth_dfs(
             summary_depth_df_short, summary_depth_df_long, circular_status
         )
-
 
     def process_mash_tsv(self, plassembler_db_dir):
         """
@@ -654,90 +655,6 @@ class Plass:
                 record = SeqRecord(dna_record.seq, id=id_updated, description="")
                 SeqIO.write(record, dna_fa, "fasta")
 
-    def add_multimer_info(self, prefix):
-        """
-        Combine combined df and multimer df
-        """
-        outdir = self.outdir
-
-        paf_file = os.path.join(outdir, "mapping.paf")
-        if os.path.exists(paf_file):
-            # if dimer file exists
-            col_list = [
-                "flye_contig",
-                "qlen",
-                "qstart",
-                "qend",
-                "strand",
-                "contig",
-                "tlen",
-                "tstart",
-                "tend",
-                "nmatch",
-                "blocklen",
-                "mapq",
-                "s1",
-                "s2",
-                "s3",
-                "s4",
-                "s5",
-                "s6",
-            ]
-            multimer_df = pd.read_csv(
-                paf_file, delimiter="\t", index_col=False, names=col_list, skiprows=1
-            )
-
-            # set as string
-            multimer_df["contig"] = multimer_df["contig"].astype("str")
-
-            # get rid of chromosome
-            # multimer_df = multimer_df[multimer_df['flye_contig'] != 'chromosome']
-
-            # sum the blocklens
-            # group the dataframe by 'contig' and calculate the sum of 'value' for each group
-            blocklen_by_contig = multimer_df.groupby("contig")["blocklen"].sum()
-
-            # convert to df
-            blocklen_by_contig = blocklen_by_contig.to_frame().reset_index()
-
-            # merge in
-            combined_depth_mash_df = self.combined_depth_mash_df.merge(
-                blocklen_by_contig, on="contig", how="left"
-            )
-
-            combined_depth_mash_df["block_len_to_len_ratio"] = (
-                combined_depth_mash_df["blocklen"] / combined_depth_mash_df["length"]
-            )
-
-            combined_depth_mash_df["multimer"] = "no_evidence"
-
-            # if more than 1.5x assembly block, denote as multimer
-            dimers = combined_depth_mash_df["block_len_to_len_ratio"] >= 1.5
-            combined_depth_mash_df.loc[dimers, "multimer"] = "yes"
-
-            chrom = combined_depth_mash_df["contig"] == "chromosome"
-            combined_depth_mash_df.loc[chrom, "multimer"] = "no"
-
-            combined_depth_mash_df = combined_depth_mash_df.drop(
-                columns=["block_len_to_len_ratio"]
-            )
-
-        else:
-            combined_depth_mash_df = self.combined_depth_mash_df
-            combined_depth_mash_df["multimer"] = "no_evidence"
-            chrom = combined_depth_mash_df["contig"] == "chromosome"
-            combined_depth_mash_df.loc[chrom, "multimer"] = "no"
-
-        # move the 'multimer' column to be after the 'circularity' (13th) column
-        cols = combined_depth_mash_df.columns.tolist()
-        cols = cols[:13] + cols[-1:] + cols[13:-1]
-        combined_depth_mash_df = combined_depth_mash_df.reindex(columns=cols)
-
-        combined_depth_mash_df.to_csv(
-            os.path.join(outdir, prefix + "_summary.tsv"), sep="\t", index=False
-        )
-        self.combined_depth_mash_df = combined_depth_mash_df
-
 
 class Assembly:
     """Plassembler Assembly Mode Output Class"""
@@ -784,7 +701,7 @@ class Assembly:
         self.long_flag = long_flag
         self.short_flag = short_flag
 
-    def combine_input_fastas(self, chromosome_fasta, plasmids_fasta):
+    def combine_input_fastas(self, chromosome_fasta: Path, plasmids_fasta: Path):
         """wrapper function to get depth of each plasmid
         :param prefix: prefix (default plassembler)
         :param outdir:  Output Directory
@@ -793,8 +710,7 @@ class Assembly:
         :return:
         """
         # combined input fasta
-        combined_fasta = os.path.join(self.outdir, "combined.fasta")
-
+        combined_fasta = Path(self.outdir)/"combined.fasta"
         chromosome_name = ""
 
         # rename the first contig as chromosome
@@ -826,46 +742,249 @@ class Assembly:
         self.chromosome_name = chromosome_name
         self.plasmid_names = plasmid_names
 
-    def get_depth(self, threads):
+
+    
+    def get_depth(self, logdir, threads, pacbio_model):
+        """wrapper function to get depth of each plasmid 
+        :param threads: threads
+        :param logdir: logdir
+        :return:
+        """
         outdir = self.outdir
 
-        if self.long_flag == True:
-            depth.minimap_depth_sort_long(outdir, threads)
-        if self.short_flag == True:
-            depth.minimap_depth_sort_short(outdir, threads)
+        input_long_reads: Path =  Path(outdir)/ f"chopper_long_reads.fastq.gz"
+        fasta: Path =  Path(outdir)/ f"combined.fasta"
+        sam_file: Path = Path(outdir)/ f"combined_long.sam"
+        sorted_bam: Path = Path(outdir)/ f"combined_sorted_long.bam"
 
-        contig_lengths = depth.get_contig_lengths(outdir)
-
+        # map
         if self.long_flag == True:
-            depthsLong = depth.get_depths_from_bam(outdir, "long", contig_lengths)
+            mapping.minimap_long_reads(input_long_reads, fasta, sam_file, threads, pacbio_model, logdir)
+            # sort
+            bam.sam_to_sorted_bam( sam_file, sorted_bam, threads, logdir)
+
+        # short reads
+        r1: Path =  Path(outdir)/ f"trimmed_R1.fastq"
+        r2: Path =  Path(outdir)/ f"trimmed_R2.fastq"
+        fasta: Path =  Path(outdir)/ f"combined.fasta"
+        sam_file: Path = Path(outdir)/ f"combined_short.sam"
+        sorted_bam: Path = Path(outdir)/ f"combined_sorted_short.bam"
+
+        #map
         if self.short_flag == True:
-            depthsShort = depth.get_depths_from_bam(outdir, "short", contig_lengths)
+            mapping.minimap_short_reads(r1, r2, fasta, sam_file, threads, logdir)
+            # sort
+            bam.sam_to_sorted_bam( sam_file, sorted_bam, threads, logdir)
+
+        # get contig lengths
+
+        fasta: Path = Path(outdir)/ f"combined.fasta"
+        contig_lengths = depth.get_contig_lengths(fasta)
+
+        # depths
+        short_bam_file: Path = Path(outdir)/ f"combined_sorted_short.bam"
+        long_bam_file: Path = Path(outdir)/ f"combined_sorted_long.bam"
+        if self.short_flag == True:
+            depthsShort = depth.get_depths_from_bam(short_bam_file, contig_lengths)
+        if self.long_flag == True:
+            depthsLong = depth.get_depths_from_bam(long_bam_file, contig_lengths)
 
         # circular status
-        circular_status = depth.get_contig_circularity(outdir)
+        circular_status = depth.get_contig_circularity(fasta)
+
+
+        if self.short_flag == True:
+            summary_depth_df_short = depth.collate_depths(depthsShort, "short", contig_lengths)
 
         if self.long_flag == True:
-            summary_depth_df_long = depth.collate_depths(
-                depthsLong, "long", contig_lengths
-            )
-        if self.short_flag == True:
-            summary_depth_df_short = depth.collate_depths(
-                depthsShort, "short", contig_lengths
-            )
+            summary_depth_df_long = depth.collate_depths(depthsLong, "long", contig_lengths)
 
         # save the depth df in the class
         if self.long_flag == True and self.short_flag == True:
             self.depth_df = depth.combine_depth_dfs(
                 summary_depth_df_short, summary_depth_df_long, circular_status
             )
-        elif self.long_flag == True and self.short_flag == False:
+        elif self.long_flag == True and self.short_flag == False: # only long
             self.depth_df = depth.depth_df_single(
                 summary_depth_df_long, circular_status
             )
-        elif self.long_flag == False and self.short_flag == True:
+        elif self.long_flag == False and self.short_flag == True:  # only short
             self.depth_df = depth.depth_df_single(
                 summary_depth_df_short, circular_status
             )
+
+    def process_mash_tsv(self, plassembler_db_dir):
+        """
+        Process mash output
+        :param outdir: output directory
+        :return: mash_empty: boolean whether there was a mash hit
+        """
+        outdir = self.outdir
+        # contig count of the unicycler assembly
+        contig_count = run_mash.get_contig_count(
+            os.path.join(outdir, "unicycler_output", "assembly.fasta")
+        )
+        # update with final plasmid count number
+        self.contig_count = contig_count
+        # get mash tsv output contig
+        mash_tsv = os.path.join(outdir, "mash.tsv")
+        col_list = [
+            "contig",
+            "ACC_NUCCORE",
+            "mash_distance",
+            "mash_pval",
+            "mash_matching_hashes",
+        ]
+
+        # check if mash tsv file is empty -> no hits
+        mash_empty = run_mash.is_file_empty(mash_tsv)
+        # instantiate tophits list
+        tophits_mash_df = []
+
+        if mash_empty == False:
+            mash_df = pd.read_csv(
+                mash_tsv, delimiter="\t", index_col=False, names=col_list
+            )
+            # get list of contigs from unicycler: 1 -> total number of contigs
+            contigs = range(1, contig_count + 1)
+
+            # instantiate tophits list
+            tophits = []
+
+            for contig in contigs:
+                hit_df = (
+                    mash_df.loc[mash_df["contig"] == contig]
+                    .sort_values("mash_distance")
+                    .reset_index(drop=True)
+                )
+                hits = len(hit_df["mash_distance"])
+                # add only if there is a hit
+                if hits > 0:
+                    tmp_df = (
+                        mash_df.loc[mash_df["contig"] == contig]
+                        .sort_values("mash_distance")
+                        .reset_index(drop=True)
+                        .loc[0]
+                    )
+                    tophits.append(
+                        [
+                            tmp_df.contig,
+                            "Yes",
+                            tmp_df.ACC_NUCCORE,
+                            tmp_df.mash_distance,
+                            tmp_df.mash_pval,
+                            tmp_df.mash_matching_hashes,
+                        ]
+                    )
+                else:  # no hits append no it
+                    tophits.append([contig, "", "", "", "", ""])
+                # create tophits df
+            tophits_mash_df = pd.DataFrame(
+                tophits,
+                columns=[
+                    "contig",
+                    "PLSDB_hit",
+                    "ACC_NUCCORE",
+                    "mash_distance",
+                    "mash_pval",
+                    "mash_matching_hashes",
+                ],
+            )
+
+        else:  # empty mash file
+            contigs = range(1, contig_count + 1)
+            # create empty df
+            tophits_mash_df = pd.DataFrame(
+                columns=[
+                    "contig",
+                    "PLSDB_hit",
+                    "ACC_NUCCORE",
+                    "mash_distance",
+                    "mash_pval",
+                    "mash_matching_hashes",
+                ]
+            )
+            for contig in contigs:
+                tophits_mash_df.loc[contig - 1] = [contig, "", "", "", "", ""]
+
+        # read in the plasdb tsv to get the description
+        plsdb_tsv_file = os.path.join(plassembler_db_dir, "plsdb.tsv")
+        cols = [
+            "UID_NUCCORE",
+            "ACC_NUCCORE",
+            "Description_NUCCORE",
+            "CreateDate_NUCCORE",
+            "Topology_NUCCORE",
+            "Completeness_NUCCORE",
+            "TaxonID_NUCCORE",
+            "Genome_NUCCORE",
+            "Length_NUCCORE",
+            "Source_NUCCORE",
+            "UID_ASSEMBLY",
+            "Status_ASSEMBLY",
+            "SeqReleaseDate_ASSEMBLY",
+            "SubmissionDate_ASSEMBLY",
+            "Latest_ASSEMBLY",
+            "UID_BIOSAMPLE",
+            "ACC_BIOSAMPLE",
+            "Location_BIOSAMPLE",
+            "Coordinates_BIOSAMPLE",
+            "IsolationSource_BIOSAMPLE",
+            "Host_BIOSAMPLE",
+            "CollectionDate_BIOSAMPLE",
+            "Host_DISEASE",
+            "SamplType_BIOSAMPLE",
+            "taxon_name",
+            "taxon_rank",
+            "lineage",
+            "taxon_species_id",
+            "taxon_species_name",
+            "taxon_genus_id",
+            "taxon_genus_name",
+            "taxon_family_id",
+            "taxon_family_name",
+            "taxon_order_id",
+            "taxon_order_name",
+            "taxon_class_id",
+            "taxon_class_name",
+            "taxon_phylum_id",
+            "taxon_phylum_name",
+            "taxon_superkingdom_id",
+            "taxon_superkingdom_name",
+            "loc_lat",
+            "loc_lng",
+            "loc_parsed",
+            "GC_NUCCORE",
+            "Identical",
+            "OldVersion",
+            "hits_rMLST",
+            "hitscount_rMLST",
+            "inclusions",
+            "Host_BIOSAMPLE_processed",
+            "Host_DISEASE_processed",
+            "D1",
+            "D2",
+            "plasmidfinder",
+            "pmlst",
+            "relaxase_type(s)",
+            "mpf_type",
+        ]
+        plsdb_tsv = pd.read_csv(
+            plsdb_tsv_file,
+            delimiter="\t",
+            index_col=False,
+            names=cols,
+            skiprows=1,
+            low_memory=False,
+        )
+        combined_mash_df = tophits_mash_df.merge(
+            plsdb_tsv, on="ACC_NUCCORE", how="left"
+        )
+
+        self.mash_df = combined_mash_df
+
+  
+
 
     def process_mash_tsv(self, plassembler_db_dir, plasmid_fasta):
         """

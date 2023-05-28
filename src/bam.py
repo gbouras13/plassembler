@@ -36,7 +36,7 @@ def sam_to_sorted_bam( sam, sorted_bam, threads, logdir):
         tool="samtools",
         input=f"",
         output=f"",
-        params=f" sort -h -@ {threads} {sam} -o {sorted_bam}",
+        params=f" sort -@ {threads} {sam} -o {sorted_bam}",
         logdir=logdir,
         outfile = ""
     )
@@ -62,9 +62,9 @@ def non_chrom_bam(outdir, threads, logdir):
     :return:
     """
 
-    input_bam : Path =  outdir/ f"short_read.bam" 
-    non_chrom_bed : Path =  outdir/ f"non_chromosome.bed" 
-    non_chrom_bam : Path =  outdir/ f"non_chromosome.bam" 
+    input_bam : Path =  Path(outdir)/ f"short_read.bam" 
+    non_chrom_bed : Path =  Path(outdir)/ f"non_chromosome.bed" 
+    non_chrom_bam : Path =  Path(outdir)/ f"non_chromosome.bam" 
 
     samtools = ExternalTool(
         tool="samtools",
@@ -87,8 +87,8 @@ def unmapped_bam(outdir, threads, logdir):
     :return:
     """
 
-    input_bam : Path =  outdir/ f"short_read.bam" 
-    unmapped_bam : Path =  outdir/ f"unmapped_bam_file.bam" 
+    input_bam : Path =  Path(outdir)/ f"short_read.bam" 
+    unmapped_bam : Path =  Path(outdir)/ f"unmapped_bam_file.bam" 
 
     samtools = ExternalTool(
         tool="samtools",
@@ -111,9 +111,9 @@ def chrom_bam(outdir, threads, logdir):
     :return:
     """
 
-    input_bam : Path =  outdir/ f"short_read.bam" 
-    chrom_bed : Path =  outdir/ f"chromosome.bed" 
-    chrom_bam : Path =  outdir/ f"chromosome.bam" 
+    input_bam : Path =  Path(outdir)/ f"short_read.bam" 
+    chrom_bed : Path =  Path(outdir)/ f"chromosome.bed" 
+    chrom_bam : Path =  Path(outdir)/ f"chromosome.bam" 
 
     samtools = ExternalTool(
         tool="samtools",
@@ -144,9 +144,9 @@ def bam_to_fastq_unmapped(outdir, threads, logdir):
     :return:
     """
 
-    unmapped_bam : Path =  outdir/ f"unmapped_bam_file.bam" 
-    unmap_fastq_one = outdir/ f"unmapped_R1.fastq" 
-    unmap_fastq_two = outdir/ f"unmapped_R2.fastq" 
+    unmapped_bam : Path =  Path(outdir)/ f"unmapped_bam_file.bam" 
+    unmap_fastq_one: Path = Path(outdir)/ f"unmapped_R1.fastq" 
+    unmap_fastq_two: Path = Path(outdir)/ f"unmapped_R2.fastq" 
 
 
     samtools = ExternalTool(
@@ -169,9 +169,9 @@ def bam_to_fastq_non_chrom(outdir, threads, logdir):
     :return:
     """
 
-    non_chrom_bam : Path =  outdir/ f"non_chromosome.bam" 
-    non_chrom_fastq_one = outdir/ f"mapped_non_chromosome_R1.fastq" 
-    non_chrom_fastq_two = outdir/ f"mapped_non_chromosome_R2.fastq" 
+    non_chrom_bam : Path =  Path(outdir)/ f"non_chromosome.bam" 
+    non_chrom_fastq_one: Path = Path(outdir)/ f"mapped_non_chromosome_R1.fastq" 
+    non_chrom_fastq_two: Path = Path(outdir)/ f"mapped_non_chromosome_R2.fastq" 
 
 
     samtools = ExternalTool(

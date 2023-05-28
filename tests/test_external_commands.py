@@ -23,6 +23,7 @@ from src.qc import (chopper, fastp)
 from src.mapping import (minimap_long_reads, minimap_short_reads)
 from src.bam import (sam_to_bam, split_bams, bam_to_fastq_short)
 from src.run_unicycler import (run_unicycler)
+from src.run_mash import (mash_sketch, run_mash, get_contig_count)
 
 test_data = Path("tests/test_data")
 val_data = Path(f"{test_data}/validation") 
@@ -30,11 +31,35 @@ fake_out_dir = Path(f"{test_data}/fake_out_dir")
 bad_dir = Path(f"{test_data}/bad_dir") 
 logdir = Path(f"{test_data}/logs") 
 map_dir = Path(f"{test_data}/map_dir") 
+mash_dir = Path(f"{test_data}/mash_dir") 
+plassembler_db_dir = Path(f"{test_data}/Plassembler_Test_DB") 
+
 
 # make fake tempdir for testing
 @pytest.fixture(scope="session")
 def tmp_dir(tmpdir_factory):
     return tmpdir_factory.mktemp("tmp")
+
+class test_mash(unittest.TestCase):
+    """Tests for run_mash.py"""
+    # sam to bam
+    def test_mash_sketch(self):
+        expected_return = True
+        fasta : Path = Path(f"{mash_dir}/unicycler_plasmids.fasta") 
+        mash_sketch(mash_dir, fasta, logdir)
+        self.assertEqual(expected_return, True)
+
+    def test_run_mash(self):
+        expected_return = True
+        run_mash(mash_dir, plassembler_db_dir, logdir)
+        self.assertEqual(expected_return, True)
+
+    def test_get_contig_count(self):
+        fasta : Path = Path(f"{mash_dir}/unicycler_plasmids.fasta") 
+        count = get_contig_count(fasta)
+        self.assertEqual(count, 1)
+     
+
 
 class test_bam(unittest.TestCase):
     """Tests for bam.py"""

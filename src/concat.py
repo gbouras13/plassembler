@@ -3,6 +3,8 @@ import sys
 import subprocess as sp
 import gzip
 from Bio import SeqIO
+from loguru import logger
+from pathlib import Path
 
 
 def concatenate_short_fastqs(out_dir):
@@ -12,27 +14,27 @@ def concatenate_short_fastqs(out_dir):
     :return:
     """
     # list all the inputs for concatenation
-    unmapped_fastq_one_short = os.path.join(out_dir, "unmapped_R1.fastq")
-    unmapped_fastq_two_short = os.path.join(out_dir, "unmapped_R2.fastq")
-    non_chrom_fastq_one_short = os.path.join(out_dir, "mapped_non_chromosome_R1.fastq")
-    non_chrom_fastq_two_short = os.path.join(out_dir, "mapped_non_chromosome_R2.fastq")
+    unmapped_fastq_one_short : Path = Path(out_dir)/f"unmapped_R1.fastq"
+    unmapped_fastq_two_short : Path = Path(out_dir)/f"unmapped_R2.fastq"
+    non_chrom_fastq_one_short : Path = Path(out_dir)/f"mapped_non_chromosome_R1.fastq" 
+    non_chrom_fastq_two_short: Path = Path(out_dir)/f"mapped_non_chromosome_R2.fastq" 
 
     # final outputs
-    short_one_file = open(os.path.join(out_dir, "short_read_concat_R1.fastq"), "w")
-    short_two_file = open(os.path.join(out_dir, "short_read_concat_R2.fastq"), "w")
+    short_one_file: Path = Path(out_dir)/f"short_read_concat_R1.fastq"
+    short_two_file: Path = Path(out_dir)/f"short_read_concat_R2.fastq"
 
     try:
-        concatenate_single(
+        concatenate_single_fastq(
             unmapped_fastq_one_short, non_chrom_fastq_one_short, short_one_file
         )
-        concatenate_single(
+        concatenate_single_fastq(
             unmapped_fastq_two_short, non_chrom_fastq_two_short, short_two_file
         )
     except:
-        sys.exit("Error with concatenate_fastqs\n")
+        logger.error("Error with concatenate_fastqs\n")
 
 
-def concatenate_single(fastq_in1, fastq_in2, fastq_out):
+def concatenate_single_fastq(fastq_in1: Path, fastq_in2: Path, fastq_out: Path):
     """concatenates 2 fastq files
     :param fastq_in1:  fastq_in1 input fastq 1
     :param fastq_in2: fastq_in1 input fastq 2
@@ -44,7 +46,7 @@ def concatenate_single(fastq_in1, fastq_in2, fastq_out):
     records = []
 
     # Read and append records from the first FASTQ file
-    if fastq_in1.endswith(".gz"):
+    if fastq_in1.suffix == ".gz":
         with gzip.open(fastq_in1, "rt") as handle:
             records.extend(SeqIO.parse(handle, "fastq"))
     else:
@@ -52,7 +54,7 @@ def concatenate_single(fastq_in1, fastq_in2, fastq_out):
             records.extend(SeqIO.parse(handle, "fastq"))
 
     # Read and append records from the second FASTQ file
-    if fastq_in2.endswith(".gz"):
+    if fastq_in2.suffix == ".gz":
         with gzip.open(fastq_in2, "rt") as handle:
             records.extend(SeqIO.parse(handle, "fastq"))
     else:
@@ -63,3 +65,18 @@ def concatenate_single(fastq_in1, fastq_in2, fastq_out):
     with open(fastq_out, "w") as handle:
         SeqIO.write(records, handle, "fastq")
 
+
+def concatenate_single_fasta(file1: Path, file2: Path, output_file: Path):
+    sequences = []
+    
+    # Read sequences from the first file
+    with open(file1, 'r') as f1:
+        sequences.extend(SeqIO.parse(f1, 'fasta'))
+    
+    # Read sequences from the second file
+    with open(file2, 'r') as f2:
+        sequences.extend(SeqIO.parse(f2, 'fasta'))
+    
+    # Write concatenated sequences to the output file
+    with open(output_file, 'w') as output:
+        SeqIO.write(sequences, output, 'fasta')

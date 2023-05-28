@@ -10,7 +10,9 @@ import unittest
 import os
 from pathlib import Path
 import pytest
-import logging
+from loguru import logger
+import sys
+import subprocess as sp
 
 
 # import functions
@@ -19,6 +21,7 @@ from src import concat
 from src import depth
 from src.sam_to_fastq import (extract_bin_long_fastqs)
 from src.plass_class import Assembly, Plass
+from src.qc import (copy_sr_fastq_file)
 
 # data
 test_data = Path("tests/test_data")
@@ -27,16 +30,17 @@ fake_out_dir = Path(f"{test_data}/fake_out_dir")
 bad_dir = Path(f"{test_data}/bad_dir") 
 logdir = Path(f"{test_data}/logs") 
 map_dir = Path(f"{test_data}/map_dir") 
+assembly_class = Path(f"{test_data}/assembly_class") 
+
 
 # make fake tempdir for testing
 @pytest.fixture(scope="session")
 def tmp_dir(tmpdir_factory):
     return tmpdir_factory.mktemp("tmp")
 
+# to ensure sys exit on logger error
+logger.add(lambda _: sys.exit(1), level="ERROR")
 
-def make_logger():
-    logger = logging.getLogger()
-    return logger
 
 class test_unicycler_success(unittest.TestCase):
     """Test for validate_pacbio_model"""
@@ -149,31 +153,52 @@ class test_concat(unittest.TestCase):
     """Test for concat.py"""
 
     # concat single
-    def test_concat_single_file_fasta(self):
+    def test_concat_single_fastq_bad(self):
         with self.assertRaises(ValueError):
-            f1 = os.path.join(val_data, "test.fastq")
-            fasta = os.path.join(val_data, "test.fasta")
-            out_f = os.path.join(val_data, "concat.fastq")
-            concat.concatenate_single(f1, fasta, out_f)
+            fasta1 : Path  = Path(val_data)/f"test.fasta"
+            fasta2 : Path  = Path(val_data)/f"test.fasta"
+            out_f : Path  = Path(val_data)/f"concat.fastq"
+            concat.concatenate_single_fastq(fasta1, fasta2, out_f)
 
     # concat single good
-    def test_concat_single_file_good(self):
-        f1 = os.path.join(val_data, "test.fastq")
-        fasta = os.path.join(val_data, "test.fastq")
+    def test_concatenate_single_fastq_good(self):
+        f1 : Path  = Path(val_data)/f"test.fastq"
+        f2 : Path  = Path(val_data)/f"test.fastq"
         out_f = os.path.join(val_data, "concat.fastq")
         expected_return = True
-        concat.concatenate_single(f1, fasta, out_f)
+        concat.concatenate_single_fastq(f1, f2, out_f)
         self.assertEqual(expected_return, True)
+
+
+    # concat single good
+    def test_concatenate_single_fasta_good(self):
+        f1 : Path  = Path(val_data)/f"test.fasta"
+        f2 : Path  = Path(val_data)/f"test.fasta"
+        out_f = os.path.join(val_data, "concat.fasta")
+        expected_return = True
+        concat.concatenate_single_fasta(f1, f2, out_f)
+        self.assertEqual(expected_return, True)
+
 
     # bad pacbio model
     def test_concatenate_short_fastqs_bad_dir(self):
         with self.assertRaises(SystemExit):
             concat.concatenate_short_fastqs(val_data)
 
+class test_qc(unittest.TestCase):
+    """Test for qc.py"""
+    def test_copy_sr_fastq_file_not_fastq(self):
+        with self.assertRaises(SystemExit):
+            infile : Path  = Path(val_data)/f"test.fasta"
+            outfile : Path  = Path(val_data)/f"test2.fasta"
+            copy_sr_fastq_file(infile, outfile)
+            
+
+
 
 
 class test_depth(unittest.TestCase):
-    """Test for concat.py"""
+    """Test for depth.py"""
 
     # concat single
     def test_concatenate_chrom_plasmids_wrong_dir(self):
@@ -183,32 +208,67 @@ class test_depth(unittest.TestCase):
     # good
     def test_get_contig_lengths_good_dir(self):
         expected_return = True
-        depth.get_contig_lengths(val_data)
+        fasta : Path = Path(f"{val_data}/combined.fasta") 
+        depth.get_contig_lengths(fasta)
         self.assertEqual(expected_return, True)
     # bad dir
     def test_get_contig_lengths_bad_dir(self):
+        fasta : Path = Path(f"{bad_dir}/combined.fasta") 
         with self.assertRaises(FileNotFoundError):
-            depth.get_contig_lengths(bad_dir)
+            depth.get_contig_lengths(fasta)
 
     def test_get_contig_circularity_good_dir(self):
         expected_return = True
-        depth.get_contig_circularity(val_data)
+        fasta : Path = Path(f"{val_data}/combined.fasta") 
+        depth.get_contig_circularity(fasta)
         self.assertEqual(expected_return, True)
 
     # bad dir
     def test_get_contig_circularity_bad_dir(self):
+        fasta : Path = Path(f"{bad_dir}/combined.fasta") 
         with self.assertRaises(FileNotFoundError):
-            depth.get_contig_circularity(bad_dir)
+            depth.get_contig_circularity(fasta)
+
+    def test_get_get_depths_from_bam_unsorted_error(self):
+        bam_file : Path = Path(f"{map_dir}/short_read.bam") 
+        fasta : Path = Path(f"{map_dir}/combined.fasta") 
+        contig_lengths = depth.get_contig_lengths(fasta)
+        with self.assertRaises(sp.CalledProcessError):
+            depth.get_depths_from_bam(bam_file,  contig_lengths = contig_lengths)
+
+    def test_get_get_depths_from_bam_unsorted_error(self):
+        bam_file : Path = Path(f"{map_dir}/short_read.bam") 
+        fasta : Path = Path(f"{map_dir}/combined.fasta") 
+        contig_lengths = depth.get_contig_lengths(fasta)
+        with self.assertRaises(sp.CalledProcessError):
+            depth.get_depths_from_bam(bam_file,  contig_lengths = contig_lengths)
+
+
+class test_assembly_class(unittest.TestCase):
+    """Test for Assembly class"""
+
+    # bad pacbio model
+    def test_combine_input_fastas_good(self):
+        expected_return = True
+        assembly = Assembly()
+        assembly.outdir = assembly_class
+        chrom_fasta: Path = Path(f"{assembly_class}/chromosome.fasta") 
+        plasmid_fasta: Path =  Path(f"{assembly_class}/plasmid.fasta") 
+        assembly.combine_input_fastas(chrom_fasta, plasmid_fasta)
+        self.assertEqual(expected_return, True)
 
 
 
 
-    # def test_minimap_depth_sort_long(self):
-    #     """test minimap depth sort long"""
-    #     tmp = 1
-    #     depth.minimap_depth_sort_long(out_dir, threads)
-    #     assert tmp == 1
+# class test_incomp(unittest.TestCase):
+#      """Test for test_incompatibility.py"""
 
+#     # concat single
+#      def test_incompatbility(self):
+#         expected_return = True
+#         fasta : Path = Path(f"{val_data}/combined.fasta") 
+#         depth.get_contig_circularity(fasta)
+#         self.assertEqual(expected_return, True)
 
 
 

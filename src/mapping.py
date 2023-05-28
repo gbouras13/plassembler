@@ -20,12 +20,14 @@ def minimap_long_reads(input_long_reads,fasta,sam, threads, pacbio_model, logdir
     minimap2_model = "map-ont"
 
     # Pacbio
-    if pacbio_model == "--pacbio-raw" or "--pacbio-corr":
+    if pacbio_model == "nothing":
+        minimap2_model = "map-ont"
+    elif pacbio_model == "--pacbio-raw":
         minimap2_model = "map-pb"
-
-    if pacbio_model == "--pacbio-hifi":
+    elif pacbio_model ==  "--pacbio-corr":
+        minimap2_model = "map-pb"
+    elif pacbio_model == "--pacbio-hifi":
         minimap2_model = "map-hifi"
-
 
     minimap2 = ExternalTool(
         tool="minimap2",
@@ -40,7 +42,6 @@ def minimap_long_reads(input_long_reads,fasta,sam, threads, pacbio_model, logdir
     ExternalTool.run_tool(minimap2, to_stdout = True)
 
 # short reads
-
 
 def minimap_short_reads(r1, r2, fasta, sam, threads, logdir):
     """maps short reads using minimap2

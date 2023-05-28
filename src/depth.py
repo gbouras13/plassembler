@@ -21,23 +21,24 @@ def concatenate_chrom_plasmids(outdir):
     :param logger: logger
     :return:
     """
-    chrom_fasta = os.path.join(outdir, "chromosome.fasta")
-    plas_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
-    concat_fasta = open(os.path.join(outdir, "combined.fasta"), "w")
+    chrom_fasta : Path = Path(outdir)/f"chromosome.fasta"
+    plas_fasta : Path = Path(outdir)/f"unicycler_output/assembly.fasta"
+    concat_fasta : Path = Path(outdir)/f"combined.fasta"
+
     try:
-        concat.concatenate_single(chrom_fasta, plas_fasta, concat_fasta)
+        concat.concatenate_single_fasta(chrom_fasta, plas_fasta, concat_fasta)
     except:
-        sys.exit("Error with concatenate_fastas\n")
+        logger.error("Error with concatenate_fastas\n")
 
 
 # get lengths of contigs
-def get_contig_lengths(outdir):
+def get_contig_lengths(fasta):
     """gets contig lengths of combined chrom and plasmids fastas
-    :param outdir:  Output Directory
+    :param fasta:  input fasta
     :return: contig_lengths: dictionary of headers and lengths
     """
     contig_lengths = {}
-    for dna_record in SeqIO.parse(os.path.join(outdir, "combined.fasta"), "fasta"):
+    for dna_record in SeqIO.parse(fasta, "fasta"):
         plas_len = len(dna_record.seq)
         dna_header = dna_record.id
         contig_lengths[dna_header] = plas_len
@@ -45,14 +46,14 @@ def get_contig_lengths(outdir):
 
 
 # get circular status of contigs
-def get_contig_circularity(outdir):
+def get_contig_circularity(fasta):
     """gets circularity of contigs
     :param outdir:  Output Directory
     :return: circular_status: dictionary of contig header and circular status
     """
     circular_status = {}
     # add circularity
-    for dna_record in SeqIO.parse(os.path.join(outdir, "combined.fasta"), "fasta"):
+    for dna_record in SeqIO.parse(fasta, "fasta"):
         dna_header = dna_record.id
         # check if circular is in unicycler output description
         if "circular=true" in dna_record.description:
@@ -135,21 +136,17 @@ def minimap_depth_sort_short(outdir, threads):
         sys.exit("Error with mapping and sorting\n")
 
 
-def get_depths_from_bam(outdir, shortFlag, contig_lengths):
+
+def get_depths_from_bam(bam_file: Path, contig_lengths: pd.DataFrame):
     """maps runs samtools depth on bam
-    :param outdir:  outdir
-    :param: shortFlag: string either "short" or "long"
+    :param bam_file: Path
     :param: contig_lengths: dictionary of headers and contig lengths
     :return: depths: dictionary of contigs and depths
     """
     depths = {}
-    if shortFlag == "short":
-        filename = os.path.join(outdir, "combined_sorted_short.bam")
-    else:  # long
-        filename = os.path.join(outdir, "combined_sorted_long.bam")
     for repName, repLength in contig_lengths.items():
         depths[repName] = [0] * repLength
-    depthCommand = ["samtools", "depth", filename]
+    depthCommand = ["samtools", "depth", bam_file]
     with open(os.devnull, "wb") as devNull:
         depthOutput = sp.check_output(depthCommand, stderr=devNull).decode()
     for line in depthOutput.splitlines():  # parse output

@@ -38,5 +38,5 @@ JSON report: fastp.json
 HTML report: fastp.html
 
 fastp --out1 tests/test_data/fake_out_dir/trimmed_R1.fastq --out2 tests/test_data/fake_out_dir/trimmed_R2.fastq --in1 tests/test_data/C11_subsetsim_R1.fastq.gz --in2 tests/test_data/C11_subsetsim_R2.fastq.gz 
-fastp v0.22.0, time used: 0 seconds
+fastp v0.22.0, time used: 1 seconds
 Command line: fastp --out1 tests/test_data/fake_out_dir/trimmed_R1.fastq --out2 tests/test_data/fake_out_dir/trimmed_R2.fastq --in1 tests/test_data/C11_subsetsim_R1.fastq.gz --in2 tests/test_data/C11_subsetsim_R2.fastq.gz

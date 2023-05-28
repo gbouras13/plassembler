@@ -4,6 +4,8 @@ import os
 from argparse import RawTextHelpFormatter
 import subprocess as sp
 import sys
+from pathlib import Path
+from loguru import logger
 
 
 # define the 2 output files in the mash database
@@ -34,7 +36,7 @@ def instantiate_db_dir(db_dir):
         os.mkdir(db_dir)
 
 
-def check_db_installation(db_dir):
+def check_db_installation(db_dir: Path):
     """checks database is installed correctly
         :param db_dir: database directory
     :return: downloaded_flag: boolean whether database is correctly downloaded.
@@ -42,11 +44,9 @@ def check_db_installation(db_dir):
     downloaded_flag = True
     # Mash files
     for file_name in MASH_DB_NAMES:
-        path = os.path.join(db_dir, file_name)
-        if os.path.isfile(path) == False:
-            print("Databases are missing. Plassembler Database Needs to be Downloaded.")
-            downloaded_flag = False
-            break
+        file_path: Path  = db_dir/f"{file_name}"
+        if file_path.exists() == False:
+            log.error("Databases are missing. Plassembler database needs to be downloaded using plassembler install.")
     return downloaded_flag
 
 

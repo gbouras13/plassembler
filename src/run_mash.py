@@ -3,31 +3,35 @@ import os
 import subprocess as sp
 import sys
 import shutil
+from src.external_tools import ExternalTool
+from pathlib import Path
 
-
-def mash_sketch(out_dir, fasta_file, logger):
+def mash_sketch(out_dir, fasta_file, logdir):
     """
     Runs mash to output fastas
     :param out_dir: output directory
     :param logger: logger
     :return:
     """
-    plasmid_fasta = os.path.join(out_dir, "plasmids.fasta")
+
+    plasmid_fasta : Path = Path(f"{out_dir}/plasmids.fasta") 
     shutil.copy2(fasta_file, plasmid_fasta)
-    mash_sketch = sp.Popen(
-        ["mash", "sketch", plasmid_fasta, "-i"], stdout=sp.PIPE, stderr=sp.PIPE
+
+    # mash command
+    mash = ExternalTool(
+        tool="mash",
+        input=f"",
+        output=f"",
+        params=f" sketch {plasmid_fasta} -i ",
+        logdir=logdir,
+        outfile = ""
     )
-    log.write_to_log(mash_sketch.stdout, logger)
-    try:
-        mash_sketch = sp.Popen(
-            ["mash", "sketch", plasmid_fasta, "-i"], stdout=sp.PIPE, stderr=sp.PIPE
-        )
-        log.write_to_log(mash_sketch.stdout, logger)
-    except:
-        sys.exit("Error with mash sketch.\n")
+
+    # need to write to stdout
+    ExternalTool.run_tool(mash, to_stdout = False)
 
 
-def run_mash(out_dir, plassembler_db_dir, logger):
+def run_mash(out_dir, plassembler_db_dir, logdir):
     """
     Runs mash to output fastas
     :param out_dir: output directory
@@ -36,30 +40,23 @@ def run_mash(out_dir, plassembler_db_dir, logger):
     :return:
     """
 
-    plsdb_sketch = os.path.join(plassembler_db_dir, "plsdb.msh")
-    plasmid_sketch = os.path.join(out_dir, "plasmids.fasta.msh")
-    mash_tsv = os.path.join(out_dir, "mash.tsv")
-    outFile = open(mash_tsv, "w")
+    plsdb_sketch : Path = Path(f"{plassembler_db_dir}/plsdb.msh") 
 
-    try:
-        mash_sketch = sp.Popen(
-            [
-                "mash",
-                "dist",
-                plasmid_sketch,
-                plsdb_sketch,
-                "-v",
-                "0.1",
-                "-d",
-                "0.1",
-                "-i",
-            ],
-            stdout=outFile,
-            stderr=sp.PIPE,
-        )
-        log.write_to_log(mash_sketch.stderr, logger)
-    except:
-        sys.exit("Error with mash dist.\n")
+    plasmid_sketch : Path = Path(f"{out_dir}/plasmids.fasta.msh") 
+
+    mash_tsv : Path = Path(f"{out_dir}/mash.tsv") 
+
+    mash = ExternalTool(
+        tool="mash",
+        input=f"",
+        output=f"",
+        params=f" dist  {plasmid_sketch} {plsdb_sketch} -v 0.1 -d 0.1 -i ",
+        logdir=logdir,
+        outfile = mash_tsv
+    )
+
+    # need to write to stdout
+    ExternalTool.run_tool(mash, to_stdout = True)
 
 
 def get_contig_count(plasmid_fasta):

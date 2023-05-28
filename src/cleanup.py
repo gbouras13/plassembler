@@ -27,16 +27,19 @@ def remove_intermediate_files(
     for file in files:
         remove_file(file)
 
-    if long_only == True or use_raven == False:
-        shutil.rmtree(os.path.join(out_dir, "00-assembly"))
-        shutil.rmtree(os.path.join(out_dir, "10-consensus"))
-        shutil.rmtree(os.path.join(out_dir, "20-repeat"))
-        shutil.rmtree(os.path.join(out_dir, "30-contigger"))
-        shutil.rmtree(os.path.join(out_dir, "40-polishing"))
+
+    remove_directory(os.path.join(out_dir, "00-assembly"))
+    remove_directory(os.path.join(out_dir, "10-consensus"))
+    remove_directory(os.path.join(out_dir, "20-repeat"))
+    remove_directory(os.path.join(out_dir, "30-contigger"))
+    remove_directory(os.path.join(out_dir, "40-polishing"))
 
     if long_only == True:
-        # the fake unicycler directory
-        shutil.rmtree(os.path.join(out_dir, "unicycler_output"))
+        # the fake unicycler directory only in long only mode
+        remove_directory(os.path.join(out_dir, "unicycler_output"))
+
+    if assembled_mode == True:
+        remove_directory(os.path.join(out_dir, "flye_output"))
 
     # delete intermediate mash file
     remove_file(os.path.join(out_dir, "mash.tsv"))
@@ -74,21 +77,21 @@ def move_and_copy_files(
     :return:
     """
 
-    # long only
-    if long_only == True or use_raven == False:
-        # make flye dir
-        flye_dir = os.path.join(out_dir, "flye_output")
-        if not os.path.exists(flye_dir):
-            os.mkdir(flye_dir)
 
-        shutil.move(os.path.join(out_dir, "assembly.fasta"), flye_dir)
-        shutil.move(os.path.join(out_dir, "assembly_info.txt"), flye_dir)
-        shutil.move(os.path.join(out_dir, "flye.log"), flye_dir)
-        shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), flye_dir)
-        shutil.move(os.path.join(out_dir, "assembly_graph.gv"), flye_dir)
+    # move the flye outputs
+    if assembled_mode == False:
+        if long_only == True or use_raven == False:
+            # make flye dir
+            flye_dir = os.path.join(out_dir, "flye_output")
+            if not os.path.exists(flye_dir):
+                os.mkdir(flye_dir)
+            shutil.move(os.path.join(out_dir, "assembly.fasta"), flye_dir)
+            shutil.move(os.path.join(out_dir, "assembly_info.txt"), flye_dir)
+            shutil.move(os.path.join(out_dir, "flye.log"), flye_dir)
+            shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), flye_dir)
+            shutil.move(os.path.join(out_dir, "assembly_graph.gv"), flye_dir)
 
-    # normal use
-
+    # move raven output
     if long_only == False and assembled_mode == False and use_raven == True:
         # make raven dir
         raven_dir = os.path.join(out_dir, "raven_output")
@@ -152,3 +155,7 @@ def touch_output_fail_files(out_dir, prefix):
 def remove_file(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)
+
+def remove_directory(dir_path):
+    if os.path.exists(dir_path):
+        shutil.rmtree(dir_path)

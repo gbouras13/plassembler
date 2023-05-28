@@ -18,7 +18,8 @@ def instantiate_dirs(output_dir, force):
     # remove outdir on force
     if force == True:
         if os.path.isdir(output_dir) == True:
-            shutil.rmtree(output_dir)
+            #shutil.rmtree(output_dir)
+            print('l')
         else:
             logger.info(f"--force was specified even though the outdir does not already exist. Continuing ")
     else:
@@ -47,17 +48,17 @@ def validate_fastq(file):
         with gzip.open(file, "rt") as handle:
             fastq = SeqIO.parse(handle, "fastq")
             if any(fastq):
-                print("FASTQ " + file + " checked")
+                logger.info(f"FASTQ {file} checked")
             else:
-                sys.exit("Error: Input " + file + "is not in the FASTQ format.\n")
+                logger.error(f"Input file {file} is not in the FASTQ format.")
     else:
         zipped = False
         with open(file, "r") as handle:
             fastq = SeqIO.parse(handle, "fastq")
             if any(fastq):
-                print("FASTQ " + file + " checked")
+                logger.info(f"FASTQ {file} checked")
             else:
-                sys.exit("Error: Input " + file + "is not in the FASTQ format.\n")
+                logger.error(f"Input file {file} is not in the FASTQ format.")
     return zipped
 
 
@@ -69,9 +70,9 @@ def validate_fasta(filename):
     with open(filename, "r") as handle:
         fasta = SeqIO.parse(handle, "fasta")
         if any(fasta):
-            print("FASTA checked")
+            logger.info(f"FASTA {filename} checked")
         else:
-            sys.exit("Error: Input file is not in the FASTA format.\n")
+            logger.error(f"Input file {filename} is not in the FASTA format.")
 
 
 def validate_fastas_assembled_mode(input_chromosome, input_plasmids):
@@ -87,9 +88,7 @@ def validate_fastas_assembled_mode(input_chromosome, input_plasmids):
         records = list(SeqIO.parse(fasta, "fasta"))
         num_contigs = len(records)
         if num_contigs > 1:
-            sys.exit(
-                "Error: There are multiple contigs in your chromosome FASTA. Please input a completed chromosome.\n"
-            )
+            logger.error(f"Error: There are multiple contigs in your chromosome FASTA {input_chromosome}. Please input a completed chromosome..")
 
     # plasmids
     validate_fasta(input_plasmids)
@@ -107,31 +106,31 @@ def validate_fastqs_assembled_mode(longreads, short_one, short_two):
     long_flag = False
     long_gzipped = False
     if longreads != "nothing":
-        print("You have input long read FASTQs for depth calculation.")
+        logger.info("You have input long read FASTQs for depth calculation.")
         long_gzipped = validate_fastq(longreads)
         long_flag = True
 
     # short
     short_flag = False
     if short_one != "nothing" and short_two != "nothing":
-        print("You have input paired short read FASTQs for depth calculation.")
+        logger.info("You have input paired short read FASTQs for depth calculation.")
         s1_gzipped = validate_fastq(short_one)
         s2_gzipped = validate_fastq(short_two)
         if s1_gzipped != s2_gzipped:
-            sys.exit(
+            logger.error(
                 "R1 and R2 files are inconsistenly compressed. Please check the compression format and try again."
             )
         short_flag = True
 
     if short_flag == False and long_flag == False:
-        sys.exit(
+        logger.error(
             "No valid long read or paired short read FASTQs were input. Please check your input and try again."
         )
 
     if (short_one != "nothing" and short_two == "nothing") or (
         short_one == "nothing" and short_two != "nothing"
     ):
-        sys.exit(
+        logger.error(
             "Only 1 short read file was found. Please check your input and try again."
         )
 
@@ -152,7 +151,7 @@ def check_dependencies():
         flye_minor_version = int(flye_out.split(".")[1])
         flye_minorest_version = flye_out.split(".")[2]
     except:
-        sys.exit("Flye not found. Please reinstall Plassembler.")
+        logger.error("Flye not found. Please reinstall Plassembler.")
 
     message = (
         "Flye version found is v"
@@ -166,13 +165,11 @@ def check_dependencies():
     logger.info(message)
 
     if flye_major_version != 2:
-        sys.exit(
-            "Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler."
-        )
+        message = "Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler."
+        logger.error(message)
     if flye_minor_version < 9:
-        sys.exit(
-            "Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler."
-        )
+        message = "Flye is too old - please reinstall plassembler, see instructions at https://github.com/gbouras13/plassembler."
+        logger.error(message)
 
     message = "Flye version is ok."
     logger.info(message)
@@ -188,7 +185,7 @@ def check_dependencies():
         message = "Raven version is ok."
         logger.info(message)
     except:
-        sys.exit("Raven not found.\n")
+        logger.error("Raven not found")
 
     # unicycler
     try:
@@ -203,9 +200,8 @@ def check_dependencies():
         unicycler_minor_version = int(unicycler_version.split(".")[1])
         unicycler_minorest_version = int(unicycler_version.split(".")[2])
     except:
-        sys.exit(
-            "Unicycler not found. Please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler."
-        )
+        message = "Unicycler not found. Please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler."
+        logger.error(message)
 
     message = (
         "Unicycler version found is v"
@@ -219,13 +215,11 @@ def check_dependencies():
     logger.info(message)
 
     if unicycler_minor_version < 4:
-        sys.exit(
-            "Unicycler is too old - please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler."
-        )
+        message = "Unicycler is too old - please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler."
+        logger.error(message)
     elif unicycler_minor_version == 4 and unicycler_minorest_version < 8:
-        sys.exit(
-            "Unicycler is too old - please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler."
-        )
+        message = "Unicycler is too old - please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler."
+        logger.error(message)
     elif unicycler_minor_version == 4 and unicycler_minorest_version >= 8:
         message = "Unicycler version is older than v0.5.0 - Plassembler will continue but please consider installing Unicycler v0.5.0. See instructions at https://github.com/gbouras13/plassembler."
         logger.info(message)
@@ -243,7 +237,7 @@ def check_dependencies():
         message = "SPAdes " + str(spades_version) + " found."
         logger.info(message)
     except:
-        sys.exit("SPAdes not found.\n")
+        logger.error("SPAdes not found.")
 
     # samtools
     try:
@@ -256,7 +250,8 @@ def check_dependencies():
         message = "Samtools v" + str(samtools_version) + " found."
         logger.info(message)
     except:
-        sys.exit("Samtools not found.\n")
+        logger.error("Samtools not found.")
+        
 
     # minimap2
     try:
@@ -267,7 +262,7 @@ def check_dependencies():
         message = "minimap2 v" + str(minimap2_version) + " found."
         logger.info(message)
     except:
-        sys.exit("minimap2 not found.\n")
+        logger.error("minimap2 not found.")
 
     # fastp
     try:
@@ -278,7 +273,8 @@ def check_dependencies():
         message = "fastp v" + str(fastp_version) + " found."
         logger.info(message)
     except:
-        sys.exit("fastp not found.\n")
+        logger.error("fastp not found.")
+        
 
     # chopper
     try:
@@ -289,7 +285,7 @@ def check_dependencies():
         message = "chopper v" + str(chopper_version) + " found."
         logger.info(message)
     except:
-        sys.exit("chopper not found.\n")
+        logger.error("chopper not found.")
 
     # mash
     try:
@@ -304,10 +300,9 @@ def check_dependencies():
         message = "mash v" + str(mash_version) + " found."
         logger.info(message)
     except:
-        sys.exit("mash not found.\n")
+        logger.error("mash not found")
 
     # all dependencies found
-    print("All dependencies found.")
     logger.info("All dependencies found.")
 
 
@@ -335,8 +330,8 @@ def validate_pacbio_model(pacbio_model):
         logger.info(message)
         pacbio_model = "--pacbio-hifi"
     else:
-        sys.exit(
-            "You pacbio model was not pacbio-raw, pacbio-corr or pacbio-hifi. Please check your input and run plassembler again."
-        )
+        message = "You pacbio model was not pacbio-raw, pacbio-corr or pacbio-hifi. Please check your input and run plassembler again."
+        logger.error(message)
+        
 
     return pacbio_model

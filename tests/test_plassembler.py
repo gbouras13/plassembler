@@ -260,15 +260,7 @@ class test_assembly_class(unittest.TestCase):
 
 
 
-# class test_incomp(unittest.TestCase):
-#      """Test for test_incompatibility.py"""
 
-#     # concat single
-#      def test_incompatbility(self):
-#         expected_return = True
-#         fasta : Path = Path(f"{val_data}/combined.fasta") 
-#         depth.get_contig_circularity(fasta)
-#         self.assertEqual(expected_return, True)
 
 
 

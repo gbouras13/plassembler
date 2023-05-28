@@ -51,10 +51,10 @@ class test_install(unittest.TestCase):
         with self.assertRaises(SystemExit):
             check_db_installation(val_data)
 
-    # def test_get_database_zenodo(self):
-    #     expected_return = False
-    #     get_database_zenodo(tmp_db_path)
-    #     # remove it after downloading
-    #     shutil.rmtree(tmp_db_path)
-    #     self.assertEqual(expected_return, False)
+    def test_get_database_zenodo(self):
+        expected_return = False
+        get_database_zenodo(tmp_db_path)
+        # remove it after downloading
+        shutil.rmtree(tmp_db_path)
+        self.assertEqual(expected_return, False)
 

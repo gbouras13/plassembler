@@ -14,9 +14,6 @@ import shutil
 
 
 # import functions
-from src import input_commands
-from src import concat
-from src import depth
 from src import assembly
 from src.cleanup import remove_file
 from src.qc import (chopper, fastp)
@@ -154,21 +151,21 @@ class test_qc_gzip(unittest.TestCase):
 class test_assemblers(unittest.TestCase):
     """Test for assembles"""
 
-#     def test_flye(self):
-#         expected_return = True
-#         # C11 sim reads
-#         assembly.run_flye(test_data, 8, raw_flag = False, pacbio_model = "nothing", logdir = logdir)
-#         shutil.rmtree(os.path.join(test_data, "00-assembly"))
-#         shutil.rmtree(os.path.join(test_data, "10-consensus"))
-#         shutil.rmtree(os.path.join(test_data, "20-repeat"))
-#         shutil.rmtree(os.path.join(test_data, "30-contigger"))
-#         shutil.rmtree(os.path.join(test_data, "40-polishing"))
-#         remove_file(os.path.join(test_data, "assembly.fasta"))
-#         remove_file(os.path.join(test_data, "assembly_info.txt"))
-#         remove_file(os.path.join(test_data, "assembly_graph.gfa"))
-#         remove_file(os.path.join(test_data, "assembly_graph.gv"))
-#         remove_file(os.path.join(test_data, "flye.log"))
-#         self.assertEqual(expected_return, True)
+    def test_flye(self):
+        expected_return = True
+        # C11 sim reads
+        assembly.run_flye(test_data, 8, raw_flag = False, pacbio_model = "nothing", logdir = logdir)
+        shutil.rmtree(os.path.join(test_data, "00-assembly"))
+        shutil.rmtree(os.path.join(test_data, "10-consensus"))
+        shutil.rmtree(os.path.join(test_data, "20-repeat"))
+        shutil.rmtree(os.path.join(test_data, "30-contigger"))
+        shutil.rmtree(os.path.join(test_data, "40-polishing"))
+        remove_file(os.path.join(test_data, "assembly.fasta"))
+        remove_file(os.path.join(test_data, "assembly_info.txt"))
+        remove_file(os.path.join(test_data, "assembly_graph.gfa"))
+        remove_file(os.path.join(test_data, "assembly_graph.gv"))
+        remove_file(os.path.join(test_data, "flye.log"))
+        self.assertEqual(expected_return, True)
 
 
     def test_raven(self):
@@ -182,27 +179,27 @@ class test_assemblers(unittest.TestCase):
         self.assertEqual(expected_return, True)
         
 
-    # def test_unicycler_good(self):
-    #     expected_return = True
-    #     # C11 sim reads
-    #     short_one = Path(f"{test_data}/short_read_concat_good_R1.fastq") 
-    #     short_two = Path(f"{test_data}/short_read_concat_good_R2.fastq") 
-    #     longreads = Path(f"{test_data}/plasmid_long_good.fastq") 
-    #     unicycler_output_dir = Path(f"{test_data}/unicycler_output") 
-    #     threads = 1
-    #     run_unicycler(threads, logdir, short_one, short_two, longreads, unicycler_output_dir)
-    #     self.assertEqual(expected_return, True)
+    def test_unicycler_good(self):
+        expected_return = True
+        # C11 sim reads
+        short_one = Path(f"{test_data}/short_read_concat_good_R1.fastq") 
+        short_two = Path(f"{test_data}/short_read_concat_good_R2.fastq") 
+        longreads = Path(f"{test_data}/plasmid_long_good.fastq") 
+        unicycler_output_dir = Path(f"{test_data}/unicycler_output") 
+        threads = 1
+        run_unicycler(threads, logdir, short_one, short_two, longreads, unicycler_output_dir)
+        self.assertEqual(expected_return, True)
         
-    # def test_unicycler_bad(self):
-    #     expected_return = True
-    #     # C11 sim reads
-    #     short_one = Path(f"{test_data}/C11_subsetsim_R1.fastq") 
-    #     short_two = Path(f"{test_data}/C11_subsetsim_R2.fastq") 
-    #     longreads = Path(f"{test_data}/plasmid_long_good.fastq") 
-    #     unicycler_output_dir = Path(f"{test_data}/unicycler_output_bad") 
-    #     threads = 1
-    #     run_unicycler(threads, logdir, short_one, short_two, longreads, unicycler_output_dir)
-    #     self.assertEqual(expected_return, True)
+    def test_unicycler_bad(self):
+        expected_return = True
+        # C11 sim reads
+        short_one = Path(f"{test_data}/C11_subsetsim_R1.fastq") 
+        short_two = Path(f"{test_data}/C11_subsetsim_R2.fastq") 
+        longreads = Path(f"{test_data}/plasmid_long_good.fastq") 
+        unicycler_output_dir = Path(f"{test_data}/unicycler_output_bad") 
+        threads = 1
+        run_unicycler(threads, logdir, short_one, short_two, longreads, unicycler_output_dir)
+        self.assertEqual(expected_return, True)
 
  
 

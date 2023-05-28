@@ -40,6 +40,8 @@ def remove_intermediate_files(
 
     if assembled_mode == True:
         remove_directory(os.path.join(out_dir, "flye_output"))
+        remove_file(os.path.join(out_dir, "plassembler_plasmids.fasta"))
+        remove_file(os.path.join(out_dir, "plassembler_plasmids.gfa"))
 
     # delete intermediate mash file
     remove_file(os.path.join(out_dir, "mash.tsv"))

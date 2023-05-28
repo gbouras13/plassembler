@@ -47,7 +47,6 @@ setup(
     data_files=data_files,
     include_package_data=True,
     scripts=["plassembler"],
-    entry_points={"console_scripts": ["install_database = src.install_database:main"]},
     url="https://github.com/gbouras13/plassembler",
     python_requires=">=3.8",
     classifiers=CLASSIFIERS,

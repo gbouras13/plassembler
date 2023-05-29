@@ -64,9 +64,9 @@ class test_bam(unittest.TestCase):
     def test_sam_to_bam(self):
         expected_return = True
         threads = 1 
-        sam : Path = Path(f"{map_dir}/test.sam") 
-        bam : Path = Path(f"{map_dir}/test.bam") 
-        sam_to_bam(sam, bam, threads, logdir)
+        samfile : Path = Path(f"{map_dir}/sam_to_bam/test.sam") 
+        bamfile : Path = Path(f"{map_dir}/sam_to_bam/test.bam") 
+        sam_to_bam(samfile, bamfile, threads, logdir)
         self.assertEqual(expected_return, True)
 
     def test_split(self):

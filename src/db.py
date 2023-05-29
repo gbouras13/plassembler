@@ -33,7 +33,7 @@ def check_db_installation(db_dir: Path, install_flag: bool):
         file_path: Path  = db_dir/f"{file_name}"
         if file_path.exists() == False:
             if install_flag == True:
-                logger.info(f"Database directory is missing {file_path}. Plassembler will be installed.")
+                logger.info(f"Database directory is missing {file_path}. Plassembler database will be downloaded.")
                 downloaded_flag = False
             else:
                 logger.error(f"Database directory is missing {file_path}. Plassembler database needs to be downloaded using the plassembler download command.")

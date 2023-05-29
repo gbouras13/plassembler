@@ -3,10 +3,14 @@ conda mambabuild . --variants "{python: [3.8,3.9,3.10,3.11]}"
 """
 
 from setuptools import setup, find_packages
-
+import os
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+from src.util import (
+    get_version,
+)
 
 
 packages = find_packages()
@@ -25,17 +29,19 @@ CLASSIFIERS = [
     "Natural Language :: English",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS :: MacOS X",
+    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
 # set version
 
-v = "1.1.0"
 
 setup(
     name="plassembler",
-    version=v,
+    version=get_version(),
     zip_safe=True,
     author="George Bouras",
     description="Plassembler: Automated Bacterial Plasmid Assembly Program",

@@ -1,5 +1,5 @@
 
-[93m[1m[4mStarting Unicycler[0m [2m(2023-05-29 10:21:14)[0m
+[93m[1m[4mStarting Unicycler[0m [2m(2023-05-29 13:41:52)[0m
 [2m    Welcome to Unicycler, an assembly pipeline for bacterial genomes. Since you[0m
 [2mprovided both short and long reads, Unicycler will perform a hybrid assembly.[0m
 [2mIt will first use SPAdes to make a short-read assembly graph, and then it will[0m
@@ -11,7 +11,7 @@ Command: [1m/Users/a1667917/mambaforge/envs/plassembler_env/bin/unicycler -1 te
 Unicycler version: v0.5.0
 Using 1 thread
 
-The output directory already exists and files may be reused or overwritten:
+Making output directory:
   /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output_bad
 
 Dependencies:
@@ -22,19 +22,17 @@ Dependencies:
   tblastn       2.12.0+   [32mgood[0m  
 
 
-[93m[1m[4mChoosing k-mer range for assembly[0m [2m(2023-05-29 10:21:17)[0m
+[93m[1m[4mChoosing k-mer range for assembly[0m [2m(2023-05-29 13:41:53)[0m
 [2m    Unicycler chooses a k-mer range for SPAdes based on the length of the input[0m
 [2mreads. It uses a wide range of many k-mer sizes to maximise the chance of[0m
 [2mfinding an ideal assembly.[0m
 
-K-mer range already exists:
-  /Users/a1667917/Documents/plassembler/tests/test_data/unicycler_output_bad/spades_assembly/kmer_range
-
-Will use this existing range:
-  27, 53, 71, 87, 99, 111, 119, 127
+SPAdes maximum k-mer: 127
+Median read length: 151
+K-mer range: 27, 53, 71, 87, 99, 111, 119, 127
 
 
-[93m[1m[4mSPAdes assemblies[0m [2m(2023-05-29 10:21:17)[0m
+[93m[1m[4mSPAdes assemblies[0m [2m(2023-05-29 13:41:53)[0m
 [2m    Unicycler now uses SPAdes to assemble the short reads. It scores the[0m
 [2massembly graph for each k-mer using the number of contigs (fewer is better) and[0m
 [2mthe number of dead ends (fewer is better). The score function is 1/(c*(d+2)),[0m

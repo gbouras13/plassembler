@@ -42,7 +42,7 @@ def check_db_installation(db_dir: Path, install_flag: bool):
 
 
 def get_database_zenodo(db_dir: Path):
-    print("Downloading Plassembler Database.")
+    logger.info("Downloading Plassembler Database.")
     tarball = "plsdb_110222_plassembler_v0.1.4_databases.tar.gz"
     tar_path = os.path.join(db_dir, tarball)
     url = "https://zenodo.org/record/7499200/files/plsdb_110222_plassembler_v0.1.4_databases.tar.gz"

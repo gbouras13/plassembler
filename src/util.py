@@ -24,7 +24,6 @@ def get_version():
     return version
 
 
-
 def print_citation():
     with open(plassembler_base("CITATION"), "r") as f:
         for line in f:

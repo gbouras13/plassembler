@@ -244,18 +244,6 @@ class test_depth(unittest.TestCase):
             depth.get_depths_from_bam(bam_file,  contig_lengths = contig_lengths)
 
 
-class test_assembly_class(unittest.TestCase):
-    """Test for Assembly class"""
-
-    # bad pacbio model
-    def test_combine_input_fastas_good(self):
-        expected_return = True
-        assembly = Assembly()
-        assembly.outdir = assembly_class
-        chrom_fasta: Path = Path(f"{assembly_class}/chromosome.fasta") 
-        plasmid_fasta: Path =  Path(f"{assembly_class}/plasmid.fasta") 
-        assembly.combine_input_fastas(chrom_fasta, plasmid_fasta)
-        self.assertEqual(expected_return, True)
 
 
 

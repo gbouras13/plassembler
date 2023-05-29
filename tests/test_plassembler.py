@@ -70,8 +70,8 @@ class test_sam_to_fastq_long(unittest.TestCase):
         self.assertEqual(expected_return, True)
 
 
-class TestValidateFasta(unittest.TestCase):
-    """Tests of Fasta validation functions"""
+class TestInputCommands(unittest.TestCase):
+    """Tests input commands"""
 
     # tests non-fasta input
     def test_non_fasta_input(self):
@@ -104,10 +104,6 @@ class TestValidateFasta(unittest.TestCase):
         input_commands.validate_fastas_assembled_mode(input_chromosome, input_plasmids)
         self.assertEqual(tmp, 1)
 
-
-class test_validate_fastq(unittest.TestCase):
-    """Test for validate_fastq"""
-
     # no gzip
     def test_validate_fastq_no_gzip(self):
         test_fastq = os.path.join(val_data, "test.fastq")
@@ -138,15 +134,17 @@ class test_validate_fastq(unittest.TestCase):
             s2 = os.path.join(val_data, "test.fastq")
             input_commands.validate_fastqs_assembled_mode(fasta, s1, s2)
 
-
-class test_validate_pacbio_model(unittest.TestCase):
-    """Test for validate_pacbio_model"""
-
     # bad pacbio model
     def test_validate_pacbio_model_bad(self):
         with self.assertRaises(SystemExit):
             pacbio_model = "not_a_model"
             input_commands.validate_pacbio_model(pacbio_model)
+
+    # bad pacbio model
+    def test_deps(self):
+        expected_return = True
+        input_commands.check_dependencies()
+        self.assertEqual(expected_return, True)
 
 
 class test_concat(unittest.TestCase):

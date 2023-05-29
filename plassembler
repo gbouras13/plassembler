@@ -334,6 +334,7 @@ def run(
     logger.info(f"Min long read length is {min_length}")
     logger.info(f"Min long read quality is {min_quality}")
     logger.info(f"Thread count is {threads}")
+    logger.info(f"--force is {force}")
     logger.info(f"--skip_qc is {skip_qc}")
     logger.info(f"--raw_flag is {raw_flag}")
     logger.info(f"--pacbio_model is {pacbio_model}")
@@ -355,11 +356,6 @@ def run(
     # check fastqs
     logger.info(f"Checking input fastqs.")    
 
-    # experimental long only - high quality long read only
-    # else:
-    #     message = "You have chosen --long_only with long reads only. Ignoring any short reads."
-    #     log.write_message(message, logger)
-
     # check fastqs
 
     long_zipped = input_commands.validate_fastq(longreads)
@@ -367,11 +363,6 @@ def run(
     s2_zipped = input_commands.validate_fastq(short_two)
 
 
-    # if args.long_only == True:
-    #     if int(min_quality) < 15:
-    #         message = "Increasing min quality to 15 in long only mode."
-    #         log.write_message(message, logger)
-    #         min_quality = str(15)
 
     # pacbio model check that the string is valid if legit
     if pacbio_model != "nothing":
@@ -430,7 +421,6 @@ def run(
         plass.no_plasmids_flag = True
 
         # identifies chromosome and renames contigs
-        # just keep Flye as placeholder experimental for now
         if use_raven == True:
             logger.info(f"Only one contig was assembled with Raven.")
             plass.identify_chromosome_process_raven(chromosome)
@@ -1121,6 +1111,7 @@ def long(
     logger.info(f"Min long read length is {min_length}")
     logger.info(f"Min long read quality is {min_quality}")
     logger.info(f"Thread count is {threads}")
+    logger.info(f"--force is {force}")
     logger.info(f"--skip_qc is {skip_qc}")
     logger.info(f"--raw_flag is {raw_flag}")
     logger.info(f"--pacbio_model is {pacbio_model}")
@@ -1132,7 +1123,6 @@ def long(
     input_commands.check_dependencies()
 
     # check the mash database is installed
-
     logger.info(f"Checking database installation.")
     database_installed = db.check_db_installation(Path(database), install_flag = False) 
     # will only continue if successful

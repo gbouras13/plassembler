@@ -32,7 +32,7 @@ CLASSIFIERS = [
     "Environment :: Console",
     "Environment :: MacOS X",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT license",
+    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS :: MacOS X",

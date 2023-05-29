@@ -17,18 +17,20 @@ import shutil
 
 
 # import functions
-from src.db import (get_database_zenodo, check_db_installation, instantiate_db_dir)
+from src.db import get_database_zenodo, check_db_installation, instantiate_db_dir
 
 # data
 test_data = Path("tests/test_data")
-db_path = Path(f"{test_data}/Plassembler_Test_DB") 
-val_data = Path(f"{test_data}/validation") 
-tmp_db_path = Path(f"{test_data}/Plassembler_Test_DB_test") 
+db_path = Path(f"{test_data}/Plassembler_Test_DB")
+val_data = Path(f"{test_data}/validation")
+tmp_db_path = Path(f"{test_data}/Plassembler_Test_DB_test")
+
 
 # make fake tempdir for testing
 @pytest.fixture(scope="session")
 def tmp_dir(tmpdir_factory):
     return tmpdir_factory.mktemp("tmp")
+
 
 # to ensure sys exit on logger error
 logger.add(lambda _: sys.exit(1), level="ERROR")
@@ -62,4 +64,3 @@ class test_install(unittest.TestCase):
         # remove it after downloading
         shutil.rmtree(tmp_db_path)
         self.assertEqual(expected_return, True)
-

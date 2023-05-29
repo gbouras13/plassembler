@@ -1,5 +1,6 @@
 from loguru import logger
 
+
 def incompatbility(combined_depth_mash_df):
     """Quick heuristic check whether there is likely differences between long and short read sets
 

@@ -18,17 +18,17 @@ import subprocess as sp
 # import functions
 
 from src.plass_class import Assembly, Plass
-from src.cleanup import (remove_file, remove_directory)
+from src.cleanup import remove_file, remove_directory
 
 
 # data
 test_data = Path("tests/test_data")
-plass_class_dir = Path(f"{test_data}/plass_class") 
-plass_class_depth_dir = Path(f"{plass_class_dir}/depth") 
-assembly_class_dir = Path(f"{test_data}/assembly_class") 
-assembly_depth_dir = Path(f"{assembly_class_dir}/depth") 
-plassembler_db_dir = Path(f"{test_data}/Plassembler_Test_DB") 
-logdir = Path(f"{test_data}/logs") 
+plass_class_dir = Path(f"{test_data}/plass_class")
+plass_class_depth_dir = Path(f"{plass_class_dir}/depth")
+assembly_class_dir = Path(f"{test_data}/assembly_class")
+assembly_depth_dir = Path(f"{assembly_class_dir}/depth")
+plassembler_db_dir = Path(f"{test_data}/Plassembler_Test_DB")
+logdir = Path(f"{test_data}/logs")
 
 
 class test_plass_class(unittest.TestCase):
@@ -62,7 +62,7 @@ class test_plass_class(unittest.TestCase):
         plass = Plass()
         plass.check_unicycler_success(plass_class_dir)
         # should be True, as assembly.fasta exists
-        self.assertEqual(plass.unicycler_success, True)       
+        self.assertEqual(plass.unicycler_success, True)
 
     def test_check_get_depth(self):
         expected = True
@@ -72,12 +72,12 @@ class test_plass_class(unittest.TestCase):
         # set to the depth dir for  intermediate files
         plass.outdir = plass_class_depth_dir
         plass.get_depth(logdir, pacbio_model, threads)
-        remove_file(Path(f"{plass_class_depth_dir}/combined_long.sam") )
-        remove_file(Path(f"{plass_class_depth_dir}/combined_short.sam") )
-        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_long.bam") )
-        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_short.bam") )
-        remove_file(Path(f"{plass_class_depth_dir}/combined.fasta") )
-        self.assertEqual(expected, True)       
+        remove_file(Path(f"{plass_class_depth_dir}/combined_long.sam"))
+        remove_file(Path(f"{plass_class_depth_dir}/combined_short.sam"))
+        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_long.bam"))
+        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_short.bam"))
+        remove_file(Path(f"{plass_class_depth_dir}/combined.fasta"))
+        self.assertEqual(expected, True)
 
     def test_check_get_depth_long(self):
         expected = True
@@ -87,17 +87,17 @@ class test_plass_class(unittest.TestCase):
         # set to the depth dir for  intermediate files
         plass.outdir = plass_class_depth_dir
         plass.get_depth_long(logdir, pacbio_model, threads)
-        remove_file(Path(f"{plass_class_depth_dir}/combined_long.sam") )
-        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_long.bam") )
-        self.assertEqual(expected, True)   
+        remove_file(Path(f"{plass_class_depth_dir}/combined_long.sam"))
+        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_long.bam"))
+        self.assertEqual(expected, True)
 
     def test_process_mash_tsv(self):
         expected = True
         plass = Plass()
-        # should be nothing due to fake db 
+        # should be nothing due to fake db
         plass.outdir = plass_class_depth_dir
         plass.process_mash_tsv(plassembler_db_dir)
-        self.assertEqual(expected, True)  
+        self.assertEqual(expected, True)
 
     def test_combine_tsv(self):
         expected = True
@@ -109,13 +109,12 @@ class test_plass_class(unittest.TestCase):
         plass.get_depth(logdir, pacbio_model, threads)
         plass.process_mash_tsv(plassembler_db_dir)
         plass.combine_depth_mash_tsvs(prefix)
-        remove_file(Path(f"{plass_class_depth_dir}/combined_long.sam") )
-        remove_file(Path(f"{plass_class_depth_dir}/combined_short.sam") )
-        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_long.bam") )
-        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_short.bam") )
-        remove_file(Path(f"{plass_class_depth_dir}/{prefix}_summary.tsv") )
-        self.assertEqual(expected, True)  
-         
+        remove_file(Path(f"{plass_class_depth_dir}/combined_long.sam"))
+        remove_file(Path(f"{plass_class_depth_dir}/combined_short.sam"))
+        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_long.bam"))
+        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_short.bam"))
+        remove_file(Path(f"{plass_class_depth_dir}/{prefix}_summary.tsv"))
+        self.assertEqual(expected, True)
 
 
 class test_assembly_class(unittest.TestCase):
@@ -125,8 +124,8 @@ class test_assembly_class(unittest.TestCase):
         expected_return = True
         assembly = Assembly()
         assembly.outdir = assembly_class_dir
-        chrom_fasta: Path = Path(f"{assembly_class_dir}/chromosome.fasta") 
-        plasmid_fasta: Path =  Path(f"{assembly_class_dir}/plasmid.fasta") 
+        chrom_fasta: Path = Path(f"{assembly_class_dir}/chromosome.fasta")
+        plasmid_fasta: Path = Path(f"{assembly_class_dir}/plasmid.fasta")
         assembly.combine_input_fastas(chrom_fasta, plasmid_fasta)
         self.assertEqual(expected_return, True)
 
@@ -138,21 +137,20 @@ class test_assembly_class(unittest.TestCase):
         # set to the depth dir for  intermediate files
         assembly.outdir = assembly_depth_dir
         assembly.get_depth(logdir, pacbio_model, threads)
-        remove_file(Path(f"{assembly_depth_dir}/combined_long.sam") )
-        remove_file(Path(f"{assembly_depth_dir}/combined_short.sam") )
-        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_long.bam") )
-        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_short.bam") )
-        self.assertEqual(expected, True)   
+        remove_file(Path(f"{assembly_depth_dir}/combined_long.sam"))
+        remove_file(Path(f"{assembly_depth_dir}/combined_short.sam"))
+        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_long.bam"))
+        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_short.bam"))
+        self.assertEqual(expected, True)
 
     def test_process_mash_tsv(self):
         expected = True
         assembly = Assembly()
         plasmid_fasta = Path(f"{assembly_depth_dir}/plasmids.fasta")
-        # should be nothing due to fake db 
+        # should be nothing due to fake db
         assembly.outdir = assembly_depth_dir
         assembly.process_mash_tsv(plassembler_db_dir, plasmid_fasta)
-        self.assertEqual(expected, True)  
-
+        self.assertEqual(expected, True)
 
     def test_combine_tsv(self):
         expected = True
@@ -165,10 +163,9 @@ class test_assembly_class(unittest.TestCase):
         assembly.get_depth(logdir, pacbio_model, threads)
         assembly.process_mash_tsv(plassembler_db_dir, plasmid_fasta)
         assembly.combine_depth_mash_tsvs(prefix)
-        remove_file(Path(f"{assembly_depth_dir}/combined_long.sam") )
-        remove_file(Path(f"{assembly_depth_dir}/combined_short.bam") )
-        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_long.bam") )
-        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_short.bam") )
-        remove_file(Path(f"{assembly_depth_dir}/{prefix}_summary.tsv") )
-        self.assertEqual(expected, True)  
-         
+        remove_file(Path(f"{assembly_depth_dir}/combined_long.sam"))
+        remove_file(Path(f"{assembly_depth_dir}/combined_short.bam"))
+        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_long.bam"))
+        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_short.bam"))
+        remove_file(Path(f"{assembly_depth_dir}/{prefix}_summary.tsv"))
+        self.assertEqual(expected, True)

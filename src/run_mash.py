@@ -6,6 +6,7 @@ import shutil
 from src.external_tools import ExternalTool
 from pathlib import Path
 
+
 def mash_sketch(out_dir, fasta_file, logdir):
     """
     Runs mash to output fastas
@@ -14,7 +15,7 @@ def mash_sketch(out_dir, fasta_file, logdir):
     :return:
     """
 
-    plasmid_fasta : Path = Path(f"{out_dir}/plasmids.fasta") 
+    plasmid_fasta: Path = Path(f"{out_dir}/plasmids.fasta")
     shutil.copy2(fasta_file, plasmid_fasta)
 
     # mash command
@@ -24,11 +25,11 @@ def mash_sketch(out_dir, fasta_file, logdir):
         output=f"",
         params=f" sketch {plasmid_fasta} -i ",
         logdir=logdir,
-        outfile = ""
+        outfile="",
     )
 
     # need to write to stdout
-    ExternalTool.run_tool(mash, to_stdout = False)
+    ExternalTool.run_tool(mash, to_stdout=False)
 
 
 def run_mash(out_dir, plassembler_db_dir, logdir):
@@ -40,11 +41,11 @@ def run_mash(out_dir, plassembler_db_dir, logdir):
     :return:
     """
 
-    plsdb_sketch : Path = Path(f"{plassembler_db_dir}/plsdb.msh") 
+    plsdb_sketch: Path = Path(f"{plassembler_db_dir}/plsdb.msh")
 
-    plasmid_sketch : Path = Path(f"{out_dir}/plasmids.fasta.msh") 
+    plasmid_sketch: Path = Path(f"{out_dir}/plasmids.fasta.msh")
 
-    mash_tsv : Path = Path(f"{out_dir}/mash.tsv") 
+    mash_tsv: Path = Path(f"{out_dir}/mash.tsv")
 
     mash = ExternalTool(
         tool="mash",
@@ -52,11 +53,11 @@ def run_mash(out_dir, plassembler_db_dir, logdir):
         output=f"",
         params=f" dist  {plasmid_sketch} {plsdb_sketch} -v 0.1 -d 0.1 -i ",
         logdir=logdir,
-        outfile = mash_tsv
+        outfile=mash_tsv,
     )
 
     # need to write to stdout
-    ExternalTool.run_tool(mash, to_stdout = True)
+    ExternalTool.run_tool(mash, to_stdout=True)
 
 
 def get_contig_count(plasmid_fasta):

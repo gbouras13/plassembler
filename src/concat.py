@@ -14,14 +14,14 @@ def concatenate_short_fastqs(out_dir):
     :return:
     """
     # list all the inputs for concatenation
-    unmapped_fastq_one_short : Path = Path(out_dir)/f"unmapped_R1.fastq"
-    unmapped_fastq_two_short : Path = Path(out_dir)/f"unmapped_R2.fastq"
-    non_chrom_fastq_one_short : Path = Path(out_dir)/f"mapped_non_chromosome_R1.fastq" 
-    non_chrom_fastq_two_short: Path = Path(out_dir)/f"mapped_non_chromosome_R2.fastq" 
+    unmapped_fastq_one_short: Path = Path(out_dir) / f"unmapped_R1.fastq"
+    unmapped_fastq_two_short: Path = Path(out_dir) / f"unmapped_R2.fastq"
+    non_chrom_fastq_one_short: Path = Path(out_dir) / f"mapped_non_chromosome_R1.fastq"
+    non_chrom_fastq_two_short: Path = Path(out_dir) / f"mapped_non_chromosome_R2.fastq"
 
     # final outputs
-    short_one_file: Path = Path(out_dir)/f"short_read_concat_R1.fastq"
-    short_two_file: Path = Path(out_dir)/f"short_read_concat_R2.fastq"
+    short_one_file: Path = Path(out_dir) / f"short_read_concat_R1.fastq"
+    short_two_file: Path = Path(out_dir) / f"short_read_concat_R2.fastq"
 
     try:
         concatenate_single_fastq(
@@ -42,7 +42,7 @@ def concatenate_single_fastq(fastq_in1: Path, fastq_in2: Path, fastq_out: Path):
     :param logger: logger
     :return:
     """
-    
+
     records = []
 
     # Read and append records from the first FASTQ file
@@ -68,15 +68,15 @@ def concatenate_single_fastq(fastq_in1: Path, fastq_in2: Path, fastq_out: Path):
 
 def concatenate_single_fasta(file1: Path, file2: Path, output_file: Path):
     sequences = []
-    
+
     # Read sequences from the first file
-    with open(file1, 'r') as f1:
-        sequences.extend(SeqIO.parse(f1, 'fasta'))
-    
+    with open(file1, "r") as f1:
+        sequences.extend(SeqIO.parse(f1, "fasta"))
+
     # Read sequences from the second file
-    with open(file2, 'r') as f2:
-        sequences.extend(SeqIO.parse(f2, 'fasta'))
-    
+    with open(file2, "r") as f2:
+        sequences.extend(SeqIO.parse(f2, "fasta"))
+
     # Write concatenated sequences to the output file
-    with open(output_file, 'w') as output:
-        SeqIO.write(sequences, output, 'fasta')
+    with open(output_file, "w") as output:
+        SeqIO.write(sequences, output, "fasta")

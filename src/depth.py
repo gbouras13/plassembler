@@ -21,9 +21,9 @@ def concatenate_chrom_plasmids(outdir):
     :param logger: logger
     :return:
     """
-    chrom_fasta : Path = Path(outdir)/f"chromosome.fasta"
-    plas_fasta : Path = Path(outdir)/f"unicycler_output/assembly.fasta"
-    concat_fasta : Path = Path(outdir)/f"combined.fasta"
+    chrom_fasta: Path = Path(outdir) / f"chromosome.fasta"
+    plas_fasta: Path = Path(outdir) / f"unicycler_output/assembly.fasta"
+    concat_fasta: Path = Path(outdir) / f"combined.fasta"
 
     try:
         concat.concatenate_single_fasta(chrom_fasta, plas_fasta, concat_fasta)
@@ -64,7 +64,6 @@ def get_contig_circularity(fasta):
         else:
             circular_status[dna_header] = "not_circular"
     return circular_status
-
 
 
 def get_depths_from_bam(bam_file: Path, contig_lengths: pd.DataFrame):

@@ -2,6 +2,7 @@ import os
 from src.external_tools import ExternalTool
 from pathlib import Path
 
+
 def run_flye(outdir, threads, raw_flag, pacbio_model, logdir):
     """Runs flye on trimmed long reads
 
@@ -10,7 +11,7 @@ def run_flye(outdir, threads, raw_flag, pacbio_model, logdir):
     :param logger: logger
     :return:
     """
-    trim_long: Path = Path(outdir)/ f"chopper_long_reads.fastq.gz"
+    trim_long: Path = Path(outdir) / f"chopper_long_reads.fastq.gz"
     flye_model = "--nano-hq"
     if raw_flag == True:
         flye_model = "--nano-raw"
@@ -23,7 +24,7 @@ def run_flye(outdir, threads, raw_flag, pacbio_model, logdir):
         output=f" ",
         params=f"{flye_model} {trim_long} --out-dir {outdir} --threads {threads} ",
         logdir=logdir,
-        outfile = ""
+        outfile="",
     )
 
     ExternalTool.run_tool(flye)
@@ -37,8 +38,8 @@ def run_raven(outdir, threads, logdir):
     :param logger: logger
     :return:
     """
-    trim_long: Path = Path(outdir) / f"chopper_long_reads.fastq.gz" 
-    
+    trim_long: Path = Path(outdir) / f"chopper_long_reads.fastq.gz"
+
     # gfa
     gfa: Path = Path(outdir) / f"assembly_graph.gfa"
 
@@ -51,10 +52,8 @@ def run_raven(outdir, threads, logdir):
         output=f"",
         params=f" -t {str(threads)} {trim_long} --graphical-fragment-assembly {gfa}",
         logdir=logdir,
-        outfile = outfile
+        outfile=outfile,
     )
 
     # need to write to stdout
-    ExternalTool.run_tool(raven, to_stdout = True)
-
-
+    ExternalTool.run_tool(raven, to_stdout=True)

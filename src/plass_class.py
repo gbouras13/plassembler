@@ -333,7 +333,7 @@ class Plass:
         self.chromosome_flag = chromosome_flag
 
     def check_unicycler_success(self, unicycler_dir):
-        unicycler_file: Path =  Path(unicycler_dir, "assembly.fasta")
+        unicycler_file: Path = Path(unicycler_dir, "assembly.fasta")
         # check if unicycler succeded according to the output (it won't if no plasmids)
         unicycler_success = os.path.isfile(unicycler_file)
         if (
@@ -344,7 +344,7 @@ class Plass:
         self.unicycler_success = unicycler_success
 
     def get_depth(self, logdir, pacbio_model, threads):
-        """wrapper function to get depth of each plasmid 
+        """wrapper function to get depth of each plasmid
         :param pacbio_model:  pacbio_model
         :param threads: threads
         :param logdir: logdir
@@ -353,43 +353,47 @@ class Plass:
         outdir = self.outdir
         depth.concatenate_chrom_plasmids(outdir)
 
-        input_long_reads: Path =  Path(outdir)/ f"chopper_long_reads.fastq.gz"
-        fasta: Path =  Path(outdir)/ f"combined.fasta"
-        sam_file: Path = Path(outdir)/ f"combined_long.sam"
-        sorted_bam: Path = Path(outdir)/ f"combined_sorted_long.bam"
+        input_long_reads: Path = Path(outdir) / f"chopper_long_reads.fastq.gz"
+        fasta: Path = Path(outdir) / f"combined.fasta"
+        sam_file: Path = Path(outdir) / f"combined_long.sam"
+        sorted_bam: Path = Path(outdir) / f"combined_sorted_long.bam"
 
         # map
-        mapping.minimap_long_reads(input_long_reads, fasta, sam_file, threads, pacbio_model, logdir)
+        mapping.minimap_long_reads(
+            input_long_reads, fasta, sam_file, threads, pacbio_model, logdir
+        )
         # sort
-        bam.sam_to_sorted_bam( sam_file, sorted_bam, threads, logdir)
+        bam.sam_to_sorted_bam(sam_file, sorted_bam, threads, logdir)
 
         # short reads
-        r1: Path =  Path(outdir)/ f"trimmed_R1.fastq"
-        r2: Path =  Path(outdir)/ f"trimmed_R2.fastq"
-        fasta: Path =  Path(outdir)/ f"combined.fasta"
-        sam_file: Path = Path(outdir)/ f"combined_short.sam"
-        sorted_bam: Path = Path(outdir)/ f"combined_sorted_short.bam"
+        r1: Path = Path(outdir) / f"trimmed_R1.fastq"
+        r2: Path = Path(outdir) / f"trimmed_R2.fastq"
+        fasta: Path = Path(outdir) / f"combined.fasta"
+        sam_file: Path = Path(outdir) / f"combined_short.sam"
+        sorted_bam: Path = Path(outdir) / f"combined_sorted_short.bam"
 
-        #map
+        # map
         mapping.minimap_short_reads(r1, r2, fasta, sam_file, threads, logdir)
         # sort
-        bam.sam_to_sorted_bam( sam_file, sorted_bam, threads, logdir)
+        bam.sam_to_sorted_bam(sam_file, sorted_bam, threads, logdir)
 
         # get contig lengths
 
-        fasta: Path = Path(outdir)/ f"combined.fasta"
+        fasta: Path = Path(outdir) / f"combined.fasta"
         contig_lengths = depth.get_contig_lengths(fasta)
 
         # depths
-        short_bam_file: Path = Path(outdir)/ f"combined_sorted_short.bam"
-        long_bam_file: Path = Path(outdir)/ f"combined_sorted_long.bam"
+        short_bam_file: Path = Path(outdir) / f"combined_sorted_short.bam"
+        long_bam_file: Path = Path(outdir) / f"combined_sorted_long.bam"
         depthsShort = depth.get_depths_from_bam(short_bam_file, contig_lengths)
         depthsLong = depth.get_depths_from_bam(long_bam_file, contig_lengths)
 
         # circular status
         circular_status = depth.get_contig_circularity(fasta)
 
-        summary_depth_df_short = depth.collate_depths(depthsShort, "short", contig_lengths)
+        summary_depth_df_short = depth.collate_depths(
+            depthsShort, "short", contig_lengths
+        )
         summary_depth_df_long = depth.collate_depths(depthsLong, "long", contig_lengths)
 
         # save the depth df in the class
@@ -398,7 +402,7 @@ class Plass:
         )
 
     def get_depth_long(self, logdir, pacbio_model, threads):
-        """wrapper function to get depth of each plasmid 
+        """wrapper function to get depth of each plasmid
         :param pacbio_model:  pacbio_model
         :param threads: threads
         :param logdir: logdir
@@ -406,23 +410,25 @@ class Plass:
         """
         outdir = self.outdir
 
-        input_long_reads: Path =  Path(outdir)/ f"chopper_long_reads.fastq.gz"
-        fasta: Path =  Path(outdir)/ f"flye_renamed.fasta"
-        sam_file: Path = Path(outdir)/ f"combined_long.sam"
-        sorted_bam: Path = Path(outdir)/ f"combined_sorted_long.bam"
+        input_long_reads: Path = Path(outdir) / f"chopper_long_reads.fastq.gz"
+        fasta: Path = Path(outdir) / f"flye_renamed.fasta"
+        sam_file: Path = Path(outdir) / f"combined_long.sam"
+        sorted_bam: Path = Path(outdir) / f"combined_sorted_long.bam"
 
         # map
-        mapping.minimap_long_reads(input_long_reads, fasta, sam_file, threads, pacbio_model, logdir)
+        mapping.minimap_long_reads(
+            input_long_reads, fasta, sam_file, threads, pacbio_model, logdir
+        )
         # sort
-        bam.sam_to_sorted_bam( sam_file, sorted_bam, threads, logdir)
+        bam.sam_to_sorted_bam(sam_file, sorted_bam, threads, logdir)
 
         # get contig lengths
 
-        fasta: Path = Path(outdir)/ f"flye_renamed.fasta"
+        fasta: Path = Path(outdir) / f"flye_renamed.fasta"
         contig_lengths = depth.get_contig_lengths(fasta)
 
         # depths
-        long_bam_file: Path = Path(outdir)/ f"combined_sorted_long.bam"
+        long_bam_file: Path = Path(outdir) / f"combined_sorted_long.bam"
         depthsLong = depth.get_depths_from_bam(long_bam_file, contig_lengths)
 
         # circular status
@@ -430,11 +436,7 @@ class Plass:
         summary_depth_df_long = depth.collate_depths(depthsLong, "long", contig_lengths)
 
         # save the depth df in the class
-        self.depth_df = depth.depth_df_single(
-            summary_depth_df_long, circular_status
-        )
-
-
+        self.depth_df = depth.depth_df_single(summary_depth_df_long, circular_status)
 
     def process_mash_tsv(self, plassembler_db_dir):
         """
@@ -449,7 +451,7 @@ class Plass:
             contig_count = run_mash.get_contig_count(
                 os.path.join(outdir, "unicycler_output", "assembly.fasta")
             )
-        else: # for long only, just assembly.fasta
+        else:  # for long only, just assembly.fasta
             contig_count = run_mash.get_contig_count(
                 os.path.join(outdir, "assembly.fasta")
             )
@@ -674,7 +676,7 @@ class Plass:
                 i += 1
                 record = SeqRecord(dna_record.seq, id=id_updated, description="")
                 SeqIO.write(record, dna_fa, "fasta")
-        
+
     def finalise_contigs_long(self, prefix):
         """
         Renames the contigs of assembly with new ones
@@ -710,6 +712,7 @@ class Plass:
                 i += 1
                 record = SeqRecord(dna_record.seq, id=id_updated, description="")
                 SeqIO.write(record, dna_fa, "fasta")
+
 
 class Assembly:
     """Plassembler Assembly Mode Output Class"""
@@ -765,7 +768,7 @@ class Assembly:
         :return:
         """
         # combined input fasta
-        combined_fasta = Path(self.outdir)/"combined.fasta"
+        combined_fasta = Path(self.outdir) / "combined.fasta"
         chromosome_name = ""
 
         # rename the first contig as chromosome
@@ -797,48 +800,48 @@ class Assembly:
         self.chromosome_name = chromosome_name
         self.plasmid_names = plasmid_names
 
-
-    
     def get_depth(self, logdir, threads, pacbio_model):
-        """wrapper function to get depth of each plasmid 
+        """wrapper function to get depth of each plasmid
         :param threads: threads
         :param logdir: logdir
         :return:
         """
         outdir = self.outdir
 
-        input_long_reads: Path =  Path(outdir)/ f"chopper_long_reads.fastq.gz"
-        fasta: Path =  Path(outdir)/ f"combined.fasta"
-        sam_file: Path = Path(outdir)/ f"combined_long.sam"
-        sorted_bam: Path = Path(outdir)/ f"combined_sorted_long.bam"
+        input_long_reads: Path = Path(outdir) / f"chopper_long_reads.fastq.gz"
+        fasta: Path = Path(outdir) / f"combined.fasta"
+        sam_file: Path = Path(outdir) / f"combined_long.sam"
+        sorted_bam: Path = Path(outdir) / f"combined_sorted_long.bam"
 
         # map
         if self.long_flag == True:
-            mapping.minimap_long_reads(input_long_reads, fasta, sam_file, threads, pacbio_model, logdir)
+            mapping.minimap_long_reads(
+                input_long_reads, fasta, sam_file, threads, pacbio_model, logdir
+            )
             # sort
-            bam.sam_to_sorted_bam( sam_file, sorted_bam, threads, logdir)
+            bam.sam_to_sorted_bam(sam_file, sorted_bam, threads, logdir)
 
         # short reads
-        r1: Path =  Path(outdir)/ f"trimmed_R1.fastq"
-        r2: Path =  Path(outdir)/ f"trimmed_R2.fastq"
-        fasta: Path =  Path(outdir)/ f"combined.fasta"
-        sam_file: Path = Path(outdir)/ f"combined_short.sam"
-        sorted_bam: Path = Path(outdir)/ f"combined_sorted_short.bam"
+        r1: Path = Path(outdir) / f"trimmed_R1.fastq"
+        r2: Path = Path(outdir) / f"trimmed_R2.fastq"
+        fasta: Path = Path(outdir) / f"combined.fasta"
+        sam_file: Path = Path(outdir) / f"combined_short.sam"
+        sorted_bam: Path = Path(outdir) / f"combined_sorted_short.bam"
 
-        #map
+        # map
         if self.short_flag == True:
             mapping.minimap_short_reads(r1, r2, fasta, sam_file, threads, logdir)
             # sort
-            bam.sam_to_sorted_bam( sam_file, sorted_bam, threads, logdir)
+            bam.sam_to_sorted_bam(sam_file, sorted_bam, threads, logdir)
 
         # get contig lengths
 
-        fasta: Path = Path(outdir)/ f"combined.fasta"
+        fasta: Path = Path(outdir) / f"combined.fasta"
         contig_lengths = depth.get_contig_lengths(fasta)
 
         # depths
-        short_bam_file: Path = Path(outdir)/ f"combined_sorted_short.bam"
-        long_bam_file: Path = Path(outdir)/ f"combined_sorted_long.bam"
+        short_bam_file: Path = Path(outdir) / f"combined_sorted_short.bam"
+        long_bam_file: Path = Path(outdir) / f"combined_sorted_long.bam"
         if self.short_flag == True:
             depthsShort = depth.get_depths_from_bam(short_bam_file, contig_lengths)
         if self.long_flag == True:
@@ -847,19 +850,22 @@ class Assembly:
         # circular status
         circular_status = depth.get_contig_circularity(fasta)
 
-
         if self.short_flag == True:
-            summary_depth_df_short = depth.collate_depths(depthsShort, "short", contig_lengths)
+            summary_depth_df_short = depth.collate_depths(
+                depthsShort, "short", contig_lengths
+            )
 
         if self.long_flag == True:
-            summary_depth_df_long = depth.collate_depths(depthsLong, "long", contig_lengths)
+            summary_depth_df_long = depth.collate_depths(
+                depthsLong, "long", contig_lengths
+            )
 
         # save the depth df in the class
         if self.long_flag == True and self.short_flag == True:
             self.depth_df = depth.combine_depth_dfs(
                 summary_depth_df_short, summary_depth_df_long, circular_status
             )
-        elif self.long_flag == True and self.short_flag == False: # only long
+        elif self.long_flag == True and self.short_flag == False:  # only long
             self.depth_df = depth.depth_df_single(
                 summary_depth_df_long, circular_status
             )
@@ -867,7 +873,6 @@ class Assembly:
             self.depth_df = depth.depth_df_single(
                 summary_depth_df_short, circular_status
             )
-  
 
     def process_mash_tsv(self, plassembler_db_dir, plasmid_fasta):
         """

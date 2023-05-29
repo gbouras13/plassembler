@@ -56,9 +56,9 @@ setup(
         "biopython >=1.76",
         "pytest>=6.2.5",
         "pandas",
-        "loguru>=0.5.3", 
+        "loguru>=0.5.3",
         "Click>=8.0.0",
         "pytest-cov>=3.0.0",
-        "pysam>=0.16.0"
+        "pysam>=0.16.0",
     ],
 )

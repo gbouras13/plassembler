@@ -37,11 +37,11 @@ def echo_click(msg, log=None):
             l.write(msg)
 
 
-
 log_fmt = (
     "[<green>{time:YYYY-MM-DD HH:mm:ss}</green>] <level>{level: <8}</level> | "
     "<level>{message}</level>"
 )
+
 
 def setup_logging(verbose: bool, quiet: bool) -> None:
     log_lvl = "INFO"

@@ -27,7 +27,6 @@ def remove_intermediate_files(
     for file in files:
         remove_file(file)
 
-
     remove_directory(os.path.join(out_dir, "00-assembly"))
     remove_directory(os.path.join(out_dir, "10-consensus"))
     remove_directory(os.path.join(out_dir, "20-repeat"))
@@ -37,7 +36,7 @@ def remove_intermediate_files(
     if long_only == True:
         # the fake unicycler directory only in long only mode
         remove_directory(os.path.join(out_dir, "unicycler_output"))
-        remove_file(os.path.join(out_dir, "plasmids_initial.fasta") )
+        remove_file(os.path.join(out_dir, "plasmids_initial.fasta"))
 
     if assembled_mode == True:
         remove_directory(os.path.join(out_dir, "flye_output"))
@@ -80,10 +79,9 @@ def move_and_copy_files(
     :return:
     """
 
-
     # move the flye outputs
     if assembled_mode == False:
-        if  use_raven == False:
+        if use_raven == False:
             # make flye dir
             flye_dir = os.path.join(out_dir, "flye_output")
             if not os.path.exists(flye_dir):
@@ -102,9 +100,8 @@ def move_and_copy_files(
             shutil.move(os.path.join(out_dir, "assembly.fasta"), raven_dir)
             shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), raven_dir)
 
-
-    if  long_only == False:
-        if unicycler_success_flag == True :
+    if long_only == False:
+        if unicycler_success_flag == True:
             # move unicycler graph output to main directory
             shutil.copy2(
                 os.path.join(out_dir, "unicycler_output", "assembly.gfa"),
@@ -157,6 +154,7 @@ def touch_output_fail_files(out_dir, prefix):
 def remove_file(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)
+
 
 def remove_directory(dir_path):
     if os.path.exists(dir_path):

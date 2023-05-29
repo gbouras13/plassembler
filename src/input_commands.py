@@ -9,6 +9,7 @@ from loguru import logger
 
 ### GLOBAL VARIABLES
 
+
 def instantiate_dirs(output_dir, force):
     """checks that the output directory doesn't already exist, overwrites if forced
         :param output_dir: output directory path
@@ -20,7 +21,9 @@ def instantiate_dirs(output_dir, force):
         if os.path.isdir(output_dir) == True:
             shutil.rmtree(output_dir)
         else:
-            logger.info(f"--force was specified even though the outdir does not already exist. Continuing ")
+            logger.info(
+                f"--force was specified even though the outdir does not already exist. Continuing "
+            )
     else:
         if os.path.isdir(output_dir) == True:
             sys.exit(
@@ -87,7 +90,9 @@ def validate_fastas_assembled_mode(input_chromosome, input_plasmids):
         records = list(SeqIO.parse(fasta, "fasta"))
         num_contigs = len(records)
         if num_contigs > 1:
-            logger.error(f"Error: There are multiple contigs in your chromosome FASTA {input_chromosome}. Please input a completed chromosome..")
+            logger.error(
+                f"Error: There are multiple contigs in your chromosome FASTA {input_chromosome}. Please input a completed chromosome.."
+            )
 
     # plasmids
     validate_fasta(input_plasmids)
@@ -250,7 +255,6 @@ def check_dependencies():
         logger.info(message)
     except:
         logger.error("Samtools not found.")
-        
 
     # minimap2
     try:
@@ -273,7 +277,6 @@ def check_dependencies():
         logger.info(message)
     except:
         logger.error("fastp not found.")
-        
 
     # chopper
     try:
@@ -331,6 +334,5 @@ def validate_pacbio_model(pacbio_model):
     else:
         message = "You pacbio model was not pacbio-raw, pacbio-corr or pacbio-hifi. Please check your input and run plassembler again."
         logger.error(message)
-        
 
     return pacbio_model

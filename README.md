@@ -1,6 +1,7 @@
 [![CI](https://github.com/gbouras13/plassembler/actions/workflows/ci.yaml/badge.svg)](https://github.com/gbouras13/plassembler/actions/workflows/ci.yaml)
-
 [![codecov](https://codecov.io/gh/gbouras13/plassembler/branch/refactor/graph/badge.svg?token=4B1T2PGM9V)](https://codecov.io/gh/gbouras13/plassembler)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![Conda](https://img.shields.io/conda/dn/bioconda/plassembler)
 
 
 plassembler

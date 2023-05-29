@@ -30,15 +30,18 @@ def check_db_installation(db_dir: Path, install_flag: bool):
     downloaded_flag = True
     # Mash files
     for file_name in MASH_DB_NAMES:
-        file_path: Path  = db_dir/f"{file_name}"
+        file_path: Path = db_dir / f"{file_name}"
         if file_path.exists() == False:
             if install_flag == True:
-                logger.info(f"Database directory is missing {file_path}. Plassembler database will be downloaded.")
+                logger.info(
+                    f"Database directory is missing {file_path}. Plassembler database will be downloaded."
+                )
                 downloaded_flag = False
             else:
-                logger.error(f"Database directory is missing {file_path}. Plassembler database needs to be downloaded using the plassembler download command.")
+                logger.error(
+                    f"Database directory is missing {file_path}. Plassembler database needs to be downloaded using the plassembler download command."
+                )
     return downloaded_flag
-
 
 
 def get_database_zenodo(db_dir: Path):
@@ -62,8 +65,18 @@ def get_database_zenodo(db_dir: Path):
             tar.extractall(path=db_dir)
 
         # move files around
-        shutil.move(os.path.join(db_dir, "plsdb_110222_plassembler_v0.1.4_databases", "plsdb.msh"), db_dir)
-        shutil.move(os.path.join(db_dir, "plsdb_110222_plassembler_v0.1.4_databases", "plsdb.tsv"), db_dir)
+        shutil.move(
+            os.path.join(
+                db_dir, "plsdb_110222_plassembler_v0.1.4_databases", "plsdb.msh"
+            ),
+            db_dir,
+        )
+        shutil.move(
+            os.path.join(
+                db_dir, "plsdb_110222_plassembler_v0.1.4_databases", "plsdb.tsv"
+            ),
+            db_dir,
+        )
         shutil.rmtree(os.path.join(db_dir, "plsdb_110222_plassembler_v0.1.4_databases"))
 
         # remove tarball
@@ -73,7 +86,3 @@ def get_database_zenodo(db_dir: Path):
         logger.error(
             "Plassembler Database Install Failed. \n Please try again or use the manual option detailed at https://github.com/gbouras13/plassembler.git \n to download the database from https://zenodo.org/record/7499200/files/plsdb_110222_plassembler_v0.1.4_databases.tar.gz"
         )
-
-
-
-

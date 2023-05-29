@@ -8,8 +8,9 @@ import gzip
 import shutil
 
 
-
-def chopper(input_long_reads, outdir, min_length, min_quality, gzip_flag, threads, logdir):
+def chopper(
+    input_long_reads, outdir, min_length, min_quality, gzip_flag, threads, logdir
+):
     """Filters long reads using chopper
 
     :param input_long_reads: input ONT reads file
@@ -20,7 +21,7 @@ def chopper(input_long_reads, outdir, min_length, min_quality, gzip_flag, thread
     :param logdir
     :return:
     """
-    filtered_long_reads : Path = Path(outdir)/f"chopper_long_reads.fastq.gz"
+    filtered_long_reads: Path = Path(outdir) / f"chopper_long_reads.fastq.gz"
     logger.info(f"Started running chopper")
     logdir.mkdir(parents=True, exist_ok=True)
     tool = "chopper"
@@ -46,8 +47,8 @@ def chopper(input_long_reads, outdir, min_length, min_quality, gzip_flag, thread
                     "25",
                 ],
                 stdin=unzip.stdout,
-                stdout=sp.PIPE, 
-                stderr=err_log
+                stdout=sp.PIPE,
+                stderr=err_log,
             )
             gzip = sp.Popen(["gzip"], stdin=chopper.stdout, stdout=f)
             output = gzip.communicate()[0]
@@ -71,15 +72,14 @@ def chopper(input_long_reads, outdir, min_length, min_quality, gzip_flag, thread
                     "25",
                 ],
                 stdin=cat.stdout,
-                stdout=sp.PIPE, 
-                stderr=err_log
+                stdout=sp.PIPE,
+                stderr=err_log,
             )
             gzip = sp.Popen(["gzip"], stdin=chopper.stdout, stdout=f)
             output = gzip.communicate()[0]
         except:
             logger.error("Error with chopper")
     logger.info(f"Finished running chopper")
-
 
 
 def fastp(short_one, short_two, outdir, logdir):
@@ -92,8 +92,8 @@ def fastp(short_one, short_two, outdir, logdir):
     :return:
     """
     outdir = Path(outdir)
-    out_one: Path  = outdir/f"trimmed_R1.fastq"
-    out_two: Path  = outdir/f"trimmed_R2.fastq"
+    out_one: Path = outdir / f"trimmed_R1.fastq"
+    out_two: Path = outdir / f"trimmed_R2.fastq"
 
     fastp = ExternalTool(
         tool="fastp",
@@ -101,7 +101,7 @@ def fastp(short_one, short_two, outdir, logdir):
         output=f"--out1 {out_one} --out2 {out_two}",
         params=f"",
         logdir=logdir,
-        outfile=""
+        outfile="",
     )
 
     ExternalTool.run_tool(fastp, to_stdout=False)
@@ -110,8 +110,8 @@ def fastp(short_one, short_two, outdir, logdir):
 def copy_sr_fastq_file(infile: Path, outfile: Path):
     if infile.suffix == ".gz":
         # If the input file is a .fastq.gz file, extract and copy to .fastq
-        with gzip.open(infile, 'rt') as f_in:
-            with open(outfile, 'w') as f_out:
+        with gzip.open(infile, "rt") as f_in:
+            with open(outfile, "w") as f_out:
                 f_out.writelines(f_in)
     elif infile.suffix == ".fastq":
         # If the input file is already a .fastq file, copy it directly

@@ -24,8 +24,8 @@ def instantiate_db_dir(db_dir: Path):
 
 def check_db_installation(db_dir: Path, install_flag: bool):
     """checks database is installed correctly
-        :param db_dir: database directory
-    :return: downloaded_flag: boolean whether database is correctly downloaded.
+    :param db_dir: database directory
+    :return: install_flag: whether this is being called to download or just check the db
     """
     downloaded_flag = True
     # Mash files

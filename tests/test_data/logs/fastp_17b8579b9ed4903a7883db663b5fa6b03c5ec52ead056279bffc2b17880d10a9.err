@@ -32,7 +32,7 @@ bases trimmed due to adapters: 126
 
 Duplication rate: 0%
 
-Insert size peak (evaluated by paired-end reads): 88
+Insert size peak (evaluated by paired-end reads): 0
 
 JSON report: fastp.json
 HTML report: fastp.html

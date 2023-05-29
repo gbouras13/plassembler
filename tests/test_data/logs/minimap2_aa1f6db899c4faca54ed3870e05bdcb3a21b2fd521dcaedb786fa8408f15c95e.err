@@ -1,11 +1,7 @@
-[M::mm_idx_gen::0.073*1.00] collected minimizers
-[M::mm_idx_gen::0.101*1.00] sorted minimizers
-[M::main::0.102*1.00] loaded/built the index for 2 target sequence(s)
-[M::mm_mapopt_update::0.108*1.00] mid_occ = 17
+[M::mm_idx_gen::0.070*1.06] collected minimizers
+[M::mm_idx_gen::0.099*1.04] sorted minimizers
+[M::main::0.100*1.03] loaded/built the index for 2 target sequence(s)
+[M::mm_mapopt_update::0.105*1.03] mid_occ = 17
 [M::mm_idx_stat] kmer size: 15; skip: 10; is_hpc: 0; #seq: 2
-[M::mm_idx_stat::0.112*1.00] distinct minimizers: 519379 (97.39% are singletons); average occurrences: 1.051; average spacing: 5.336; total length: 2913269
-[M::worker_pipeline::1.995*1.00] mapped 1250 sequences
-[M::main] Version: 2.26-r1175
-[M::main] CMD: minimap2 -ax map-ont -t 1 tests/test_data/map_dir/flye_renamed.fasta tests/test_data/map_dir/chopper_long_reads.fastq.gz
-[M::main] Real time: 2.000 sec; CPU: 1.993 sec; Peak RSS: 0.073 GB
+[M::mm_idx_stat::0.109*1.03] distinct minimizers: 519379 (97.39% are singletons); average occurrences: 1.051; average spacing: 5.336; total length: 2913269
 Command line: minimap2 -ax map-ont -t 1 tests/test_data/map_dir/flye_renamed.fasta tests/test_data/map_dir/chopper_long_reads.fastq.gz

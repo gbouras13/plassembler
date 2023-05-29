@@ -38,23 +38,28 @@ class test_install(unittest.TestCase):
     """Test for db"""
 
     def test_check_db_installation_good(self):
-        expected_return = False
-        check_db_installation(db_path)
-        self.assertEqual(expected_return, False)
+        expected_return = True
+        d_flag = check_db_installation(db_path, False)
+        self.assertEqual(expected_return, d_flag)
+
+    def test_check_db_installation_good_d(self):
+        expected_return = True
+        d_flag = check_db_installation(db_path, True)
+        self.assertEqual(expected_return, d_flag)
 
     def test_instantiate_db_good(self):
         expected_return = True
         instantiate_db_dir(db_path)
-        self.assertEqual(expected_return, False)
+        self.assertEqual(expected_return, True)
 
     def test_check_db_installation_bad(self):
         with self.assertRaises(SystemExit):
-            check_db_installation(val_data)
+            d_flag = check_db_installation(val_data, False)
 
     def test_get_database_zenodo(self):
-        expected_return = False
+        expected_return = True
         get_database_zenodo(tmp_db_path)
         # remove it after downloading
         shutil.rmtree(tmp_db_path)
-        self.assertEqual(expected_return, False)
+        self.assertEqual(expected_return, True)
 

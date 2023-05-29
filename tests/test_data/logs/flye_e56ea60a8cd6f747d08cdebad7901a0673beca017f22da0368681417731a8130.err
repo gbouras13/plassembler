@@ -1,0 +1,38 @@
+[2023-05-29 09:53:12] INFO: Starting Flye 2.9.2-b1786
+[2023-05-29 09:53:12] INFO: >>>STAGE: configure
+[2023-05-29 09:53:12] INFO: Configuring run
+[2023-05-29 09:53:12] INFO: Total read length: 6572565
+[2023-05-29 09:53:12] INFO: Reads N50/N90: 8677 / 2080
+[2023-05-29 09:53:12] INFO: Minimum overlap set to 2000
+[2023-05-29 09:53:12] INFO: >>>STAGE: assembly
+[2023-05-29 09:53:12] INFO: Assembling disjointigs
+[2023-05-29 09:53:12] INFO: Reading sequences
+[2023-05-29 09:53:12] INFO: Building minimizer index
+[2023-05-29 09:53:12] INFO: Pre-calculating index storage
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2023-05-29 09:53:13] INFO: Filling index
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2023-05-29 09:53:14] INFO: Extending reads
+Traceback (most recent call last):
+  File "/Users/a1667917/mambaforge/envs/plassembler_env/bin/flye", line 33, in <module>
+    sys.exit(load_entry_point('flye==2.9.2', 'console_scripts', 'flye')())
+  File "/Users/a1667917/mambaforge/envs/plassembler_env/lib/python3.8/site-packages/flye/main.py", line 751, in main
+    _run(args)
+  File "/Users/a1667917/mambaforge/envs/plassembler_env/lib/python3.8/site-packages/flye/main.py", line 490, in _run
+    jobs[i].run()
+  File "/Users/a1667917/mambaforge/envs/plassembler_env/lib/python3.8/site-packages/flye/main.py", line 117, in run
+    asm.assemble(self.args, Job.run_params, self.assembly_filename,
+  File "/Users/a1667917/mambaforge/envs/plassembler_env/lib/python3.8/site-packages/flye/assembly/assemble.py", line 70, in assemble
+    subprocess.check_call(cmdline)
+  File "/Users/a1667917/mambaforge/envs/plassembler_env/lib/python3.8/subprocess.py", line 359, in check_call
+    retcode = call(*popenargs, **kwargs)
+  File "/Users/a1667917/mambaforge/envs/plassembler_env/lib/python3.8/subprocess.py", line 342, in call
+    return p.wait(timeout=timeout)
+  File "/Users/a1667917/mambaforge/envs/plassembler_env/lib/python3.8/subprocess.py", line 1083, in wait
+    return self._wait(timeout=timeout)
+  File "/Users/a1667917/mambaforge/envs/plassembler_env/lib/python3.8/subprocess.py", line 1806, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/Users/a1667917/mambaforge/envs/plassembler_env/lib/python3.8/subprocess.py", line 1764, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+KeyboardInterrupt
+Command line: flye --nano-hq tests/test_data/chopper_long_reads.fastq.gz --out-dir tests/test_data --threads 8

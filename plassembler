@@ -51,7 +51,7 @@ def begin_plassembler(outdir):
     logger.add(log_file)
     # ensure sys exit if error
     logger.add(lambda _: sys.exit(1), level="ERROR")
-    logger.info(f"You are using plassembler version {get_version()}")
+    logger.info(f"You are using Plassembler version {get_version()}")
     logger.info(f"Repository homepage is https://github.com/gbouras13/plassembler")
     logger.info(f"Written by George Bouras: george.bouras@adelaide.edu.au")
     return start_time
@@ -67,7 +67,7 @@ def end_plassembler(start_time):
     elapsed_time = round(elapsed_time, 2)
 
     # Show elapsed time for the process
-    logger.info("plassembler has finished")
+    logger.info("Plassembler has finished")
     logger.info("Elapsed time: "+str(elapsed_time) +" seconds")
 
 

@@ -15,7 +15,7 @@ import shutil
 
 # import functions
 from src import assembly
-from src.cleanup import remove_file
+from src.cleanup import (remove_file, remove_directory)
 from src.qc import (chopper, fastp)
 from src.mapping import (minimap_long_reads, minimap_short_reads)
 from src.bam import (sam_to_bam, split_bams, bam_to_fastq_short)
@@ -67,6 +67,7 @@ class test_bam(unittest.TestCase):
         samfile : Path = Path(f"{map_dir}/sam_to_bam/test.sam") 
         bamfile : Path = Path(f"{map_dir}/sam_to_bam/test.bam") 
         sam_to_bam(samfile, bamfile, threads, logdir)
+        remove_file(bamfile)
         self.assertEqual(expected_return, True)
 
     def test_split(self):
@@ -88,9 +89,10 @@ class test_mapping(unittest.TestCase):
         pacbio_model = ""
         input_long_reads : Path = Path(f"{map_dir}/chopper_long_reads.fastq.gz") 
         fasta : Path = Path(f"{map_dir}/flye_renamed.fasta") 
-        sam : Path = Path(f"{map_dir}/test.sam") 
+        samfile : Path = Path(f"{map_dir}/test.sam") 
         threads = 1
-        minimap_long_reads(input_long_reads, fasta, sam, threads, pacbio_model, logdir)
+        minimap_long_reads(input_long_reads, fasta, samfile, threads, pacbio_model, logdir)
+        remove_file(samfile)
         self.assertEqual(expected_return, True)
 
         # short read map
@@ -99,9 +101,10 @@ class test_mapping(unittest.TestCase):
         r1 : Path = Path(f"{map_dir}/trimmed_R1.fastq") 
         r2 : Path = Path(f"{map_dir}/trimmed_R2.fastq") 
         fasta : Path = Path(f"{map_dir}/flye_renamed.fasta") 
-        sam : Path = Path(f"{map_dir}/test.sam") 
+        samfile : Path = Path(f"{map_dir}/test.sam") 
         threads = 1
-        minimap_short_reads(r1, r2, fasta, sam, threads, logdir)
+        minimap_short_reads(r1, r2, fasta, samfile, threads, logdir)
+        remove_file(samfile)
         self.assertEqual(expected_return, True)
 
 
@@ -188,6 +191,7 @@ class test_assemblers(unittest.TestCase):
         unicycler_output_dir = Path(f"{test_data}/unicycler_output") 
         threads = 1
         run_unicycler(threads, logdir, short_one, short_two, longreads, unicycler_output_dir)
+        remove_directory(unicycler_output_dir)
         self.assertEqual(expected_return, True)
         
     def test_unicycler_bad(self):
@@ -199,6 +203,7 @@ class test_assemblers(unittest.TestCase):
         unicycler_output_dir = Path(f"{test_data}/unicycler_output_bad") 
         threads = 1
         run_unicycler(threads, logdir, short_one, short_two, longreads, unicycler_output_dir)
+        remove_directory(unicycler_output_dir)
         self.assertEqual(expected_return, True)
 
  

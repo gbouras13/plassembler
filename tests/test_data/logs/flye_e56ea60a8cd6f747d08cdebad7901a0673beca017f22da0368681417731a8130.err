@@ -1,0 +1,65 @@
+[2023-05-29 10:20:54] INFO: Starting Flye 2.9.2-b1786
+[2023-05-29 10:20:54] INFO: >>>STAGE: configure
+[2023-05-29 10:20:54] INFO: Configuring run
+[2023-05-29 10:20:54] INFO: Total read length: 6572565
+[2023-05-29 10:20:54] INFO: Reads N50/N90: 8677 / 2080
+[2023-05-29 10:20:54] INFO: Minimum overlap set to 2000
+[2023-05-29 10:20:54] INFO: >>>STAGE: assembly
+[2023-05-29 10:20:54] INFO: Assembling disjointigs
+[2023-05-29 10:20:54] INFO: Reading sequences
+[2023-05-29 10:20:54] INFO: Building minimizer index
+[2023-05-29 10:20:54] INFO: Pre-calculating index storage
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2023-05-29 10:20:54] INFO: Filling index
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2023-05-29 10:20:55] INFO: Extending reads
+[2023-05-29 10:20:58] INFO: Overlap-based coverage: 2
+[2023-05-29 10:20:58] INFO: Median overlap divergence: 0.0718673
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2023-05-29 10:20:58] INFO: Assembled 109 disjointigs
+[2023-05-29 10:20:58] INFO: Generating sequence
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2023-05-29 10:20:58] INFO: Filtering contained disjointigs
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2023-05-29 10:20:58] INFO: Contained seqs: 6
+[2023-05-29 10:20:58] INFO: >>>STAGE: consensus
+[2023-05-29 10:20:58] INFO: Running Minimap2
+[2023-05-29 10:20:59] INFO: Computing consensus
+[2023-05-29 10:21:02] INFO: Alignment error rate: 0.072808
+[2023-05-29 10:21:02] INFO: >>>STAGE: repeat
+[2023-05-29 10:21:02] INFO: Building and resolving repeat graph
+[2023-05-29 10:21:02] INFO: Parsing disjointigs
+[2023-05-29 10:21:02] INFO: Building repeat graph
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2023-05-29 10:21:02] INFO: Median overlap divergence: 0.0913838
+[2023-05-29 10:21:02] INFO: Parsing reads
+[2023-05-29 10:21:03] INFO: Aligning reads to the graph
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2023-05-29 10:21:03] INFO: Aligned read sequence: 5061675 / 5967825 (0.848161)
+[2023-05-29 10:21:03] INFO: Median overlap divergence: 0.036382
+[2023-05-29 10:21:03] INFO: Mean edge coverage: 2
+[2023-05-29 10:21:03] INFO: Simplifying the graph
+[2023-05-29 10:21:04] INFO: >>>STAGE: contigger
+[2023-05-29 10:21:04] INFO: Generating contigs
+[2023-05-29 10:21:04] INFO: Reading sequences
+[2023-05-29 10:21:04] INFO: Generated 33 contigs
+[2023-05-29 10:21:04] INFO: Added 0 scaffold connections
+[2023-05-29 10:21:04] INFO: >>>STAGE: polishing
+[2023-05-29 10:21:04] INFO: Polishing genome (1/1)
+[2023-05-29 10:21:04] INFO: Running minimap2
+[2023-05-29 10:21:05] INFO: Separating alignment into bubbles
+[2023-05-29 10:21:07] INFO: Alignment error rate: 0.052707
+[2023-05-29 10:21:07] INFO: Correcting bubbles
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2023-05-29 10:21:12] INFO: >>>STAGE: finalize
+[2023-05-29 10:21:13] INFO: Assembly statistics:
+
+	Total length:	851480
+	Fragments:	32
+	Fragments N50:	32085
+	Largest frg:	83942
+	Scaffolds:	0
+	Mean coverage:	3
+
+[2023-05-29 10:21:13] INFO: Final assembly: /Users/a1667917/Documents/plassembler/tests/test_data/assembly.fasta
+Command line: flye --nano-hq tests/test_data/chopper_long_reads.fastq.gz --out-dir tests/test_data --threads 8

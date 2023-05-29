@@ -1,0 +1,1 @@
+Command line: unicycler -1 tests/test_data/short_read_concat_good_R1.fastq -2 tests/test_data/short_read_concat_good_R2.fastq -l tests/test_data/plasmid_long_good.fastq -t 1 -o tests/test_data/unicycler_output

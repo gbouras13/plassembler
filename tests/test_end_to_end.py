@@ -90,3 +90,10 @@ def test_plassembler_assembled(tmp_dir):
     cmd = f"plassembler assembled -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir} --input_plasmids {input_plasmids} --input_chromosome {input_chromosome}  -t 8 -f"
     exec_command(cmd)
     remove_directory(outdir)
+
+def test_plassembler_download(tmp_dir):
+    """test plassembler download"""
+    fake_db = f"{end_to_end}/db"
+    cmd = f"plassembler download -d {fake_db}"
+    exec_command(cmd)
+    remove_directory(fake_db)

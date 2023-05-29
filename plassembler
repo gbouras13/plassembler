@@ -938,7 +938,7 @@ download
 @click.option(
     "-d",
     "--database",
-    help="Database where database will be stored.",
+    help="Directory where database will be stored.",
     type=click.Path(),
     required=True
 )

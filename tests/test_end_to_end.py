@@ -126,7 +126,7 @@ class TestPlassemblerEndToEnd(unittest.TestCase):
 
     def test_plassembler(self):
         """test plassembler run"""
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(RuntimeError):
             longreads: Path = f"{end_to_end}/input_fastq.gz"
             s1: Path = f"{end_to_end}/input_R1.fastq.gz"
             s2: Path = f"{end_to_end}/input_R2.fastq.gz"
@@ -138,7 +138,7 @@ class TestPlassemblerEndToEnd(unittest.TestCase):
 
     def test_plassembler_long(self):
         """test plassembler long"""
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(RuntimeError):
             longreads: Path = f"{end_to_end}/input_fastq.gz"
             chromosome = 50000
             outdir: Path = f"{end_to_end}/test_out"
@@ -148,7 +148,7 @@ class TestPlassemblerEndToEnd(unittest.TestCase):
 
     def test_plassembler_assembled(self):
         """test plassembler assembled"""
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(RuntimeError):
             longreads: Path = f"{end_to_end}/input_fastq.gz"
             s1: Path = f"{end_to_end}/input_R1.fastq.gz"
             s2: Path = f"{end_to_end}/input_R2.fastq.gz"

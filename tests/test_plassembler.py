@@ -6,16 +6,16 @@ Usage: pytest
 """
 
 import os
+import shutil
 import subprocess as sp
 import sys
-
-# import
 import unittest
 from pathlib import Path
 
 import pytest
 from loguru import logger
 
+from src.plassembler import begin_plassembler, end_plassembler
 from src.plassembler.utils.concat import (
     concatenate_short_fastqs,
     concatenate_single_fasta,
@@ -57,8 +57,25 @@ def tmp_dir(tmpdir_factory):
     return tmpdir_factory.mktemp("tmp")
 
 
+def remove_directory(dir_path):
+    if os.path.exists(dir_path):
+        shutil.rmtree(dir_path)
+
+
 # to ensure sys exit on logger error
 logger.add(lambda _: sys.exit(1), level="ERROR")
+
+
+class test_plassembler_misc(unittest.TestCase):
+    """Tests for miscellaneous plassembler functions"""
+
+    def test_end_plassembler():
+        end_plassembler(23)
+
+    def test_begin_plassembler():
+        outdir: Path = f"{fake_out_dir}/test_out"
+        begin_plassembler(outdir)
+        remove_directory(outdir)
 
 
 class test_unicycler_success(unittest.TestCase):

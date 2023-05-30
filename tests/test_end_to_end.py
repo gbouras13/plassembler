@@ -10,6 +10,7 @@ import os
 import shutil
 import subprocess
 import sys
+import unittest
 from pathlib import Path
 
 import pytest
@@ -120,40 +121,41 @@ def test_citation():
 # something to sort out with unicycler conda recipe maybe
 
 
-def test_plassembler(self):
-    """test plassembler run"""
-    with self.assertRaises(SystemExit):
-        longreads: Path = f"{end_to_end}/input_fastq.gz"
-        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
-        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
-        chromosome = 50000
-        outdir: Path = f"{end_to_end}/test_out"
-        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
-        exec_command(cmd)
-        remove_directory(outdir)
+class TestPlassemblerEndToEnd(unittest.TestCase):
+    """Tests of plassembler end to end functions"""
 
+    def test_plassembler(self):
+        """test plassembler run"""
+        with self.assertRaises(SystemExit):
+            longreads: Path = f"{end_to_end}/input_fastq.gz"
+            s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+            s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+            chromosome = 50000
+            outdir: Path = f"{end_to_end}/test_out"
+            cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+            exec_command(cmd)
+            remove_directory(outdir)
 
-def test_plassembler_long(self):
-    """test plassembler long"""
-    with self.assertRaises(SystemExit):
-        longreads: Path = f"{end_to_end}/input_fastq.gz"
-        chromosome = 50000
-        outdir: Path = f"{end_to_end}/test_out"
-        cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
-        exec_command(cmd)
-        remove_directory(outdir)
+    def test_plassembler_long(self):
+        """test plassembler long"""
+        with self.assertRaises(SystemExit):
+            longreads: Path = f"{end_to_end}/input_fastq.gz"
+            chromosome = 50000
+            outdir: Path = f"{end_to_end}/test_out"
+            cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+            exec_command(cmd)
+            remove_directory(outdir)
 
-
-def test_plassembler_assembled(self):
-    """test plassembler assembled"""
-    with self.assertRaises(SystemExit):
-        longreads: Path = f"{end_to_end}/input_fastq.gz"
-        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
-        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
-        outdir: Path = f"{end_to_end}/test_out"
-        chromosome = 50000
-        input_plasmids = f"{end_to_end}/test_plasmids.fasta"
-        input_chromosome = f"{end_to_end}/test_chromosome.fasta"
-        cmd = f"plassembler assembled -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir} --input_plasmids {input_plasmids} --input_chromosome {input_chromosome}  -t 8 -f"
-        exec_command(cmd)
-        remove_directory(outdir)
+    def test_plassembler_assembled(self):
+        """test plassembler assembled"""
+        with self.assertRaises(SystemExit):
+            longreads: Path = f"{end_to_end}/input_fastq.gz"
+            s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+            s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+            outdir: Path = f"{end_to_end}/test_out"
+            chromosome = 50000
+            input_plasmids = f"{end_to_end}/test_plasmids.fasta"
+            input_chromosome = f"{end_to_end}/test_chromosome.fasta"
+            cmd = f"plassembler assembled -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir} --input_plasmids {input_plasmids} --input_chromosome {input_chromosome}  -t 8 -f"
+            exec_command(cmd)
+            remove_directory(outdir)

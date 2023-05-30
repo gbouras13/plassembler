@@ -1,9 +1,11 @@
-import subprocess as sp
-from plassembler.utils.external_tools import ExternalTool
-from loguru import logger
-from pathlib import Path
 import gzip
 import shutil
+import subprocess as sp
+from pathlib import Path
+
+from loguru import logger
+
+from plassembler.utils.external_tools import ExternalTool
 
 
 def chopper(
@@ -19,15 +21,15 @@ def chopper(
     :param logdir
     :return:
     """
-    filtered_long_reads: Path = Path(outdir) / f"chopper_long_reads.fastq.gz"
-    logger.info(f"Started running chopper")
+    filtered_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
+    logger.info("Started running chopper")
     logdir.mkdir(parents=True, exist_ok=True)
     tool = "chopper"
     tool_name = Path(tool).name
     logfile_prefix: Path = logdir / f"{tool_name}"
     err_log = open(f"{logfile_prefix}.err", "w")
     f = open(filtered_long_reads, "w")
-    if gzip_flag == True:
+    if gzip_flag is True:
         try:
             unzip = sp.Popen(["gunzip", "-c", input_long_reads], stdout=sp.PIPE)
             chopper = sp.Popen(
@@ -49,8 +51,8 @@ def chopper(
                 stderr=err_log,
             )
             gzip = sp.Popen(["gzip"], stdin=chopper.stdout, stdout=f)
-            output = gzip.communicate()[0]
-        except:
+            gzip.communicate()[0]
+        except Exception:
             logger.error("Error with chopper")
     else:
         try:
@@ -74,10 +76,10 @@ def chopper(
                 stderr=err_log,
             )
             gzip = sp.Popen(["gzip"], stdin=chopper.stdout, stdout=f)
-            output = gzip.communicate()[0]
-        except:
+            gzip.communicate()[0]
+        except Exception:
             logger.error("Error with chopper")
-    logger.info(f"Finished running chopper")
+    logger.info("Finished running chopper")
 
 
 def fastp(short_one, short_two, outdir, logdir):
@@ -90,14 +92,14 @@ def fastp(short_one, short_two, outdir, logdir):
     :return:
     """
     outdir = Path(outdir)
-    out_one: Path = outdir / f"trimmed_R1.fastq"
-    out_two: Path = outdir / f"trimmed_R2.fastq"
+    out_one: Path = outdir / "trimmed_R1.fastq"
+    out_two: Path = outdir / "trimmed_R2.fastq"
 
     fastp = ExternalTool(
         tool="fastp",
         input=f"--in1 {short_one} --in2 {short_two}",
         output=f"--out1 {out_one} --out2 {out_two}",
-        params=f"",
+        params="",
         logdir=logdir,
         outfile="",
     )

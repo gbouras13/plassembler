@@ -5,24 +5,25 @@ Usage: pytest
 
 """
 
+import os
+import shutil
+
 # import
 import unittest
-import os
 from pathlib import Path
-import pytest
-import shutil
 from unittest.mock import patch
 
+import pytest
 
 # import functions
-from src.plassembler.utils.assembly import (run_raven, run_flye)
-from src.plassembler.utils.cleanup import (remove_file, remove_directory)
-from src.plassembler.utils.qc import (chopper, fastp)
-from src.plassembler.utils.mapping import (minimap_long_reads, minimap_short_reads)
-from src.plassembler.utils.bam import (sam_to_bam, split_bams, bam_to_fastq_short)
-from src.plassembler.utils.run_unicycler import run_unicycler
-from src.plassembler.utils.run_mash import (mash_sketch, run_mash, get_contig_count)
+from src.plassembler.utils.assembly import run_flye, run_raven
+from src.plassembler.utils.bam import bam_to_fastq_short, sam_to_bam, split_bams
+from src.plassembler.utils.cleanup import remove_directory, remove_file
 from src.plassembler.utils.external_tools import ExternalTool
+from src.plassembler.utils.mapping import minimap_long_reads, minimap_short_reads
+from src.plassembler.utils.qc import chopper, fastp
+from src.plassembler.utils.run_mash import get_contig_count, mash_sketch, run_mash
+from src.plassembler.utils.run_unicycler import run_unicycler
 
 test_data = Path("tests/test_data")
 val_data = Path(f"{test_data}/validation")
@@ -167,9 +168,7 @@ class test_assemblers(unittest.TestCase):
     def test_flye(self):
         expected_return = True
         # C11 sim reads
-        run_flye(
-            test_data, 8, raw_flag=False, pacbio_model="nothing", logdir=logdir
-        )
+        run_flye(test_data, 8, raw_flag=False, pacbio_model="nothing", logdir=logdir)
         shutil.rmtree(os.path.join(test_data, "00-assembly"))
         shutil.rmtree(os.path.join(test_data, "10-consensus"))
         shutil.rmtree(os.path.join(test_data, "20-repeat"))
@@ -219,7 +218,6 @@ class test_assemblers(unittest.TestCase):
         )
         remove_directory(unicycler_output_dir)
         self.assertEqual(expected_return, True)
-
 
 
 class TestExternalTools:

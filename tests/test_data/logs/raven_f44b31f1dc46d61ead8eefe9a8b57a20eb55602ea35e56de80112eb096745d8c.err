@@ -1,24 +1,24 @@
-[raven::] loaded 1250 sequences 0.077950s
-[raven::Graph::Construct] minimized 0 - 1250 / 1250 0.228547s
-[raven::Graph::Construct] mapped sequences 0.267639s
-[raven::Graph::Construct] annotated piles 0.002530s
-[raven::Graph::Construct] removed contained sequences 0.000096s
-[raven::Graph::Construct] removed chimeric sequences 0.000091s
-[raven::Graph::Construct] reached checkpoint 0.003189s
-[raven::Graph::Construct] minimized 0 - 97 / 97 0.058211s
-[raven::Graph::Construct] mapped valid sequences 0.062865s
-[raven::Graph::Construct] updated overlaps 0.000015s
-[raven::Graph::Construct] removed false overlaps 0.001120s
-[raven::Graph::Construct] stored 188 nodes 0.001612s
+[raven::] loaded 1250 sequences 0.080301s
+[raven::Graph::Construct] minimized 0 - 1250 / 1250 0.226611s
+[raven::Graph::Construct] mapped sequences 0.260048s
+[raven::Graph::Construct] annotated piles 0.003256s
+[raven::Graph::Construct] removed contained sequences 0.000095s
+[raven::Graph::Construct] removed chimeric sequences 0.000096s
+[raven::Graph::Construct] reached checkpoint 0.006166s
+[raven::Graph::Construct] minimized 0 - 97 / 97 0.059224s
+[raven::Graph::Construct] mapped valid sequences 0.064042s
+[raven::Graph::Construct] updated overlaps 0.000016s
+[raven::Graph::Construct] removed false overlaps 0.001292s
+[raven::Graph::Construct] stored 188 nodes 0.001660s
 [raven::Graph::Construct] stored 126 edges 0.000000s
-[raven::Graph::Construct] reached checkpoint 0.004665s
-[raven::Graph::Construct] 0.631607s
-[raven::Graph::Assemble] removed transitive edges 0.000064s
-[raven::Graph::Assemble] reached checkpoint 0.004441s
-[raven::Graph::Assemble] removed tips and bubbles 0.000017s
-[raven::Graph::Assemble] reached checkpoint 0.004276s
-[raven::Graph::Assemble] removed long edges 0.000324s
-[raven::Graph::Assemble] reached checkpoint 0.004127s
-[raven::Graph::Assemble] 0.014654s
-[raven::] 0.732037s
+[raven::Graph::Construct] reached checkpoint 0.009494s
+[raven::Graph::Construct] 0.633532s
+[raven::Graph::Assemble] removed transitive edges 0.000264s
+[raven::Graph::Assemble] reached checkpoint 0.010150s
+[raven::Graph::Assemble] removed tips and bubbles 0.000170s
+[raven::Graph::Assemble] reached checkpoint 0.010097s
+[raven::Graph::Assemble] removed long edges 0.000551s
+[raven::Graph::Assemble] reached checkpoint 0.011297s
+[raven::Graph::Assemble] 0.034001s
+[raven::] 0.757187s
 Command line: raven -t 1 tests/test_data/chopper_long_reads.fastq.gz --graphical-fragment-assembly tests/test_data/assembly_graph.gfa

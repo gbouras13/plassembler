@@ -8,14 +8,11 @@ Usage: pytest
 # import
 import unittest
 from pathlib import Path
-from loguru import logger
 
-
+from src.plassembler.utils.cleanup import remove_file
+from src.plassembler.utils.plass_class import Assembly, Plass
 
 # import functions
-
-from src.plassembler.utils.plass_class import Assembly, Plass
-from src.plassembler.utils.cleanup import remove_file
 
 
 # data
@@ -32,7 +29,6 @@ class test_plass_class(unittest.TestCase):
     """Tests for Plass class"""
 
     def test_get_contig_count(self):
-        expected_return = True
         plass = Plass()
         plass.outdir = plass_class_dir
         plass.get_contig_count()

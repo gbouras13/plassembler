@@ -5,19 +5,18 @@ Usage: pytest
 
 """
 
+import shutil
+import sys
+
 # import
 import unittest
-import os
 from pathlib import Path
+
 import pytest
 from loguru import logger
-import sys
-import subprocess as sp
-import shutil
-
 
 # import functions
-from src.db import get_database_zenodo, check_db_installation, instantiate_db_dir
+from src.plassembler.utils.db import check_db_installation, get_database_zenodo
 
 # data
 test_data = Path("tests/test_data")
@@ -39,24 +38,17 @@ logger.add(lambda _: sys.exit(1), level="ERROR")
 class test_install(unittest.TestCase):
     """Test for db"""
 
+    # for plassembler run
     def test_check_db_installation_good(self):
-        expected_return = True
-        d_flag = check_db_installation(db_path, False)
-        self.assertEqual(expected_return, d_flag)
+        check_db_installation(db_path, False)
 
+    # for plassembler download
     def test_check_db_installation_good_d(self):
-        expected_return = True
-        d_flag = check_db_installation(db_path, True)
-        self.assertEqual(expected_return, d_flag)
-
-    def test_instantiate_db_good(self):
-        expected_return = True
-        instantiate_db_dir(db_path)
-        self.assertEqual(expected_return, True)
+        check_db_installation(db_path, True)
 
     def test_check_db_installation_bad(self):
         with self.assertRaises(SystemExit):
-            d_flag = check_db_installation(val_data, False)
+            check_db_installation(val_data, False)
 
     def test_get_database_zenodo(self):
         expected_return = True

@@ -1,12 +1,14 @@
 """
-conda mambabuild . --variants "{python: [3.8,3.9,3.10]}"
+conda mambabuild . --variants "{python: [3.8]}"
 """
 
-from setuptools import setup, find_packages
 import os
+
+from setuptools import find_packages, setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
 
 def get_version():
     with open(
@@ -17,7 +19,7 @@ def get_version():
         )
     ) as f:
         return f.readline().strip()
-    
+
 
 packages = find_packages()
 # the directories where the code is
@@ -56,7 +58,7 @@ setup(
     include_package_data=True,
     scripts=["plassembler"],
     url="https://github.com/gbouras13/plassembler",
-    python_requires=">=3.8,<3.11",
+    python_requires="=3.8",
     classifiers=CLASSIFIERS,
     install_requires=[
         "pyyaml>=6.0",

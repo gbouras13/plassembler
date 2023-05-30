@@ -1,11 +1,11 @@
-[M::mm_idx_gen::0.060*1.08] collected minimizers
-[M::mm_idx_gen::0.082*1.06] sorted minimizers
-[M::main::0.082*1.06] loaded/built the index for 2 target sequence(s)
-[M::mm_mapopt_update::0.083*1.06] mid_occ = 1000
+[M::mm_idx_gen::0.060*1.07] collected minimizers
+[M::mm_idx_gen::0.083*1.05] sorted minimizers
+[M::main::0.083*1.05] loaded/built the index for 2 target sequence(s)
+[M::mm_mapopt_update::0.083*1.05] mid_occ = 1000
 [M::mm_idx_stat] kmer size: 21; skip: 11; is_hpc: 0; #seq: 2
-[M::mm_idx_stat::0.086*1.06] distinct minimizers: 471968 (99.11% are singletons); average occurrences: 1.031; average spacing: 5.986; total length: 2913269
-[M::worker_pipeline::0.154*1.02] mapped 5000 sequences
+[M::mm_idx_stat::0.087*1.05] distinct minimizers: 471968 (99.11% are singletons); average occurrences: 1.031; average spacing: 5.986; total length: 2913269
+[M::worker_pipeline::0.162*1.02] mapped 5000 sequences
 [M::main] Version: 2.26-r1175
 [M::main] CMD: minimap2 -ax sr -t 1 tests/test_data/map_dir/flye_renamed.fasta tests/test_data/map_dir/trimmed_R1.fastq tests/test_data/map_dir/trimmed_R2.fastq
-[M::main] Real time: 0.159 sec; CPU: 0.163 sec; Peak RSS: 0.044 GB
+[M::main] Real time: 0.167 sec; CPU: 0.170 sec; Peak RSS: 0.043 GB
 Command line: minimap2 -ax sr -t 1 tests/test_data/map_dir/flye_renamed.fasta tests/test_data/map_dir/trimmed_R1.fastq tests/test_data/map_dir/trimmed_R2.fastq

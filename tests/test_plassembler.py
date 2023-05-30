@@ -5,23 +5,41 @@ Usage: pytest
 
 """
 
+import os
+import subprocess as sp
+import sys
+
 # import
 import unittest
-import os
 from pathlib import Path
+
 import pytest
 from loguru import logger
-import sys
-import subprocess as sp
 
+from src.plassembler.utils.concat import (
+    concatenate_short_fastqs,
+    concatenate_single_fasta,
+    concatenate_single_fastq,
+)
+from src.plassembler.utils.depth import (
+    concatenate_chrom_plasmids,
+    get_contig_circularity,
+    get_contig_lengths,
+    get_depths_from_bam,
+)
 
 # import functions
-from src.plassembler.utils.input_commands import (validate_fasta,check_dependencies, validate_pacbio_model, validate_fastas_assembled_mode, validate_fastq, validate_fastqs_assembled_mode )
-from src.plassembler.utils.concat import (concatenate_single_fastq,concatenate_single_fasta, concatenate_short_fastqs )
-from src.plassembler.utils.depth import (concatenate_chrom_plasmids,get_contig_lengths, get_contig_circularity, get_depths_from_bam)
+from src.plassembler.utils.input_commands import (
+    check_dependencies,
+    validate_fasta,
+    validate_fastas_assembled_mode,
+    validate_fastq,
+    validate_fastqs_assembled_mode,
+    validate_pacbio_model,
+)
+from src.plassembler.utils.plass_class import Plass
+from src.plassembler.utils.qc import copy_sr_fastq_file
 from src.plassembler.utils.sam_to_fastq import extract_bin_long_fastqs
-from src.plassembler.utils.plass_class import Assembly, Plass
-from src.plassembler.utils.qc import (copy_sr_fastq_file)
 
 # data
 test_data = Path("tests/test_data")
@@ -94,9 +112,7 @@ class TestInputCommands(unittest.TestCase):
         with self.assertRaises(SystemExit):
             input_plasmids = os.path.join(val_data, "test.fasta")
             input_chromosome = os.path.join(val_data, "test_multi.fasta")
-            validate_fastas_assembled_mode(
-                input_chromosome, input_plasmids
-            )
+            validate_fastas_assembled_mode(input_chromosome, input_plasmids)
 
     # assembled single chrom works fine
     def test_validate_fastas_assembled_mode_single(self):
@@ -161,15 +177,15 @@ class test_concat(unittest.TestCase):
     # concat single
     def test_concat_single_fastq_bad(self):
         with self.assertRaises(ValueError):
-            fasta1: Path = Path(val_data) / f"test.fasta"
-            fasta2: Path = Path(val_data) / f"test.fasta"
-            out_f: Path = Path(val_data) / f"concat.fastq"
+            fasta1: Path = Path(val_data) / "test.fasta"
+            fasta2: Path = Path(val_data) / "test.fasta"
+            out_f: Path = Path(val_data) / "concat.fastq"
             concatenate_single_fastq(fasta1, fasta2, out_f)
 
     # concat single good
     def test_concatenate_single_fastq_good(self):
-        f1: Path = Path(val_data) / f"test.fastq"
-        f2: Path = Path(val_data) / f"test.fastq"
+        f1: Path = Path(val_data) / "test.fastq"
+        f2: Path = Path(val_data) / "test.fastq"
         out_f = os.path.join(val_data, "fastq")
         expected_return = True
         concatenate_single_fastq(f1, f2, out_f)
@@ -177,8 +193,8 @@ class test_concat(unittest.TestCase):
 
     # concat single good
     def test_concatenate_single_fasta_good(self):
-        f1: Path = Path(val_data) / f"test.fasta"
-        f2: Path = Path(val_data) / f"test.fasta"
+        f1: Path = Path(val_data) / "test.fasta"
+        f2: Path = Path(val_data) / "test.fasta"
         out_f = os.path.join(val_data, "concat.fasta")
         expected_return = True
         concatenate_single_fasta(f1, f2, out_f)
@@ -194,8 +210,8 @@ class test_qc(unittest.TestCase):
 
     def test_copy_sr_fastq_file_not_fastq(self):
         with self.assertRaises(SystemExit):
-            infile: Path = Path(val_data) / f"test.fasta"
-            outfile: Path = Path(val_data) / f"test2.fasta"
+            infile: Path = Path(val_data) / "test.fasta"
+            outfile: Path = Path(val_data) / "test2.fasta"
             copy_sr_fastq_file(infile, outfile)
 
 
@@ -231,13 +247,6 @@ class test_depth(unittest.TestCase):
         fasta: Path = Path(f"{bad_dir}/combined.fasta")
         with self.assertRaises(FileNotFoundError):
             get_contig_circularity(fasta)
-
-    def test_get_get_depths_from_bam_unsorted_error(self):
-        bam_file: Path = Path(f"{map_dir}/short_read.bam")
-        fasta: Path = Path(f"{map_dir}/combined.fasta")
-        contig_lengths = get_contig_lengths(fasta)
-        with self.assertRaises(sp.CalledProcessError):
-            get_depths_from_bam(bam_file, contig_lengths=contig_lengths)
 
     def test_get_get_depths_from_bam_unsorted_error(self):
         bam_file: Path = Path(f"{map_dir}/short_read.bam")

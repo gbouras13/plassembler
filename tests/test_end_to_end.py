@@ -7,12 +7,13 @@ Usage: pytest
 
 # import
 import os
-from pathlib import Path
-import pytest
-from loguru import logger
-import sys
 import shutil
 import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+from loguru import logger
 
 # import functions
 
@@ -55,8 +56,7 @@ def exec_command(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
     return out.decode("utf8") if out is not None else None
 
 
-
-def test_plassembler_download(tmp_dir):
+def test_plassembler_download():
     """test plassembler download"""
     fake_db = f"{end_to_end}/db"
     cmd = f"plassembler download -d {fake_db}"
@@ -64,11 +64,18 @@ def test_plassembler_download(tmp_dir):
     remove_directory(fake_db)
 
 
-#### test running end to end
-# uncomment for mac running to check 
+def test_citation():
+    """test plassembler citation"""
+    cmd = "plassembler citation"
+    exec_command(cmd)
 
-#### 70kbp, 44kbp and 9kbp plasmid reads are from
-### the 70kbp is a fake chromosome
+
+# test running end to end
+# uncomment for mac running to check
+
+# 70kbp, 44kbp and 9kbp plasmid reads are from
+# the 70kbp is a fake chromosome
+
 
 # def test_plassembler(tmp_dir):
 #     """test plassembler run"""
@@ -81,6 +88,7 @@ def test_plassembler_download(tmp_dir):
 #     exec_command(cmd)
 #     remove_directory(outdir)
 
+
 # def test_plassembler_long(tmp_dir):
 #     """test plassembler long"""
 #     longreads: Path = f"{end_to_end}/input_fastq.gz"
@@ -89,6 +97,7 @@ def test_plassembler_download(tmp_dir):
 #     cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
 #     exec_command(cmd)
 #     remove_directory(outdir)
+
 
 # def test_plassembler_assembled(tmp_dir):
 #     """test plassembler assembled"""
@@ -104,13 +113,12 @@ def test_plassembler_download(tmp_dir):
 #     remove_directory(outdir)
 
 
-
-
 #################################
 #     # on my mac the test works fine, but for CI Unicycler install is crook
 #     # therefore just error out
 #################################
-# something to sort out with unicycler conda recipe maybe 
+# something to sort out with unicycler conda recipe maybe
+
 
 def test_plassembler(self):
     """test plassembler run"""
@@ -124,6 +132,7 @@ def test_plassembler(self):
         exec_command(cmd)
         remove_directory(outdir)
 
+
 def test_plassembler_long(self):
     """test plassembler long"""
     with self.assertRaises(SystemExit):
@@ -133,6 +142,7 @@ def test_plassembler_long(self):
         cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
         exec_command(cmd)
         remove_directory(outdir)
+
 
 def test_plassembler_assembled(self):
     """test plassembler assembled"""

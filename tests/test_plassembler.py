@@ -16,12 +16,12 @@ import subprocess as sp
 
 
 # import functions
-from src import input_commands
-from src import concat
-from src import depth
-from src.sam_to_fastq import extract_bin_long_fastqs
-from src.plass_class import Assembly, Plass
-from src.qc import copy_sr_fastq_file
+from src.plassembler.utils.input_commands import (validate_fasta,check_dependencies, validate_pacbio_model, validate_fastas_assembled_mode, validate_fastq, validate_fastqs_assembled_mode )
+from src.plassembler.utils.concat import (concatenate_single_fastq,concatenate_single_fasta, concatenate_short_fastqs )
+from src.plassembler.utils.depth import (concatenate_chrom_plasmids,get_contig_lengths, get_contig_circularity, get_depths_from_bam)
+from src.plassembler.utils.sam_to_fastq import extract_bin_long_fastqs
+from src.plassembler.utils.plass_class import Assembly, Plass
+from src.plassembler.utils.qc import (copy_sr_fastq_file)
 
 # data
 test_data = Path("tests/test_data")
@@ -79,14 +79,14 @@ class TestInputCommands(unittest.TestCase):
     def test_non_fasta_input(self):
         with self.assertRaises(SystemExit):
             non_fasta_file = os.path.join(val_data, "test_not_fasta.txt")
-            input_commands.validate_fasta(non_fasta_file)
+            validate_fasta(non_fasta_file)
 
     # tests legit input
     def test_fasta_input(self):
         fasta_file = os.path.join(val_data, "test.fasta")
         # dummy to make sure the function works
         tmp = 1
-        input_commands.validate_fasta(fasta_file)
+        validate_fasta(fasta_file)
         self.assertEqual(tmp, 1)
 
     # assembled multifasta chrom
@@ -94,7 +94,7 @@ class TestInputCommands(unittest.TestCase):
         with self.assertRaises(SystemExit):
             input_plasmids = os.path.join(val_data, "test.fasta")
             input_chromosome = os.path.join(val_data, "test_multi.fasta")
-            input_commands.validate_fastas_assembled_mode(
+            validate_fastas_assembled_mode(
                 input_chromosome, input_plasmids
             )
 
@@ -103,7 +103,7 @@ class TestInputCommands(unittest.TestCase):
         input_plasmids = os.path.join(val_data, "test.fasta")
         input_chromosome = os.path.join(val_data, "test.fasta")
         tmp = 1
-        input_commands.validate_fastas_assembled_mode(input_chromosome, input_plasmids)
+        validate_fastas_assembled_mode(input_chromosome, input_plasmids)
         self.assertEqual(tmp, 1)
 
     # no gzip
@@ -111,7 +111,7 @@ class TestInputCommands(unittest.TestCase):
         test_fastq = os.path.join(val_data, "test.fastq")
         # zipped
         expected_return = False
-        return_object = input_commands.validate_fastq(test_fastq)
+        return_object = validate_fastq(test_fastq)
         self.assertEqual(return_object, expected_return)
 
     # gzip
@@ -119,14 +119,14 @@ class TestInputCommands(unittest.TestCase):
         test_fastq = os.path.join(val_data, "test_2.fastq.gz")
         # zipped
         expected_return = True
-        return_object = input_commands.validate_fastq(test_fastq)
+        return_object = validate_fastq(test_fastq)
         self.assertEqual(return_object, expected_return)
 
     # fastq
     def test_validate_fastqs_fasta_as_fastq(self):
         with self.assertRaises(ValueError):
             fasta = os.path.join(val_data, "test.fasta")
-            input_commands.validate_fastq(fasta)
+            validate_fastq(fasta)
 
     # assembled fastq
     def test_validate_fastqs_assembled_mode_fasta_as_fastq(self):
@@ -134,13 +134,13 @@ class TestInputCommands(unittest.TestCase):
             fasta = os.path.join(val_data, "test.fasta")
             s1 = os.path.join(val_data, "test_2.fastq.gz")
             s2 = os.path.join(val_data, "test.fastq")
-            input_commands.validate_fastqs_assembled_mode(fasta, s1, s2)
+            validate_fastqs_assembled_mode(fasta, s1, s2)
 
     # bad pacbio model
     def test_validate_pacbio_model_bad(self):
         with self.assertRaises(SystemExit):
             pacbio_model = "not_a_model"
-            input_commands.validate_pacbio_model(pacbio_model)
+            validate_pacbio_model(pacbio_model)
 
     # bad pacbio model
     def test_deps(self):
@@ -151,7 +151,7 @@ class TestInputCommands(unittest.TestCase):
         # so this test should cause system exit with github actions not success
         # expected_return = True
         with self.assertRaises(SystemExit):
-            input_commands.check_dependencies()
+            check_dependencies()
             # self.assertEqual(expected_return, True)
 
 
@@ -164,15 +164,15 @@ class test_concat(unittest.TestCase):
             fasta1: Path = Path(val_data) / f"test.fasta"
             fasta2: Path = Path(val_data) / f"test.fasta"
             out_f: Path = Path(val_data) / f"concat.fastq"
-            concat.concatenate_single_fastq(fasta1, fasta2, out_f)
+            concatenate_single_fastq(fasta1, fasta2, out_f)
 
     # concat single good
     def test_concatenate_single_fastq_good(self):
         f1: Path = Path(val_data) / f"test.fastq"
         f2: Path = Path(val_data) / f"test.fastq"
-        out_f = os.path.join(val_data, "concat.fastq")
+        out_f = os.path.join(val_data, "fastq")
         expected_return = True
-        concat.concatenate_single_fastq(f1, f2, out_f)
+        concatenate_single_fastq(f1, f2, out_f)
         self.assertEqual(expected_return, True)
 
     # concat single good
@@ -181,13 +181,12 @@ class test_concat(unittest.TestCase):
         f2: Path = Path(val_data) / f"test.fasta"
         out_f = os.path.join(val_data, "concat.fasta")
         expected_return = True
-        concat.concatenate_single_fasta(f1, f2, out_f)
+        concatenate_single_fasta(f1, f2, out_f)
         self.assertEqual(expected_return, True)
 
-    # bad pacbio model
     def test_concatenate_short_fastqs_bad_dir(self):
         with self.assertRaises(SystemExit):
-            concat.concatenate_short_fastqs(val_data)
+            concatenate_short_fastqs(val_data)
 
 
 class test_qc(unittest.TestCase):
@@ -206,43 +205,43 @@ class test_depth(unittest.TestCase):
     # concat single
     def test_concatenate_chrom_plasmids_wrong_dir(self):
         with self.assertRaises(SystemExit):
-            depth.concatenate_chrom_plasmids(val_data)
+            concatenate_chrom_plasmids(val_data)
 
     # good
     def test_get_contig_lengths_good_dir(self):
         expected_return = True
         fasta: Path = Path(f"{val_data}/combined.fasta")
-        depth.get_contig_lengths(fasta)
+        get_contig_lengths(fasta)
         self.assertEqual(expected_return, True)
 
     # bad dir
     def test_get_contig_lengths_bad_dir(self):
         fasta: Path = Path(f"{bad_dir}/combined.fasta")
         with self.assertRaises(FileNotFoundError):
-            depth.get_contig_lengths(fasta)
+            get_contig_lengths(fasta)
 
     def test_get_contig_circularity_good_dir(self):
         expected_return = True
         fasta: Path = Path(f"{val_data}/combined.fasta")
-        depth.get_contig_circularity(fasta)
+        get_contig_circularity(fasta)
         self.assertEqual(expected_return, True)
 
     # bad dir
     def test_get_contig_circularity_bad_dir(self):
         fasta: Path = Path(f"{bad_dir}/combined.fasta")
         with self.assertRaises(FileNotFoundError):
-            depth.get_contig_circularity(fasta)
+            get_contig_circularity(fasta)
 
     def test_get_get_depths_from_bam_unsorted_error(self):
         bam_file: Path = Path(f"{map_dir}/short_read.bam")
         fasta: Path = Path(f"{map_dir}/combined.fasta")
-        contig_lengths = depth.get_contig_lengths(fasta)
+        contig_lengths = get_contig_lengths(fasta)
         with self.assertRaises(sp.CalledProcessError):
-            depth.get_depths_from_bam(bam_file, contig_lengths=contig_lengths)
+            get_depths_from_bam(bam_file, contig_lengths=contig_lengths)
 
     def test_get_get_depths_from_bam_unsorted_error(self):
         bam_file: Path = Path(f"{map_dir}/short_read.bam")
         fasta: Path = Path(f"{map_dir}/combined.fasta")
-        contig_lengths = depth.get_contig_lengths(fasta)
+        contig_lengths = get_contig_lengths(fasta)
         with self.assertRaises(sp.CalledProcessError):
-            depth.get_depths_from_bam(bam_file, contig_lengths=contig_lengths)
+            get_depths_from_bam(bam_file, contig_lengths=contig_lengths)

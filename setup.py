@@ -1,5 +1,5 @@
 """
-conda mambabuild . --variants "{python: [3.8,3.9,3.10,3.11]}"
+conda mambabuild . --variants "{python: [3.8,3.9,3.10]}"
 """
 
 from setuptools import setup, find_packages
@@ -19,7 +19,6 @@ def get_version():
         return f.readline().strip()
     
 
-
 packages = find_packages()
 # the directories where the code is
 # so knows it should be included
@@ -36,10 +35,6 @@ CLASSIFIERS = [
     "Natural Language :: English",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS :: MacOS X",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
@@ -61,7 +56,7 @@ setup(
     include_package_data=True,
     scripts=["plassembler"],
     url="https://github.com/gbouras13/plassembler",
-    python_requires=">=3.8",
+    python_requires=">=3.8,<3.11",
     classifiers=CLASSIFIERS,
     install_requires=[
         "pyyaml>=6.0",

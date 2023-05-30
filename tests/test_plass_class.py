@@ -7,18 +7,15 @@ Usage: pytest
 
 # import
 import unittest
-import os
 from pathlib import Path
-import pytest
 from loguru import logger
-import sys
-import subprocess as sp
+
 
 
 # import functions
 
-from src.plass_class import Assembly, Plass
-from src.cleanup import remove_file, remove_directory
+from src.plassembler.utils.plass_class import Assembly, Plass
+from src.plassembler.utils.cleanup import remove_file
 
 
 # data

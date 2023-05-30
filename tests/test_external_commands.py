@@ -15,14 +15,14 @@ from unittest.mock import patch
 
 
 # import functions
-from src import assembly
-from src.cleanup import remove_file, remove_directory
-from src.qc import chopper, fastp
-from src.mapping import minimap_long_reads, minimap_short_reads
-from src.bam import sam_to_bam, split_bams, bam_to_fastq_short
-from src.run_unicycler import run_unicycler
-from src.run_mash import mash_sketch, run_mash, get_contig_count
-from src.external_tools import ExternalTool
+from src.plassembler.utils.assembly import (run_raven, run_flye)
+from src.plassembler.utils.cleanup import (remove_file, remove_directory)
+from src.plassembler.utils.qc import (chopper, fastp)
+from src.plassembler.utils.mapping import (minimap_long_reads, minimap_short_reads)
+from src.plassembler.utils.bam import (sam_to_bam, split_bams, bam_to_fastq_short)
+from src.plassembler.utils.run_unicycler import run_unicycler
+from src.plassembler.utils.run_mash import (mash_sketch, run_mash, get_contig_count)
+from src.plassembler.utils.external_tools import ExternalTool
 
 test_data = Path("tests/test_data")
 val_data = Path(f"{test_data}/validation")
@@ -167,7 +167,7 @@ class test_assemblers(unittest.TestCase):
     def test_flye(self):
         expected_return = True
         # C11 sim reads
-        assembly.run_flye(
+        run_flye(
             test_data, 8, raw_flag=False, pacbio_model="nothing", logdir=logdir
         )
         shutil.rmtree(os.path.join(test_data, "00-assembly"))
@@ -185,7 +185,7 @@ class test_assemblers(unittest.TestCase):
     def test_raven(self):
         expected_return = True
         # C11 sim reads
-        assembly.run_raven(test_data, 1, logdir=logdir)
+        run_raven(test_data, 1, logdir=logdir)
         remove_file(os.path.join(test_data, "assembly.fasta"))
         remove_file(os.path.join(test_data, "assembly_graph.gfa"))
         remove_file(os.path.join(test_data, "params.json"))

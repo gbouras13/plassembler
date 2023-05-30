@@ -1,7 +1,5 @@
-import os
-import sys
 import subprocess as sp
-from src.external_tools import ExternalTool
+from plassembler.utils.external_tools import ExternalTool
 from loguru import logger
 from pathlib import Path
 import gzip
@@ -42,9 +40,9 @@ def chopper(
                     "-l",
                     min_length,
                     "--headcrop",
-                    "25",
+                    "75",
                     "--tailcrop",
-                    "25",
+                    "75",
                 ],
                 stdin=unzip.stdout,
                 stdout=sp.PIPE,
@@ -67,9 +65,9 @@ def chopper(
                     "-l",
                     min_length,
                     "--headcrop",
-                    "25",
+                    "75",
                     "--tailcrop",
-                    "25",
+                    "75",
                 ],
                 stdin=cat.stdout,
                 stdout=sp.PIPE,

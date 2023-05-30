@@ -21,7 +21,7 @@ def check_db_installation(db_dir: Path, install_flag: bool):
     f2: Path = db_dir / f"{mash_db_names[1]}"
 
     if f1.exists() and f2.exists():
-        logger.info("PLSDB Database at {database} has already been downloaded")
+        logger.info(f"PLSDB Database at {db_dir} has already been downloaded")
     else:
         for file_name in mash_db_names:
             file_path: Path = db_dir / f"{file_name}"

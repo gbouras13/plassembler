@@ -1,5 +1,5 @@
 
-[93m[1m[4mStarting Unicycler[0m [2m(2023-05-30 17:39:24)[0m
+[93m[1m[4mStarting Unicycler[0m [2m(2023-06-01 11:34:27)[0m
 [2m    Welcome to Unicycler, an assembly pipeline for bacterial genomes. Since you[0m
 [2mprovided both short and long reads, Unicycler will perform a hybrid assembly.[0m
 [2mIt will first use SPAdes to make a short-read assembly graph, and then it will[0m
@@ -22,7 +22,7 @@ Dependencies:
   tblastn       2.14.0+   [32mgood[0m  
 
 
-[93m[1m[4mChoosing k-mer range for assembly[0m [2m(2023-05-30 17:39:25)[0m
+[93m[1m[4mChoosing k-mer range for assembly[0m [2m(2023-06-01 11:34:28)[0m
 [2m    Unicycler chooses a k-mer range for SPAdes based on the length of the input[0m
 [2mreads. It uses a wide range of many k-mer sizes to maximise the chance of[0m
 [2mfinding an ideal assembly.[0m
@@ -32,7 +32,7 @@ Median read length: 151
 K-mer range: 27, 53, 71, 87, 99, 111, 119, 127
 
 
-[93m[1m[4mSPAdes assemblies[0m [2m(2023-05-30 17:39:25)[0m
+[93m[1m[4mSPAdes assemblies[0m [2m(2023-06-01 11:34:28)[0m
 [2m    Unicycler now uses SPAdes to assemble the short reads. It scores the[0m
 [2massembly graph for each k-mer using the number of contigs (fewer is better) and[0m
 [2mthe number of dead ends (fewer is better). The score function is 1/(c*(d+2)),[0m

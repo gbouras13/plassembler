@@ -69,10 +69,10 @@ logger.add(lambda _: sys.exit(1), level="ERROR")
 class test_plassembler_misc(unittest.TestCase):
     """Tests for miscellaneous plassembler functions"""
 
-    def test_end_plassembler():
+    def test_end_plassembler(self):
         end_plassembler(23)
 
-    def test_begin_plassembler():
+    def test_begin_plassembler(self):
         outdir: Path = f"{fake_out_dir}/test_out"
         begin_plassembler(outdir)
         remove_directory(outdir)

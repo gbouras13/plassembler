@@ -44,6 +44,8 @@ def begin_plassembler(outdir, force):
     """
     # get start time
     start_time = time.time()
+    # error out on sys.exit
+    logger.add(lambda _: sys.exit(1), level="ERROR")
 
     # instantiate the outdir
     # remove outdir on force
@@ -68,7 +70,6 @@ def begin_plassembler(outdir, force):
     # adds log file
     logger.add(log_file)
     # ensure sys exit if error
-    logger.add(lambda _: sys.exit(1), level="ERROR")
     logger.info(f"You are using Plassembler version {get_version()}")
     logger.info("Repository homepage is https://github.com/gbouras13/plassembler")
     logger.info("Written by George Bouras: george.bouras@adelaide.edu.au")
@@ -189,7 +190,7 @@ def common_options(func):
             "--outdir",
             help="Directory to write the output to.",
             type=click.Path(),
-            default="plassembler.output",
+            default="plassembler.output/",
             show_default=True,
         ),
         click.option(
@@ -305,7 +306,7 @@ def run(
 ):
     """Runs Plassembler"""
 
-    # start times
+    # initiate plassembler
     start_time, outdir = begin_plassembler(outdir, force)
 
     logger.info(f"Database directory is {database}")

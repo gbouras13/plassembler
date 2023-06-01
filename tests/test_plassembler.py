@@ -72,10 +72,19 @@ class test_plassembler_misc(unittest.TestCase):
     def test_end_plassembler(self):
         end_plassembler(23)
 
-    def test_begin_plassembler(self):
+    def test_begin_plassembler_force(self):
         outdir: Path = f"{fake_out_dir}/test_out"
-        begin_plassembler(outdir)
+        begin_plassembler(outdir, True)
         remove_directory(outdir)
+
+    def test_begin_plassembler_no_force_pass(self):
+        outdir: Path = f"{fake_out_dir}/test_out"
+        begin_plassembler(outdir, False)
+        remove_directory(outdir)
+
+    def test_begin_plassembler_no_force_fail(self):
+        with self.assertRaises(SystemExit):
+            begin_plassembler(fake_out_dir, False)
 
 
 class test_unicycler_success(unittest.TestCase):

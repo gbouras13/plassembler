@@ -15,7 +15,6 @@ from plassembler.utils.concat import concatenate_short_fastqs
 from plassembler.utils.db import check_db_installation
 from plassembler.utils.input_commands import (
     check_dependencies,
-    instantiate_dirs,
     validate_fastas_assembled_mode,
     validate_fastq,
     validate_fastqs_assembled_mode,
@@ -38,13 +37,32 @@ log_fmt = (
 )
 
 
-def begin_plassembler(outdir):
+def begin_plassembler(outdir, force):
     """
     begins plassembler
     returns start time
     """
     # get start time
     start_time = time.time()
+
+    # instantiate the outdir
+    # remove outdir on force
+    if force is True:
+        if os.path.isdir(outdir) is True:
+            shutil.rmtree(outdir)
+        else:
+            logger.info(
+                f"--force was specified even though the directory {outdir} does not already exist. Continuing "
+            )
+    else:
+        if os.path.isdir(outdir) is True:
+            logger.error(
+                f"Directory {outdir} already exists and force was not specified. Please specify -f or --force to overwrite {outdir}"
+            )
+    # instantiate outdir
+    if os.path.isdir(outdir) is False:
+        os.mkdir(outdir)
+
     # initial logging stuff
     log_file = os.path.join(outdir, f"plassembler_{start_time}.log")
     # adds log file
@@ -54,7 +72,8 @@ def begin_plassembler(outdir):
     logger.info(f"You are using Plassembler version {get_version()}")
     logger.info("Repository homepage is https://github.com/gbouras13/plassembler")
     logger.info("Written by George Bouras: george.bouras@adelaide.edu.au")
-    return start_time
+
+    return start_time, outdir
 
 
 def end_plassembler(start_time):
@@ -170,7 +189,7 @@ def common_options(func):
             "--outdir",
             help="Directory to write the output to.",
             type=click.Path(),
-            default="plassembler.output/",
+            default="plassembler.output",
             show_default=True,
         ),
         click.option(
@@ -287,10 +306,7 @@ def run(
     """Runs Plassembler"""
 
     # start times
-    start_time = begin_plassembler(outdir)
-
-    # instiate the output directory
-    outdir = instantiate_dirs(outdir, force)
+    start_time, outdir = begin_plassembler(outdir, force)
 
     logger.info(f"Database directory is {database}")
     logger.info(f"Longreads file is {longreads}")
@@ -740,10 +756,7 @@ def assembled(
     """Runs assembled mode"""
 
     # start times
-    start_time = begin_plassembler(outdir)
-
-    # instiate the output directory
-    outdir = instantiate_dirs(outdir, force)
+    start_time, outdir = begin_plassembler(outdir, force)
 
     logger.info(f"Database directory is {database}")
     logger.info(f"Longreads file is {longreads}")
@@ -884,7 +897,6 @@ def download(ctx, database, force, **kwargs):
 
     logger.add(lambda _: sys.exit(1), level="ERROR")
     database = Path(database)
-    instantiate_dirs(database, force)
     logger.info(f"Checking database installation at {database}")
     check_db_installation(database, install_flag=True)  # t
 
@@ -1021,10 +1033,7 @@ def long(
     """
 
     # start times
-    start_time = begin_plassembler(outdir)
-
-    # instiate the output directory
-    outdir = instantiate_dirs(outdir, force)
+    start_time, outdir = begin_plassembler(outdir, force)
 
     logger.info(f"Database directory is {database}")
     logger.info(f"Longreads file is {longreads}")

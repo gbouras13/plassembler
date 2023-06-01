@@ -1,35 +1,9 @@
 import gzip
 import os
-import shutil
 import subprocess as sp
 
 from Bio import SeqIO
 from loguru import logger
-
-
-def instantiate_dirs(outdir, force):
-    """checks that the output directory doesn't already exist, overwrites if forced
-        :param outdir: output directory path
-    :param force: flag to overwrite the output directory
-    :return: outdir
-    """
-    # remove outdir on force
-    if force is True:
-        if os.path.isdir(outdir) is True:
-            shutil.rmtree(outdir)
-        else:
-            logger.info(
-                f"--force was specified even though the directory {outdir} does not already exist. Continuing "
-            )
-    else:
-        if os.path.isdir(outdir) is True:
-            logger.error(
-                f"Directory {outdir} already exists and force was not specified. Please specify -f or --force to overwrite {outdir}"
-            )
-    # instantiate outdir
-    if os.path.isdir(outdir) is False:
-        os.mkdir(outdir)
-    return outdir
 
 
 def validate_fastq(file):

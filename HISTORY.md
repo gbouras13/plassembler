@@ -1,10 +1,17 @@
 # History
 
-1.1.0 (2023-05-23)
+1.1.0 (2023-05-30)
 ------------------
 
-* Adds Raven long read assembly option using `--use_raven`
-* Removes rasusa, `-s` and `--no_subsample` (to improve determinism). If users want faster runtimes, we recommend `--use_raven`.
+* Refactored codebase and release on pypi
+* Adds unit tests and CI
+* Breaking CLI changes to be compatible with click
+* `plassembler.py` changed to `plassembler run`
+* Adds Raven long read assembly option to `plassembler run` using `--use_raven`
+* `install_database.py` changed to `plassembler download`
+* Assembled mode now `plassembler assembled`
+* Untested/experimental long read only mode using `plassembler long`
+* Removes rasusa, `-s` and `--no_subsample`. If users want faster runtimes, we recommend `--use_raven` or conduct subsampling prior.
 
 
 1.0.0 (2023-05-10)

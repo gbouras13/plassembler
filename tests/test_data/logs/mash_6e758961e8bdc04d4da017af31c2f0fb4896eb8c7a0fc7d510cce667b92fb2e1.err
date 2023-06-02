@@ -1,0 +1,1 @@
+Command line: mash dist tests/test_data/mash_dir/plasmids.fasta.msh tests/test_data/Plassembler_Test_DB/plsdb.msh -v 0.1 -d 0.1 -i

@@ -1,0 +1,11 @@
+[M::mm_idx_gen::0.069*1.09] collected minimizers
+[M::mm_idx_gen::0.099*1.06] sorted minimizers
+[M::main::0.099*1.06] loaded/built the index for 2 target sequence(s)
+[M::mm_mapopt_update::0.105*1.06] mid_occ = 13
+[M::mm_idx_stat] kmer size: 15; skip: 10; is_hpc: 0; #seq: 2
+[M::mm_idx_stat::0.108*1.06] distinct minimizers: 507666 (97.48% are singletons); average occurrences: 1.047; average spacing: 5.337; total length: 2838087
+[M::worker_pipeline::1.234*1.00] mapped 500 sequences
+[M::main] Version: 2.26-r1175
+[M::main] CMD: minimap2 -ax map-ont -t 1 tests/test_data/plass_class/depth/combined.fasta tests/test_data/plass_class/depth/chopper_long_reads.fastq.gz
+[M::main] Real time: 1.239 sec; CPU: 1.237 sec; Peak RSS: 0.075 GB
+Command line: minimap2 -ax map-ont -t 1 tests/test_data/plass_class/depth/combined.fasta tests/test_data/plass_class/depth/chopper_long_reads.fastq.gz

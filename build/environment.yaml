@@ -1,0 +1,18 @@
+name: plassembler_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - flye >=2.9
+  - unicycler >=0.4.8
+  - minimap2 >=2.11
+  - fastp >=0.18.0
+  - chopper >=0.5.0
+  - mash >=2.2
+  - raven-assembler >=1.8
+  - samtools >= 0.15.0
+  - just
+  - poetry
+  - python >=3.8,<3.10
+  - ripgrep

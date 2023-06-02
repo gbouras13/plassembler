@@ -1,6 +1,0 @@
-digraph {
-nodesep = 0.5;
-node [shape = circle, label = "", height = 0.3];
-"0" -> "0" [label = "id 1\l2833k 31x", color = "black"] ;
-"1" -> "1" [label = "id -1\l2833k 31x", color = "black"] ;
-}

@@ -30,7 +30,8 @@ Additionally, I would recommend reading the following guides to bacterial genome
   - [Documentation](#documentation)
   - [Method](#method)
   - [Other Features](#other-features)
-- [Quality Control](#quality-control)
+  - [Quality Control](#quality-control)
+  - [Metagenomes](#metagenomes)
   - [Installation](#installation)
     - [Conda](#conda)
     - [Pip](#pip)
@@ -152,12 +153,17 @@ Please see [here](docs/multiple_chromosomes.md) for more details and an example.
 * However, if you think you have reasonably simple metagenomic samples with long reads, in theory `plassembler` could be used.
 * We tested `plassembler` on the R10.4 sequenced ZymoBIOMICS HMW Standard sequenced in this [paper](https://www.nature.com/articles/s41592-022-01539-7), and it successfully recovered the two plasmids present in the 7 strains present in that mock community.
 
-
-# Quality Control
+## Quality Control
 
 * `plassembler` can also be used for quality control to test whether your long and short read sets come from the same isolate, even within the same species.
 
 Please see [here](docs/quality_control.md) for more details and some examples.
+
+## Metagenomes
+
+* `plassembler` is not currently recommended for metagenomic datasets, because of their high diversity, leading to difficulties in recovering chromosome-length contigs for bacteria. Additionally, Unicycler is not recommended for metagenomes. However,  `plassembler` was tested on a high depth simple mock community dataset. It worked quite nicely, but we don't anticipate it will work as well on your data!
+
+Please see [here](docs/metagenomics.md) for more details.
 
 ## Installation
 

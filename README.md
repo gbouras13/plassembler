@@ -193,7 +193,7 @@ You can install the Python components of `plassembler` using pip.
 pip install plassembler
 ```
 
-You will then need to install the external dependencies separately, which can be found in `build/environment.yml`
+You will then need to install the external dependencies separately, which can be found in `build/environment.yaml`
 
 * [Flye](https://github.com/fenderglass/Flye) >=2.9
 * [Unicycler](https://github.com/rrwick/Unicycler) >=0.4.8

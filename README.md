@@ -9,7 +9,6 @@
 
 ## Automated Bacterial Plasmid Assembly Program
 
-
 Plassembler is a program that is designed for automated & fast assembly of plasmids in  bacterial genomes that have been hybrid sequenced with long read & paired-end short read sequencing. It was originally designed for Oxford Nanopore Technologies long reads, but will also work with Pacbio reads. 
 
 If you are assembling a small number of bacterial genomes manually, I would recommend starting by using [Trycycler](https://github.com/rrwick/Trycycler) to recover the chromosome before using Plassembler to recover plasmids, especially the small ones. If you have more genomes or want to assemble your genomes in a more automated way, try [dragonflye](https://github.com/rpetit3/dragonflye), especially if you are used to Shovill, or my own work-in-progress pipeline [hybracter](https://github.com/gbouras13/hybracter) that is more appropriate for large datasets.  
@@ -103,6 +102,10 @@ Unicycler is awesome and still a good way to assemble plasmids from hybrid seque
 Documentation can be found at http://plassembler.readthedocs.io/.
 
 ## Method
+
+<p align="center">
+  <img src="img/Figure1.png" alt="Plassembler Workflow" height=600>
+</p>
 
 1. Long reads are filtered using [chopper](https://github.com/wdecoster/chopper) ..
 2. Long-read only assembly is conducted with [Flye](https://github.com/fenderglass/Flye) or optionally [Raven](https://github.com/lbcb-sci/raven) if `--use_raven` is specified.

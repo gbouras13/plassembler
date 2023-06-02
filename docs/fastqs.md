@@ -20,7 +20,6 @@ These are the barcodes linked to the species
 * barcode08 Serratia Marcescens was excluded from benchmarking due to how devilishly difficult it was for Ryan Wick to assemble it, even with Trycycler - see his [comments](https://github.com/rrwick/Small-plasmid-Nanopore/blob/main/method.md#Long-read). 
 * I tried assembling it in different ways with different read subsets, but kept getting different results every time depending on what read subset I chose or even how I randomly sampled the reads, indicating there was enormous heterogeneity in this sample. Even when I used all reads (over 400x chromosome coverage), the Flye step in Plassembler could not resolve the 184447bp plasmid which was concerning! So I excluded it from the benchmarking.
 
-
 #### Recovering Barcodes 
 
 * These files contained the reads for all barcodes pooled together. The barcode was indicated in the FASTQ header. 

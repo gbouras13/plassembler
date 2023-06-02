@@ -1,41 +1,59 @@
+## Installation
 
-Installation
-------
+Plassembler has been tested on Linux and MacOS machines. 
 
-Plassembler is on bioconda. 
+### Conda
 
-plassembler should run and has been tested on Linux and MacOSX machines. 
+The easiest way to install plassembler is via conda - Plassembler is on bioconda. 
 
-The easiest way to install plassembler is via conda.
-
-`conda install -c bioconda plassembler`
+```
+conda install -c bioconda plassembler
+```
 
 or mamba for quicker solving:
 
-`mamba install -c bioconda plassembler`
+```
+mamba install -c bioconda plassembler
+```
 
 This will install all the dependencies along with plassembler.
 
-Alternatively, the development version of plassembler can be installed manually via github - it may contain untested changes.
+### Pip
 
-`git clone https://github.com/gbouras13/plassembler.git`
+You can install the Python components of `plassembler` using pip.
 
-The dependencies found in environment.yml will then need to be installed manually.
+```
+pip install plassembler
+```
 
-For example using conda:
+You will then need to install the external dependencies separately, which can be found in `build/environment.yml`
+
+* [Flye](https://github.com/fenderglass/Flye) >=2.9
+* [Unicycler](https://github.com/rrwick/Unicycler) >=0.4.8
+* [Minimap2](https://github.com/lh3/minimap2) >=2.11
+* [fastp](https://github.com/OpenGene/fastp) >=0.18.0
+* [chopper](https://github.com/wdecoster/chopper) >=0.5.0
+* [mash](https://github.com/marbl/Mash) >=2.2
+* [Raven](https://github.com/lbcb-sci/raven) >=1.8
+* [Samtools](https://github.com/samtools/samtools) >=0.15.0
+
+### Source
+
+Alternatively, the development version of plassembler can be installed manually via github.
 
 ```
 git clone https://github.com/gbouras13/plassembler.git
 cd plassembler
-conda env create -f environment.yml
-conda activate plassembler_env
-plassembler.py -h
+pip install -e .
 ```
 
-Unicycler v0.5.0 Installation Issues
-------
+## Unicycler v0.5.0 Installation Issues
 
-For Linux environments, Unicycler v0.5.0 should be installed with the plassembler bioconda installation.
+`plassembler` works best with Unicycler v0.5.0. With Unicycler v0.4.8, `plassembler` should still run without any issue and provide a satisfactory assembly, but you will be warned of this when you run `plassembler`. `plassembler` will not work with any older version of Unicycler.
+
+**Linux**
+
+For Linux environments, Unicycler v0.5.0 should be installed automaticall with the plassembler bioconda installation.
 
 You can force it as follows:
 
@@ -50,17 +68,16 @@ pip3 install git+https://github.com/rrwick/Unicycler.git
 
 **MacOS**
 
-For MacOS environments, the current plassembler bioconda installation method will only install the latest available bioconda Unicycler version of v0.4.8. Plassembler should still run without any issue and provide a satisfactory assembly, but you will be warned of this when you run Plassembler.
+For MacOS environments, the current conda installation method will only install the latest available bioconda Unicycler version of v0.4.8. 
 
-Ryan Wick (the author of Unicycler) suggests that v0.5.0 should ideally be used, as v0.4.8 is not compatible with the latest versions of spades (see [here](https://github.com/rrwick/Unicycler/releases/tag/v0.5.0) ). This will require another installation step on MacOS.
+Ryan Wick (the author of Unicycler) suggests that v0.5.0 should be used, as v0.4.8 is not compatible with the latest versions of spades (see [here](https://github.com/rrwick/Unicycler/releases/tag/v0.5.0) ). This will require another installation step on MacOS.
 
 To install Unicycler v0.5.0, it is recommended that you install Unicycler from github after installing Plassembler follows:
 
 ```
 # installs plassembler into an environment called 'plassemblerENV' and activates it
-conda create -n plassemblerENV
+conda create -n plassemblerENV plassembler
 conda activate plassemblerENV
-conda install -c bioconda plassembler
 # installs Unicycler v0.5.0
 pip3 install git+https://github.com/rrwick/Unicycler.git
 ```
@@ -69,9 +86,8 @@ Mac M1 users may need to change some compiler settings and install from the Unic
 
 ```
 # installs plassembler into an environment called 'plassemblerENV' and activates it
-conda create -n plassemblerENV
+conda create -n plassemblerENV plassembler
 conda activate plassemblerENV
-conda install -c bioconda plassembler
 # installs Unicycler v0.5.0
 git clone https://github.com/rrwick/Unicycler.git
 cd Unicycler
@@ -112,7 +128,7 @@ conda config --add channels conda-forge
 ```
 mamba create -n plassemblerENV plassembler
 conda activate plassemblerENV
-plassembler.py -h
+plassembler --help
 
 ```
 

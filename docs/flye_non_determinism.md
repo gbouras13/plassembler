@@ -2,9 +2,9 @@
 
 All following data was conducted on a Intel® Core™ i7-10700K CPU @ 3.80GHz on a machine running Ubuntu 20.04.6 LTS. 
 
-In the course of bechmarking Plassembler, I ran into some interesting problems regarding non-determinism.
+In the course of bechmarking `plassembler`, I ran into some interesting problems regarding non-determinism.
 
-It was flagged in manuscript review that Plassembler was non-deterministic, which I didn't actually know about. All my testing I'd done had been with the same amount of threads - so this will be something I take into future benchmarking analyses.
+It was flagged in manuscript review that `plassembler` was non-deterministic, which I didn't actually know about. All my testing I'd done had been with the same amount of threads - so this will be something I take into future benchmarking analyses.
 
 Previously (perhaps naively), I had assumed assemblers ( [SPAdes](https://github.com/ablab/spades), [Flye](https://github.com/fenderglass/Flye) and [Unicycler](https://github.com/rrwick/Unicycler) (which uses SPAdes)) were deterministic. But after some digging, I quickly found out they were not.
 
@@ -28,7 +28,9 @@ The following Tables show the results of Flye assemblies of real read sets for W
 
 I have included the Flye v2.9.2 assembly lengths with and without without `--deterministic` run using Plassembler. The exact same readset for all 3 runs (1, 8 and 16 threads) are used as input (as chopper is deterministic).
 
-The exact command used within Plassembler is:
+Note that this is with Plassembler v1.0.0, so if you dig into the details on Zenodo the log files will look different.
+
+The exact command used within `plassembler` is:
 
 ```
 flye --nano-hq <input fastq> --out-dir <output directory> --threads <thread count>

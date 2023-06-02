@@ -1,7 +1,7 @@
 Method
 -------
 
-1. Long reads are filtered using [chopper](https://github.com/wdecoster/chopper) ..
+1. Long reads are filtered using [chopper](https://github.com/wdecoster/chopper).
 2. Long-read only assembly is conducted with [Flye](https://github.com/fenderglass/Flye) or optionally [Raven](https://github.com/lbcb-sci/raven) if `--use_raven` is specified.
 3. If the resulting assembly is checked. Contigs bigger than the provided chromosome size `-c`, are identified as chromosomal and extracted. Any other contigs are extracted as putative plasmid contigs, if Flye assembled any. If no contigs were larger than `-c`, plassembler will exit - you probably need to get some more long reads to complete your assembly (or check `-c` wasn't too big).
 4. Short reads are filtered using [fastp](https://github.com/OpenGene/fastp).

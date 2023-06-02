@@ -16,7 +16,7 @@ include = [
 plassembler = 'plassembler:main'
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.10"
+python = ">=3.8,<4.0"
 click = ">=8.0.0"
 loguru = ">=0.5.3"
 pyyaml = ">=6.0"

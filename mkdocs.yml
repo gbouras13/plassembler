@@ -23,6 +23,7 @@ nav:
       - Fastq Preparation: fastqs.md
       - Simulated Read Results: benchmarking_results_sim.md
       - Real Read Results: benchmarking_results_real.md
+      - Flye Non Determinism: flye_non_determinism.md
     - OTHER FEATURES:
       - Quality Control: quality_control.md
       - Multiple Chromosomes: multiple_chromosome.md

@@ -5,6 +5,8 @@
 
 * Refactored codebase and release on pypi
 * Adds unit tests and CI
+* Replace `argparse` with `click`
+* Adds option to skip chopper and fastq to `plassembler run` using `--skip_qc`
 * Breaking CLI changes to be compatible with click
 * `plassembler.py` changed to `plassembler run`
 * Adds Raven long read assembly option to `plassembler run` using `--use_raven`

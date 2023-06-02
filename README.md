@@ -3,6 +3,10 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![Conda](https://img.shields.io/conda/dn/bioconda/plassembler)
 
+[![Bioconda Downloads](https://img.shields.io/conda/dn/bioconda/plassembler)](https://img.shields.io/conda/dn/bioconda/plassembler)
+[![PyPI version](https://badge.fury.io/py/plassembler.svg)](https://badge.fury.io/py/plassembler)
+[![Downloads](https://static.pepy.tech/badge/plassembler)](https://pepy.tech/project/plassembler)
+
 
 # plassembler
 
@@ -146,12 +150,6 @@ Please see [here](docs/multiple_chromosomes.md) for more details and an example.
 * If you have sufficient hybrid sequencing data, Plassembler will theoretically recover assemblies of all non-chromosomal replicons, including phages and phage-plasmids
 * A good example of this is the _Vibrio campbellii DS40M4_  example, where Plassembler recovered the assembly of phage phiX174, albeit it was from sequencing spike-in contamination in that case.
 
-5. Metagenomes
-
-* `plassembler` is not recommended for recovering plasmids from complicated diverse metagenome assemblies.
-* This is because Unicycler is not recommended for metagenomes, as it does not handle diverse samples.
-* However, if you think you have reasonably simple metagenomic samples with long reads, in theory `plassembler` could be used.
-* We tested `plassembler` on the R10.4 sequenced ZymoBIOMICS HMW Standard sequenced in this [paper](https://www.nature.com/articles/s41592-022-01539-7), and it successfully recovered the two plasmids present in the 7 strains present in that mock community.
 
 ## Quality Control
 
@@ -161,7 +159,7 @@ Please see [here](docs/quality_control.md) for more details and some examples.
 
 ## Metagenomes
 
-* `plassembler` is not currently recommended for metagenomic datasets, because of their high diversity, leading to difficulties in recovering chromosome-length contigs for bacteria. Additionally, Unicycler is not recommended for metagenomes. However,  `plassembler` was tested on a high depth simple mock community dataset. It worked quite nicely, but we don't anticipate it will work as well on your data!
+* `plassembler` is not currently recommended for metagenomic datasets, because of their high diversity, leading to difficulties in recovering chromosome-length contigs for bacteria. Additionally, Unicycler is not recommended for metagenomes. However,  `plassembler` was tested on a high depth very simple mock community dataset from this [paper](https://www.nature.com/articles/s41592-022-01539-7). It worked quite nicely, recovering the 5 known plasmids, but we don't anticipate it will work as well on your data! If you try it and it works please let us know.
 
 Please see [here](docs/metagenomics.md) for more details.
 

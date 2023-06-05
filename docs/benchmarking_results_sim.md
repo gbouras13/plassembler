@@ -6,7 +6,7 @@ The following Tables show the summary statistics of `plassembler` (with Flye and
 
 Accuracy was assessed using QUAST comparing plasmid assemblies against the ground truth.
 
-You can find the full pipeline used to generate these results [here](https://github.com/gbouras13/plassembler_simulation_benchmarking).
+You can find the full pipeline used to generate these results [here](https://github.com/gbouras13/plassembler_simulation_benchmarking) and the results themselves [here](https://zenodo.org/record/7996690).
 
 Time and Memory Usage
 ===============

@@ -4,7 +4,7 @@ All benchmarking was conducted on a Intel® Core™ i7-10700K CPU @ 3.80GHz on a
 
 The following Tables show the summary statistics of `plassembler` (with Flye and Raven) and Unicycler run from real read sets simulated from 6 samples from Wick, Judd, Wyres et al 2021. These were compared against the independent Trycyler derived and manually curated ground truth you can find [here](https://github.com/rrwick/Small-plasmid-Nanopore/blob/main/method.md). 
 
-You can find the full pipeline used to generate these results [here](https://github.com/gbouras13/plassembler_simulation_benchmarking).
+You can find the full pipeline used to generate these results [here](https://github.com/gbouras13/plassembler_simulation_benchmarking) and the results themselves [here](https://zenodo.org/record/7996690).
 
 You can find the full details on how the real read sets were obtained and subsampled [here](fastqs.md).
 

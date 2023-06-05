@@ -2,6 +2,7 @@
 [![codecov](https://codecov.io/gh/gbouras13/plassembler/branch/refactor/graph/badge.svg?token=4B1T2PGM9V)](https://codecov.io/gh/gbouras13/plassembler)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/plassembler/badges/version.svg)](https://anaconda.org/bioconda/plassembler)
 [![Bioconda Downloads](https://img.shields.io/conda/dn/bioconda/plassembler)](https://img.shields.io/conda/dn/bioconda/plassembler)
 [![PyPI version](https://badge.fury.io/py/plassembler.svg)](https://badge.fury.io/py/plassembler)
 [![Downloads](https://static.pepy.tech/badge/plassembler)](https://pepy.tech/project/plassembler)

@@ -10,7 +10,6 @@
 
 # plassembler
 
-
 ## Automated Bacterial Plasmid Assembly Program
 
 Plassembler is a program that is designed for automated & fast assembly of plasmids in  bacterial genomes that have been hybrid sequenced with long read & paired-end short read sequencing. It was originally designed for Oxford Nanopore Technologies long reads, but will also work with Pacbio reads. 
@@ -22,10 +21,19 @@ Additionally, I would recommend reading the following guides to bacterial genome
 *  [Perfect Bacterial Assembly Tutorial](https://github.com/rrwick/Perfect-bacterial-genome-tutorial)
 *  [Perfect bacterial assembly Paper](https://doi.org/10.1371/journal.pcbi.1010905)
 
+## Manuscript
+
+Plassembler has been recently published in *Bioinformatics*:
+
+George Bouras, Anna E. Sheppard, Vijini Mallawaarachchi, Sarah Vreugde, Plassembler: an automated bacterial plasmid assembly tool, Bioinformatics, btad409, https://doi.org/10.1093/bioinformatics/btad409.
+
+If you use Plassembler, please see the full [Citations](#citations) section for a list of all programs Plassembler uses under the hood, in order to fully recognise the creators of these tools for their work.
+
 ## Table of Contents
 
 - [plassembler](#plassembler)
   - [Automated Bacterial Plasmid Assembly Program](#automated-bacterial-plasmid-assembly-program)
+  - [Manuscript](#manuscript)
   - [Table of Contents](#table-of-contents)
   - [Quick Start](#quick-start)
   - [Latest Version](#latest-version)

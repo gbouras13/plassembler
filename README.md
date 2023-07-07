@@ -25,7 +25,7 @@ Additionally, I would recommend reading the following guides to bacterial genome
 
 Plassembler has been recently published in *Bioinformatics*:
 
-George Bouras, Anna E. Sheppard, Vijini Mallawaarachchi, Sarah Vreugde, Plassembler: an automated bacterial plasmid assembly tool, Bioinformatics, btad409, https://doi.org/10.1093/bioinformatics/btad409.
+George Bouras, Anna E. Sheppard, Vijini Mallawaarachchi, Sarah Vreugde, Plassembler: an automated bacterial plasmid assembly tool, Bioinformatics, Volume 39, Issue 7, July 2023, btad409, https://doi.org/10.1093/bioinformatics/btad409.
 
 If you use Plassembler, please see the full [Citations](#citations) section for a list of all programs Plassembler uses under the hood, in order to fully recognise the creators of these tools for their work.
 

@@ -458,7 +458,7 @@ def run(
 
             # for long, custom function is quick enough
             logger.info("Processing Sam/Bam Files and extracting Fastqs.")
-            extract_bin_long_fastqs(outdir)
+            extract_bin_long_fastqs(outdir,threads)
 
             # for short, too slow so use samtools
             samfile: Path = Path(outdir) / "short_read.sam"
@@ -631,7 +631,7 @@ def run(
 
             # for long, custom function is quick enough
             logger.info("Processing Sam/Bam Files and extracting Fastqs.")
-            extract_bin_long_fastqs(outdir)
+            extract_bin_long_fastqs(outdir,threads)
 
             # for short, too slow so use samtools
             samfile: Path = Path(outdir) / "short_read.sam"
@@ -1171,7 +1171,7 @@ def long(
 
             # for long, custom function is quick enough
             logger.info("Processing Sam/Bam Files and extracting Fastqs.")
-            extract_bin_long_fastqs(outdir)
+            extract_bin_long_fastqs(outdir,threads)
             plass.get_depth_long(logdir, pacbio_model, threads)
 
             # run mash

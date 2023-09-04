@@ -27,7 +27,10 @@ from plassembler.utils.plass_class import Assembly, Plass
 from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp
 from plassembler.utils.run_mash import mash_sketch, run_mash
 from plassembler.utils.run_unicycler import run_unicycler
-from plassembler.utils.sam_to_fastq import extract_bin_long_fastqs
+from plassembler.utils.sam_to_fastq import (
+    extract_long_fastqs_slow_keep_fastqs,
+    extract_long_fastqs_fast,
+)
 from plassembler.utils.test_incompatibility import incompatbility
 from plassembler.utils.util import get_version, print_citation
 
@@ -458,7 +461,12 @@ def run(
 
             # for long, custom function is quick enough
             logger.info("Processing Sam/Bam Files and extracting Fastqs.")
-            extract_bin_long_fastqs(outdir)
+            samfile: Path = Path(outdir) / "long_read.sam"
+            plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
+            if keep_fastqs is True:  # if keep_fastq
+                extract_long_fastqs_slow_keep_fastqs(outdir, samfile, plasmidfastqs)
+            else:
+                extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
             # for short, too slow so use samtools
             samfile: Path = Path(outdir) / "short_read.sam"
@@ -631,7 +639,12 @@ def run(
 
             # for long, custom function is quick enough
             logger.info("Processing Sam/Bam Files and extracting Fastqs.")
-            extract_bin_long_fastqs(outdir)
+            samfile: Path = Path(outdir) / "long_read.sam"
+            plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
+            if keep_fastqs is True:  # if keep_fastq
+                extract_long_fastqs_slow_keep_fastqs(outdir, samfile, plasmidfastqs)
+            else:
+                extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
             # for short, too slow so use samtools
             samfile: Path = Path(outdir) / "short_read.sam"
@@ -1171,7 +1184,9 @@ def long(
 
             # for long, custom function is quick enough
             logger.info("Processing Sam/Bam Files and extracting Fastqs.")
-            extract_bin_long_fastqs(outdir)
+            samfile: Path = Path(outdir) / "long_read.sam"
+            plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
+            extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
             plass.get_depth_long(logdir, pacbio_model, threads)
 
             # run mash

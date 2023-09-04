@@ -39,7 +39,7 @@ from src.plassembler.utils.input_commands import (
 )
 from src.plassembler.utils.plass_class import Plass
 from src.plassembler.utils.qc import copy_sr_fastq_file
-from src.plassembler.utils.sam_to_fastq import extract_bin_long_fastqs
+
 
 # data
 test_data = Path("tests/test_data")
@@ -105,15 +105,6 @@ class test_unicycler_success(unittest.TestCase):
         plass.check_unicycler_success(unicycler_output_dir)
         self.assertEqual(expected_return, True)
 
-
-class test_sam_to_fastq_long(unittest.TestCase):
-    """Test for sam to fastq convertion with pysam"""
-
-    # long read map
-    def test_sam_to_fastq_long(self):
-        expected_return = True
-        extract_bin_long_fastqs(map_dir)
-        self.assertEqual(expected_return, True)
 
 
 class TestInputCommands(unittest.TestCase):

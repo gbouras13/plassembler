@@ -1,3 +1,0 @@
-[M::bam2fq_mainloop] discarded 0 singletons
-[M::bam2fq_mainloop] processed 0 reads
-Command line: samtools fastq -@ 1 tests/test_data/map_dir/unmapped_bam_file.bam -1 tests/test_data/map_dir/unmapped_R1.fastq -2 tests/test_data/map_dir/unmapped_R2.fastq -0 /dev/null -s /dev/null -n

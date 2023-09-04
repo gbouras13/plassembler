@@ -21,13 +21,13 @@ from src.plassembler.utils.bam import bam_to_fastq_short, sam_to_bam, split_bams
 from src.plassembler.utils.cleanup import remove_directory, remove_file
 from src.plassembler.utils.external_tools import ExternalTool
 from src.plassembler.utils.mapping import minimap_long_reads, minimap_short_reads
+from src.plassembler.utils.qc import chopper, fastp
+from src.plassembler.utils.run_mash import get_contig_count, mash_sketch, run_mash
+from src.plassembler.utils.run_unicycler import run_unicycler
 from src.plassembler.utils.sam_to_fastq import (
     extract_long_fastqs_fast,
     extract_long_fastqs_slow_keep_fastqs,
 )
-from src.plassembler.utils.qc import chopper, fastp
-from src.plassembler.utils.run_mash import get_contig_count, mash_sketch, run_mash
-from src.plassembler.utils.run_unicycler import run_unicycler
 
 test_data = Path("tests/test_data")
 val_data = Path(f"{test_data}/validation")

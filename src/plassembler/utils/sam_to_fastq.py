@@ -1,9 +1,8 @@
 import os
+import subprocess as sp
 from collections import defaultdict
 
 import pysam
-import subprocess as sp
-
 
 
 def extract_long_fastqs_slow_keep_fastqs(out_dir, samname, plasmidname):
@@ -183,13 +182,10 @@ def extract_long_fastqs_slow_keep_fastqs(out_dir, samname, plasmidname):
 Thanks to @fanvanf
 """
 
+
 def extract_long_fastqs_fast(sam_name, plasmidfile, threads):
-    #sam_name = os.path.join(out_dir, "long_read.sam")
-    #plasmidfile = os.path.join(out_dir, "plasmid_long.fastq")
+    # sam_name = os.path.join(out_dir, "long_read.sam")
+    # plasmidfile = os.path.join(out_dir, "plasmid_long.fastq")
 
-    cmd=f"samtools  view -@ {threads} {sam_name} | awk '{{if((($3 ~ /plas/)&& ($2 == \"0\"|| $2 == \"16\"))||($2 == \"4\")) print \"@\"$1\"\\n\"$10\"\\n+\"$1\"\\n\"$11}}' > {plasmidfile}"
-    sp.run(cmd,shell=True)
-
-
-
-
+    cmd = f'samtools  view -@ {threads} {sam_name} | awk \'{{if((($3 ~ /plas/)&& ($2 == "0"|| $2 == "16"))||($2 == "4")) print "@"$1"\\n"$10"\\n+"$1"\\n"$11}}\' > {plasmidfile}'
+    sp.run(cmd, shell=True)

@@ -40,7 +40,6 @@ from src.plassembler.utils.input_commands import (
 from src.plassembler.utils.plass_class import Plass
 from src.plassembler.utils.qc import copy_sr_fastq_file
 
-
 # data
 test_data = Path("tests/test_data")
 val_data = Path(f"{test_data}/validation")
@@ -104,7 +103,6 @@ class test_unicycler_success(unittest.TestCase):
         unicycler_output_dir = Path(f"{test_data}/unicycler_output")
         plass.check_unicycler_success(unicycler_output_dir)
         self.assertEqual(expected_return, True)
-
 
 
 class TestInputCommands(unittest.TestCase):

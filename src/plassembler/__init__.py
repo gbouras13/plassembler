@@ -28,8 +28,8 @@ from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp
 from plassembler.utils.run_mash import mash_sketch, run_mash
 from plassembler.utils.run_unicycler import run_unicycler
 from plassembler.utils.sam_to_fastq import (
-    extract_long_fastqs_slow_keep_fastqs,
     extract_long_fastqs_fast,
+    extract_long_fastqs_slow_keep_fastqs,
 )
 from plassembler.utils.test_incompatibility import incompatbility
 from plassembler.utils.util import get_version, print_citation

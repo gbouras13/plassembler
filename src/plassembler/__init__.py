@@ -33,6 +33,8 @@ from plassembler.utils.sam_to_fastq import (
 )
 from plassembler.utils.test_incompatibility import incompatbility
 from plassembler.utils.util import get_version, print_citation
+from plassembler.utils.run_canu import run_canu, make_blastdb, run_blast, process_blast_output
+
 
 log_fmt = (
     "[<green>{time:YYYY-MM-DD HH:mm:ss}</green>] <level>{level: <8}</level> | "
@@ -54,7 +56,8 @@ def begin_plassembler(outdir, force):
     # remove outdir on force
     if force is True:
         if os.path.isdir(outdir) is True:
-            shutil.rmtree(outdir)
+            #shutil.rmtree(outdir)
+            print('l')
         else:
             logger.info(
                 f"--force was specified even though the directory {outdir} does not already exist. Continuing "
@@ -919,7 +922,6 @@ def download(ctx, database, force, **kwargs):
 long only
 """
 
-
 def long_options(func):
     """Run command line args
     Define common command line args here, and include them with the @common_options decorator below.
@@ -1083,27 +1085,27 @@ def long(
     if pacbio_model != "nothing":
         pacbio_model = validate_pacbio_model(pacbio_model)
 
-    if skip_qc is False:
-        # filtering long readfastq
-        logger.info("Filtering long reads with chopper")
-        chopper(  # due to the stdin side of this, just implement the class maually in py
-            longreads, outdir, min_length, min_quality, long_zipped, threads, logdir
-        )
+    # if skip_qc is False:
+    #     # filtering long readfastq
+    #     logger.info("Filtering long reads with chopper")
+    #     chopper(  # due to the stdin side of this, just implement the class maually in py
+    #         longreads, outdir, min_length, min_quality, long_zipped, threads, logdir
+    #     )
 
-    else:  # copy the input to the outdir
-        shutil.copy2(
-            longreads,
-            Path(f"{outdir}/chopper_long_reads.fastq.gz"),
-        )
+    # else:  # copy the input to the outdir
+    #     shutil.copy2(
+    #         longreads,
+    #         Path(f"{outdir}/chopper_long_reads.fastq.gz"),
+    #     )
 
-    # Raven for long only or '--use_raven'
-    if use_raven is True:
-        logger.info(f"--use_raven is {use_raven}. Using Raven for long read assembly.")
-        logger.info("Running Raven.")
-        run_raven(outdir, threads, logdir)
-    else:
-        logger.info("Running Flye.")
-        run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
+    # # Raven for long only or '--use_raven'
+    # if use_raven is True:
+    #     logger.info(f"--use_raven is {use_raven}. Using Raven for long read assembly.")
+    #     logger.info("Running Raven.")
+    #     run_raven(outdir, threads, logdir)
+    # else:
+    #     logger.info("Running Flye.")
+    #     run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
 
     # instanatiate the class with some of the commands
     plass = Plass()
@@ -1187,6 +1189,20 @@ def long(
             samfile: Path = Path(outdir) / "long_read.sam"
             plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
             extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
+
+            # canu
+            logger.info("Running canu.")
+            if pacbio_model != "":
+                canu_nano_or_pacbio = "pacbio"
+            else:
+                canu_nano_or_pacbio = "nanopore"
+            canu_output_dir: Path = Path(outdir) / "canu"
+            run_canu(threads, logdir, plasmidfastqs, canu_output_dir, canu_nano_or_pacbio)
+            make_blastdb(canu_output_dir, logdir)
+            run_blast(canu_output_dir, threads, logdir)
+            process_blast_output(canu_output_dir, outdir)
+
+
             plass.get_depth_long(logdir, pacbio_model, threads)
 
             # run mash
@@ -1204,7 +1220,7 @@ def long(
             # combine depth and mash tsvs
             plass.combine_depth_mash_tsvs(prefix)
 
-            # rename contigs and update copy bumber with plsdb
+            # rename contigs and update copy number with plsdb
             plass.finalise_contigs_long(prefix)
 
             # cleanup files
@@ -1218,13 +1234,13 @@ def long(
                 use_raven,
             )
 
-            remove_intermediate_files(
-                outdir,
-                keep_chromosome,
-                False,  # assembled mode
-                True,  # long only
-                use_raven,
-            )
+            # remove_intermediate_files(
+            #     outdir,
+            #     keep_chromosome,
+            #     False,  # assembled mode
+            #     True,  # long only
+            #     use_raven,
+            # )
 
     # end plassembler
     end_plassembler(start_time)

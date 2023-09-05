@@ -163,7 +163,7 @@ def check_dependencies():
         logger.error("Raven not found")
 
     # unicycler
-    
+
     process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT)
     unicycler_out, _ = process.communicate()
     unicycler_out = unicycler_out.decode()

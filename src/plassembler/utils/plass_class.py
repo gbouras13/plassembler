@@ -423,28 +423,45 @@ class Plass:
         outdir = self.outdir
 
         input_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
-        fasta: Path = Path(outdir) / "plasmids.fasta"
+        plas_fasta: Path = Path(outdir) / "plasmids_canu.fasta"
+        chromosome: Path = Path(outdir) / "chromosome.fasta"
+        combined_fasta: Path = Path(outdir) / "long_combined.fasta"
         sam_file: Path = Path(outdir) / "combined_long.sam"
         sorted_bam: Path = Path(outdir) / "combined_sorted_long.bam"
 
+        # # write to combined fasta
+
+        # Create a list to hold the combined sequences
+        combined_sequences = []
+
+        # Read and append sequences from the first FASTA file
+        for record in SeqIO.parse(chromosome, 'fasta'):
+            combined_sequences.append(record)
+
+        # Read and append sequences from the second FASTA file
+        for record in SeqIO.parse(plas_fasta, 'fasta'):
+            combined_sequences.append(record)
+
+        # Write the combined sequences to the output file
+        SeqIO.write(combined_sequences, combined_fasta, 'fasta')
+
+
         # map
         minimap_long_reads(
-            input_long_reads, fasta, sam_file, threads, pacbio_model, logdir
+            input_long_reads, combined_fasta, sam_file, threads, pacbio_model, logdir
         )
         # sort
         sam_to_sorted_bam(sam_file, sorted_bam, threads, logdir)
 
         # get contig lengths
-
-        fasta: Path = Path(outdir) / "plasmids.fasta"
-        contig_lengths = get_contig_lengths(fasta)
+        contig_lengths = get_contig_lengths(combined_fasta)
 
         # depths
         long_bam_file: Path = Path(outdir) / "combined_sorted_long.bam"
         depthsLong = get_depths_from_bam(long_bam_file, contig_lengths)
 
         # circular status
-        circular_status = get_contig_circularity(fasta)
+        circular_status = get_contig_circularity(combined_fasta)
         summary_depth_df_long = collate_depths(depthsLong, "long", contig_lengths)
 
         # save the depth df in the class
@@ -702,23 +719,10 @@ class Plass:
         i = 0
         with open(os.path.join(outdir, prefix + "_plasmids.fasta"), "w") as dna_fa:
             for dna_record in SeqIO.parse(plasmid_fasta, "fasta"):
-                if "circular" in dna_record.description:  # circular contigs
-                    id_updated = (
-                        dna_record.description.split(" ")[0]
-                        + " "
-                        + " plasmid_copy_number_long="
-                        + str(combined_depth_mash_df.plasmid_copy_number_long[i])
-                        + "x "
-                        + "circular=true"
-                    )
-                else:  # long only
-                    id_updated = (
-                        dna_record.description.split(" ")[0]
-                        + " "
-                        + " plasmid_copy_number_long="
-                        + str(combined_depth_mash_df.plasmid_copy_number_long[i])
-                        + "x "
-                    )
+                id = dna_record.id
+                l = len(dna_record.seq)
+                copy_number = combined_depth_mash_df.plasmid_copy_number_long[i]
+                id_updated = f"{id} len={l} plasmid_copy_number_long={copy_number}x"
                 i += 1
                 record = SeqRecord(dna_record.seq, id=id_updated, description="")
                 SeqIO.write(record, dna_fa, "fasta")

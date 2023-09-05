@@ -157,9 +157,11 @@ def process_blast_output(canu_output_dir, outdir):
         tmp_df_sorted = tmp_df_sorted[tmp_df_sorted["qlen"] != tmp_df_sorted["length"]]
         # more than 99% identical
         tmp_df_sorted = tmp_df_sorted[tmp_df_sorted["pident"] > 99]
+        # starts need to be < 100
+        tmp_df_sorted = tmp_df_sorted[tmp_df_sorted["qstart"] < 100]
         num_rows = tmp_df_sorted.shape[0]
         if num_rows == 0:  # where there is no dupe at all
-            fasta_dict[contig]["dupe"] = 1
+            fasta_dict[contig]["dupe"] = False
             # exit
         else:
             # Get the first row
@@ -167,30 +169,30 @@ def process_blast_output(canu_output_dir, outdir):
             # ensure the match is good
             if (
                 first_row["length"] < 500
-            ):  # less than 500bp repeat in the top hit - probably IS not a real plasmid dupe
-                # exit
-                print("exit")
+            ):  # less than 500bp repeat in the top hit - probably Insertion Seq not a real plasmid dupe
+                fasta_dict[contig]["dupe"] = False
             else:
-                # the repeat will be in the longest hit with qstart = 1
-                best_row = tmp_df_sorted[tmp_df_sorted["qstart"] == 1].iloc[0]
-                # if the query end is larger than the sstart - there is an overlap
-                # take 1 as the start and then the sstart as the end
-                # otherwise check for  concatenation (within 50))
-                # otherwise exit just the whole plasmid
-                if best_row["qend"] > best_row["sstart"]:
-                    fasta_dict[contig]["dupe"] = True
-                    fasta_dict[contig]["start"] = 1
-                    fasta_dict[contig]["end"] = best_row["sstart"]
-                elif (best_row["qend"] + 100) > best_row[
-                    "sstart"
-                ]:  # likely to be pure duplication if within 100bp
-                    fasta_dict[contig]["dupe"] = True
-                    fasta_dict[contig]["start"] = 1
-                    fasta_dict[contig]["end"] = best_row["qend"]
-                else:
-                    print("no duplication detected")
-
-    print(fasta_dict)
+                # the repeat will be in the longest hit with qstart < 100  (usually 1 or very close to it)
+                try:
+                    best_row = tmp_df_sorted.iloc[0]
+                    # if the query end is larger than the sstart - there is an overlap
+                    # take 1 as the start and then the sstart as the end
+                    # otherwise check for  concatenation (within 50))
+                    # otherwise exit just the whole plasmid
+                    if best_row["qend"] > best_row["sstart"]:
+                        fasta_dict[contig]["dupe"] = True
+                        fasta_dict[contig]["start"] = best_row["qstart"]
+                        fasta_dict[contig]["end"] = best_row["sstart"]
+                    elif (best_row["qend"] + 100) > best_row[
+                        "sstart"
+                    ]:  # likely to be pure duplication if within 100bp
+                        fasta_dict[contig]["dupe"] = True
+                        fasta_dict[contig]["start"] = best_row["qstart"]
+                        fasta_dict[contig]["end"] = best_row["qend"]
+                    else:
+                        fasta_dict[contig]["dupe"] = False
+                except Exception:
+                    logger.error("Flye not found. Please reinstall Plassembler.")
 
     # Create a list of SeqRecord objects
     records = []
@@ -207,7 +209,7 @@ def process_blast_output(canu_output_dir, outdir):
         records.append(record)
 
     # Write the records to a FASTA file
-    output_filename: Path = Path(outdir) / "plasmids.fasta"
+    output_filename: Path = Path(outdir) / "plasmids_canu.fasta"
     with open(output_filename, "w") as output_handle:
         SeqIO.write(records, output_handle, "fasta")
 

@@ -54,9 +54,10 @@ def remove_intermediate_files(
     remove_file(os.path.join(out_dir, "chopper_long_reads.fastq.gz"))
     remove_file(os.path.join(out_dir, "multimap_plasmid_chromosome_long.fastq"))
 
-    # multimer
-    remove_file(os.path.join(out_dir, "mapping.paf"))
-
+    # long
+    remove_file(os.path.join(out_dir, "plasmids_canu.fasta"))
+    remove_file(os.path.join(out_dir, "plasmid_long.fastq"))
+    
     # chromosome
     if keep_chromosome is False:
         remove_file(os.path.join(out_dir, "chromosome.fasta"))

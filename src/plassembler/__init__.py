@@ -60,8 +60,7 @@ def begin_plassembler(outdir, force):
     # remove outdir on force
     if force is True:
         if os.path.isdir(outdir) is True:
-            # shutil.rmtree(outdir)
-            print("l")
+            shutil.rmtree(outdir)
         else:
             logger.info(
                 f"--force was specified even though the directory {outdir} does not already exist. Continuing "
@@ -1090,27 +1089,27 @@ def long(
     if pacbio_model != "nothing":
         pacbio_model = validate_pacbio_model(pacbio_model)
 
-    # if skip_qc is False:
-    #     # filtering long readfastq
-    #     logger.info("Filtering long reads with chopper")
-    #     chopper(  # due to the stdin side of this, just implement the class maually in py
-    #         longreads, outdir, min_length, min_quality, long_zipped, threads, logdir
-    #     )
+    if skip_qc is False:
+        # filtering long readfastq
+        logger.info("Filtering long reads with chopper")
+        chopper(  # due to the stdin side of this, just implement the class maually in py
+            longreads, outdir, min_length, min_quality, long_zipped, threads, logdir
+        )
 
-    # else:  # copy the input to the outdir
-    #     shutil.copy2(
-    #         longreads,
-    #         Path(f"{outdir}/chopper_long_reads.fastq.gz"),
-    #     )
+    else:  # copy the input to the outdir
+        shutil.copy2(
+            longreads,
+            Path(f"{outdir}/chopper_long_reads.fastq.gz"),
+        )
 
-    # # Raven for long only or '--use_raven'
-    # if use_raven is True:
-    #     logger.info(f"--use_raven is {use_raven}. Using Raven for long read assembly.")
-    #     logger.info("Running Raven.")
-    #     run_raven(outdir, threads, logdir)
-    # else:
-    #     logger.info("Running Flye.")
-    #     run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
+    # Raven for long only or '--use_raven'
+    if use_raven is True:
+        logger.info(f"--use_raven is {use_raven}. Using Raven for long read assembly.")
+        logger.info("Running Raven.")
+        run_raven(outdir, threads, logdir)
+    else:
+        logger.info("Running Flye.")
+        run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
 
     # instanatiate the class with some of the commands
     plass = Plass()
@@ -1148,105 +1147,74 @@ def long(
         logger.error(message)
 
     else:
-        ####################################################################
-        # Only 1 contig
-        ####################################################################
+        # no_plasmids_flag = False as obviously "plasmids"
+        plass.no_plasmids_flag = False
 
-        if plass.contig_count == 1:
-            # chromosome identified but no plasmids - just finish
-            # end plassembler
-            move_and_copy_files(
-                outdir,
-                prefix,
-                False,  # unicycler success
-                False,  # keep fastqs
-                True,  # assembled mode
-                False,  # long only
-                use_raven,
-            )
-            remove_intermediate_files(
-                outdir,
-                keep_chromosome,
-                False,  # assembled mode
-                True,  # long only
-                use_raven,
-            )
-            logger.error("Chromosome identified but no plasmids.")
+        logger.info("Mapping long reads.")
+        input_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
+        fasta: Path = Path(outdir) / "flye_renamed.fasta"
+        samfile: Path = Path(outdir) / "long_read.sam"
+        minimap_long_reads(
+            input_long_reads, fasta, samfile, threads, pacbio_model, logdir
+        )
 
-        ####################################################################
-        # Multiple Contigs
-        ####################################################################
+        # for long, custom function is quick enough
+        logger.info("Processing Sam/Bam Files and extracting Fastqs.")
+        samfile: Path = Path(outdir) / "long_read.sam"
+        plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
+        extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
-        elif plass.contig_count > 1:
-            # no_plasmids_flag = False as obviously "plasmids"
-            plass.no_plasmids_flag = False
+        # canu
+        logger.info("Running canu.")
+        if pacbio_model != "":
+            canu_nano_or_pacbio = "pacbio"
+        else:
+            canu_nano_or_pacbio = "nanopore"
+        canu_output_dir: Path = Path(outdir) / "canu"
+        run_canu(
+            threads, logdir, plasmidfastqs, canu_output_dir, canu_nano_or_pacbio
+        )
+        make_blastdb(canu_output_dir, logdir)
+        run_blast(canu_output_dir, threads, logdir)
+        process_blast_output(canu_output_dir, outdir)
 
-            logger.info("Mapping long reads.")
-            input_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
-            fasta: Path = Path(outdir) / "flye_renamed.fasta"
-            samfile: Path = Path(outdir) / "long_read.sam"
-            minimap_long_reads(
-                input_long_reads, fasta, samfile, threads, pacbio_model, logdir
-            )
+        # depth
+        plass.get_depth_long(logdir, pacbio_model, threads)
 
-            # for long, custom function is quick enough
-            logger.info("Processing Sam/Bam Files and extracting Fastqs.")
-            samfile: Path = Path(outdir) / "long_read.sam"
-            plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
-            extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
+        # run mash
+        logger.info("Calculating mash distances to PLSDB.")
+        # mash sketches the plasmids
+        mash_sketch(outdir, os.path.join(outdir, "plasmids_canu.fasta"), logdir)
+        # runs mash
+        run_mash(outdir, database, logdir)
 
-            # canu
-            logger.info("Running canu.")
-            if pacbio_model != "":
-                canu_nano_or_pacbio = "pacbio"
-            else:
-                canu_nano_or_pacbio = "nanopore"
-            canu_output_dir: Path = Path(outdir) / "canu"
-            run_canu(
-                threads, logdir, plasmidfastqs, canu_output_dir, canu_nano_or_pacbio
-            )
-            make_blastdb(canu_output_dir, logdir)
-            run_blast(canu_output_dir, threads, logdir)
-            process_blast_output(canu_output_dir, outdir)
+        # processes output
+        plass.process_mash_tsv(database)
 
-            plass.get_depth_long(logdir, pacbio_model, threads)
+        # combine depth and mash tsvs
+        plass.combine_depth_mash_tsvs(prefix)
 
-            # run mash
-            logger.info("Calculating mash distances to PLSDB.")
+        # rename contigs and update copy number with plsdb
+        plass.finalise_contigs_long(prefix)
 
-            # mash sketches the plasmids
-            mash_sketch(outdir, os.path.join(outdir, "plasmids_initial.fasta"), logdir)
+        # cleanup files
+        move_and_copy_files(
+            outdir,
+            prefix,
+            False,  # unicycler success
+            False,  # keep fastqs
+            False,  # assembled mode
+            True,  # long only
+            use_raven,
+        )
 
-            # runs mash
-            run_mash(outdir, database, logdir)
-
-            # processes output
-            plass.process_mash_tsv(database)
-
-            # combine depth and mash tsvs
-            plass.combine_depth_mash_tsvs(prefix)
-
-            # rename contigs and update copy number with plsdb
-            plass.finalise_contigs_long(prefix)
-
-            # cleanup files
-            move_and_copy_files(
-                outdir,
-                prefix,
-                False,  # unicycler success
-                False,  # keep fastqs
-                False,  # assembled mode
-                True,  # long only
-                use_raven,
-            )
-
-            # remove_intermediate_files(
-            #     outdir,
-            #     keep_chromosome,
-            #     False,  # assembled mode
-            #     True,  # long only
-            #     use_raven,
-            # )
+        remove_intermediate_files(
+            outdir,
+            keep_chromosome,
+            False,  # assembled mode
+            True,  # long only
+            use_raven,
+        )
 
     # end plassembler
     end_plassembler(start_time)

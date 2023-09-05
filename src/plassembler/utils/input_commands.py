@@ -129,13 +129,7 @@ def check_dependencies():
         logger.error("Flye not found. Please reinstall Plassembler.")
 
     message = (
-        "Flye version found is v"
-        + str(flye_major_version)
-        + "."
-        + str(flye_minor_version)
-        + "."
-        + flye_minorest_version
-        + "."
+        f"Flye version found is v{flye_major_version}.{flye_minor_version}.{flye_minorest_version}."
     )
     logger.info(message)
 
@@ -164,25 +158,24 @@ def check_dependencies():
 
     # unicycler
 
-    process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT)
-    unicycler_out, _ = process.communicate()
-    unicycler_out = unicycler_out.decode()
-    logger.info(unicycler_out)
-    unicycler_version = unicycler_out.split(" ")[1]
-    # get rid of the "v"
-    logger.info(unicycler_version)
+    try:
+        process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT)
+        unicycler_out, _ = process.communicate()
+        unicycler_out = unicycler_out.decode()
+        unicycler_version = unicycler_out.split(" ")[1]
+        # get rid of the "v"
+        unicycler_version = unicycler_version[1:]
 
-    unicycler_version = unicycler_version[1:]
-    logger.info(unicycler_version)
+        unicycler_major_version = int(unicycler_version.split(".")[0])
+        unicycler_minor_version = int(unicycler_version.split(".")[1])
+        unicycler_minorest_version = int(unicycler_version.split(".")[2])
+    except Exception:
+        message = "Unicycler not found. Please re-install Unicycler, see instructions at https://github.com/gbouras13/plassembler."
+        logger.error(message)
 
-    unicycler_major_version = unicycler_version.split(".")[0]
-    unicycler_minor_version = int(unicycler_version.split(".")[1])
-    unicycler_minorest_version = int(unicycler_version.split(".")[2])
-    # except Exception:
-    #     message = "Unicycler not found. Please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler."
-    #     logger.error(message)
-
-    message = f"Unicycler version found is v{unicycler_major_version}.{unicycler_minor_version}.{unicycler_minorest_version}."
+    message = (
+        f"Unicycler version found is v{unicycler_major_version}.{unicycler_minor_version}.{unicycler_minorest_version}."
+    )
     logger.info(message)
 
     if unicycler_minor_version < 4:
@@ -205,7 +198,7 @@ def check_dependencies():
         spades_out = spades_out.decode()
         spades_version = spades_out.split(" ")[3]
         spades_version = spades_version.split("\n")[0]
-        message = "SPAdes " + str(spades_version) + " found."
+        message = f"SPAdes {spades_version} found."
         logger.info(message)
     except Exception:
         logger.error("SPAdes not found.")
@@ -218,7 +211,7 @@ def check_dependencies():
         samtools_version = samtools_out.split("\n")[0].split(" ")[
             1
         ]  # get second line, and then second component of line
-        message = "Samtools v" + str(samtools_version) + " found."
+        message = f"Samtools v{samtools_version} found."
         logger.info(message)
     except Exception:
         logger.error("Samtools not found.")
@@ -229,7 +222,7 @@ def check_dependencies():
         minimap2_out, _ = process.communicate()
         minimap2_version = minimap2_out.decode()
         minimap2_version = minimap2_version.split("\n")[0]
-        message = "minimap2 v" + str(minimap2_version) + " found."
+        message = f"minimap2 v{minimap2_version} found."
         logger.info(message)
     except Exception:
         logger.error("minimap2 not found.")
@@ -240,7 +233,7 @@ def check_dependencies():
         _, fastp_out = process.communicate()
         fastp_version = fastp_out.decode()
         fastp_version = fastp_version.split("\n")[0].split(" ")[1]
-        message = "fastp v" + str(fastp_version) + " found."
+        message = f"fastp v{fastp_version} found."
         logger.info(message)
     except Exception:
         logger.error("fastp not found.")
@@ -251,7 +244,7 @@ def check_dependencies():
         chopper_out, _ = process.communicate()
         chopper_version = chopper_out.decode()
         chopper_version = chopper_version.split("\n")[0].split(" ")[1]
-        message = "chopper v" + str(chopper_version) + " found."
+        message = f"chopper v{chopper_version} found."
         logger.info(message)
     except Exception:
         logger.error("chopper not found.")
@@ -266,10 +259,42 @@ def check_dependencies():
             if "version" in line:
                 version_line.append(line)
         mash_version = version_line[0].split(" ")[2]
-        message = "mash v" + str(mash_version) + " found."
+        message = f"mash v{mash_version} found."
         logger.info(message)
     except Exception:
         logger.error("mash not found")
+
+
+    # canu
+    try:
+        process = sp.Popen(["canu", "--version"], stdout=sp.PIPE, stderr=sp.PIPE)
+        canu_out, _ = process.communicate()
+        canu_out = canu_out.decode()
+        canu_out = canu_out.split("\n")[0].split(" ")[1]
+        message = f"canu v{canu_out} found."
+        logger.info(message)
+    except Exception:
+        logger.error("canu not found")
+
+    # blast
+
+    try:
+        process = sp.Popen(["blastn", "-version"], stdout=sp.PIPE, stderr=sp.STDOUT)
+        blast_out, _ = process.communicate()
+        blast_out = blast_out.decode().strip()
+        blast_out = blast_out.split("\n")[0]
+        blast_version = blast_out.split(" ")[1]
+        blast_version = blast_version.strip("+")
+        blast_major_version = int(blast_version.split(".")[0])
+        blast_minor_version = int(blast_version.split(".")[1])
+        blast_minorest_version = int(blast_version.split(".")[2])
+        message = (
+            f"BLAST version found is v{blast_major_version}.{blast_minor_version}.{blast_minorest_version}."
+        )
+        logger.info(message)
+    except Exception:
+        message = "BLAST not found."
+        logger.error(message)
 
     # all dependencies found
     logger.info("All dependencies found.")

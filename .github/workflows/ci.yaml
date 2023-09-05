@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [macos-latest, ubuntu-latest]
         python-version: ["3.8", "3.9"]
 
     steps:
@@ -45,6 +45,8 @@ jobs:
         run: just check-fmt
       - name: Test and generate coverage report with pytest
         shell: bash -l {0}
+        # need to set TERM to linux for some reason,kept getting a nasty error that was breaking unicycler 
+        # https://github.com/cypress-io/cypress/issues/15679
         run: |
           export TERM=linux
           unicycler --version

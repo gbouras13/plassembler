@@ -22,17 +22,16 @@ install:
 
 # run all tests
 test opts="":
-    poetry run pytest -vv {{opts}} tests/test_end_to_end.py
-    #poetry run pytest -vv {{opts}} tests/
+    poetry run pytest -vv {{opts}} tests/
 
 # run tests with coverage report
 coverage:
-    poetry run pytest --cov-report term --cov-report html --cov={{ PROJECT }} --cov-branch tests/test_end_to_end.py
+    poetry run pytest --cov-report term --cov-report html --cov={{ PROJECT }} --cov-branch tests/
     {{ OPEN }} htmlcov/index.html
 
 # run tests on the CI
 test-ci:
-    poetry run pytest --cov={{ PROJECT }} --cov-report=xml --cov-branch tests/test_end_to_end.py
+    poetry run pytest --cov={{ PROJECT }} --cov-report=xml --cov-branch tests/
 
 # prints out the commands to run to tag the release and push it
 tag:

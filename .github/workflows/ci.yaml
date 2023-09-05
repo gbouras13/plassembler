@@ -46,6 +46,7 @@ jobs:
       - name: Test and generate coverage report with pytest
         shell: bash -l {0}
         run: |
+          export TERM=linux
           unicycler --version
           just test-ci
       - name: Upload coverage reports to Codecov

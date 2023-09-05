@@ -167,9 +167,13 @@ def check_dependencies():
     process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT)
     unicycler_out, _ = process.communicate()
     unicycler_out = unicycler_out.decode()
+    logger.info(unicycler_version)
     unicycler_version = unicycler_out.split(" ")[1]
     # get rid of the "v"
+    logger.info(unicycler_version)
+
     unicycler_version = unicycler_version[1:]
+    logger.info(unicycler_version)
 
     unicycler_major_version = unicycler_version.split(".")[0]
     unicycler_minor_version = int(unicycler_version.split(".")[1])

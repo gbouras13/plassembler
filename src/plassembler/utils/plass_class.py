@@ -423,7 +423,7 @@ class Plass:
         outdir = self.outdir
 
         input_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
-        fasta: Path = Path(outdir) / "flye_renamed.fasta"
+        fasta: Path = Path(outdir) / "plasmids.fasta"
         sam_file: Path = Path(outdir) / "combined_long.sam"
         sorted_bam: Path = Path(outdir) / "combined_sorted_long.bam"
 
@@ -436,7 +436,7 @@ class Plass:
 
         # get contig lengths
 
-        fasta: Path = Path(outdir) / "flye_renamed.fasta"
+        fasta: Path = Path(outdir) / "plasmids.fasta"
         contig_lengths = get_contig_lengths(fasta)
 
         # depths

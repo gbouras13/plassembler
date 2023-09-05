@@ -25,6 +25,12 @@ from plassembler.utils.mapping import minimap_long_reads, minimap_short_reads
 # import classes
 from plassembler.utils.plass_class import Assembly, Plass
 from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp
+from plassembler.utils.run_canu import (
+    make_blastdb,
+    process_blast_output,
+    run_blast,
+    run_canu,
+)
 from plassembler.utils.run_mash import mash_sketch, run_mash
 from plassembler.utils.run_unicycler import run_unicycler
 from plassembler.utils.sam_to_fastq import (
@@ -33,8 +39,6 @@ from plassembler.utils.sam_to_fastq import (
 )
 from plassembler.utils.test_incompatibility import incompatbility
 from plassembler.utils.util import get_version, print_citation
-from plassembler.utils.run_canu import run_canu, make_blastdb, run_blast, process_blast_output
-
 
 log_fmt = (
     "[<green>{time:YYYY-MM-DD HH:mm:ss}</green>] <level>{level: <8}</level> | "
@@ -56,8 +60,8 @@ def begin_plassembler(outdir, force):
     # remove outdir on force
     if force is True:
         if os.path.isdir(outdir) is True:
-            #shutil.rmtree(outdir)
-            print('l')
+            # shutil.rmtree(outdir)
+            print("l")
         else:
             logger.info(
                 f"--force was specified even though the directory {outdir} does not already exist. Continuing "
@@ -922,6 +926,7 @@ def download(ctx, database, force, **kwargs):
 long only
 """
 
+
 def long_options(func):
     """Run command line args
     Define common command line args here, and include them with the @common_options decorator below.
@@ -1197,11 +1202,12 @@ def long(
             else:
                 canu_nano_or_pacbio = "nanopore"
             canu_output_dir: Path = Path(outdir) / "canu"
-            run_canu(threads, logdir, plasmidfastqs, canu_output_dir, canu_nano_or_pacbio)
+            run_canu(
+                threads, logdir, plasmidfastqs, canu_output_dir, canu_nano_or_pacbio
+            )
             make_blastdb(canu_output_dir, logdir)
             run_blast(canu_output_dir, threads, logdir)
             process_blast_output(canu_output_dir, outdir)
-
 
             plass.get_depth_long(logdir, pacbio_model, threads)
 

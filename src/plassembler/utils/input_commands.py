@@ -155,7 +155,7 @@ def check_dependencies():
         raven_out, _ = process.communicate()
         raven_version = raven_out.decode()
         raven_version = raven_version.split("\n")[0]
-        message = "Raven v" + str(raven_version) + " found."
+        message = f"Raven v{raven_version} found."
         logger.info(message)
         message = "Raven version is ok."
         logger.info(message)
@@ -171,7 +171,7 @@ def check_dependencies():
     # get rid of the "v"
     unicycler_version = unicycler_version[1:]
 
-    unicycler_major_version = int(unicycler_version.split(".")[0])
+    unicycler_major_version = unicycler_version.split(".")[0]
     unicycler_minor_version = int(unicycler_version.split(".")[1])
     unicycler_minorest_version = int(unicycler_version.split(".")[2])
     # except Exception:
@@ -179,13 +179,7 @@ def check_dependencies():
     #     logger.error(message)
 
     message = (
-        "Unicycler version found is v"
-        + str(unicycler_major_version)
-        + "."
-        + str(unicycler_minor_version)
-        + "."
-        + str(unicycler_minorest_version)
-        + "."
+        f"Unicycler version found is v{unicycler_major_version}.{unicycler_minor_version}.{unicycler_minorest_version}."
     )
     logger.info(message)
 

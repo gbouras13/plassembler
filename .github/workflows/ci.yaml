@@ -37,6 +37,8 @@ jobs:
         run: |
           mamba install python=${{ matrix.python-version }}
           just install
+          python -m pip install --upgrade pip
+          pip3 install git+https://github.com/rrwick/Unicycler.git
       - name: Check formatting
         shell: bash -l {0}
         run: just check-fmt

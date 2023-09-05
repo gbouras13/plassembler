@@ -163,20 +163,20 @@ def check_dependencies():
         logger.error("Raven not found")
 
     # unicycler
-    try:
-        process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT)
-        unicycler_out, _ = process.communicate()
-        unicycler_out = unicycler_out.decode()
-        unicycler_version = unicycler_out.split(" ")[1]
-        # get rid of the "v"
-        unicycler_version = unicycler_version[1:]
+    
+    process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT)
+    unicycler_out, _ = process.communicate()
+    unicycler_out = unicycler_out.decode()
+    unicycler_version = unicycler_out.split(" ")[1]
+    # get rid of the "v"
+    unicycler_version = unicycler_version[1:]
 
-        unicycler_major_version = int(unicycler_version.split(".")[0])
-        unicycler_minor_version = int(unicycler_version.split(".")[1])
-        unicycler_minorest_version = int(unicycler_version.split(".")[2])
-    except Exception:
-        message = "Unicycler not found. Please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler."
-        logger.error(message)
+    unicycler_major_version = int(unicycler_version.split(".")[0])
+    unicycler_minor_version = int(unicycler_version.split(".")[1])
+    unicycler_minorest_version = int(unicycler_version.split(".")[2])
+    # except Exception:
+    #     message = "Unicycler not found. Please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler."
+    #     logger.error(message)
 
     message = (
         "Unicycler version found is v"

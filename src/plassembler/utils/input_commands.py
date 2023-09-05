@@ -178,9 +178,7 @@ def check_dependencies():
     #     message = "Unicycler not found. Please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler."
     #     logger.error(message)
 
-    message = (
-        f"Unicycler version found is v{unicycler_major_version}.{unicycler_minor_version}.{unicycler_minorest_version}."
-    )
+    message = f"Unicycler version found is v{unicycler_major_version}.{unicycler_minor_version}.{unicycler_minorest_version}."
     logger.info(message)
 
     if unicycler_minor_version < 4:

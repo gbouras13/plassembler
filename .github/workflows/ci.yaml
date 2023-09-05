@@ -27,7 +27,7 @@ jobs:
           activate-environment: plassembler
           environment-file: build/environment.yaml
           python-version: ${{ matrix.python-version }}
-          auto-activate-base: false
+          auto-activate-base: true
           miniforge-variant: Mambaforge
           channels: conda-forge,bioconda,defaults
           channel-priority: strict
@@ -36,10 +36,8 @@ jobs:
         shell: bash -l {0}
         run: |
           mamba install python=${{ matrix.python-version }}
+          mamba install unicycler
           just install
-          python -m pip install --upgrade pip
-          pip3 install git+https://github.com/rrwick/Unicycler.git
-          unicycler --help
       - name: Check formatting
         shell: bash -l {0}
         run: just check-fmt

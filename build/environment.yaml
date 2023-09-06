@@ -14,6 +14,7 @@ dependencies:
   - samtools >=0.15.0
   - canu >=2.2
   - blast >=2.10
+  - dnaapler >= 0.3.1
   - just
   - poetry
   - python >=3.8,<3.10

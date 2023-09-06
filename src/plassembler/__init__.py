@@ -1176,6 +1176,13 @@ def long(
         run_blast(canu_output_dir, threads, logdir)
         process_blast_output(canu_output_dir, outdir)
 
+        # dnaapler
+
+
+
+        
+
+
         # depth
         plass.get_depth_long(logdir, pacbio_model, threads)
 

@@ -18,16 +18,21 @@ def run_canu(threads, logdir, longreads, canu_output_dir, canu_nano_or_pacbio):
     :return:
     """
     # canu -p C308_canu -d C308_canu genomeSize=0.01m maxInputCoverage=200 maxThreads=8 -nanopore plasmid_long.fastq
-    canu = ExternalTool(
-        tool="canu",
-        input="",
-        output="",
-        params=f" -p canu -d {canu_output_dir} genomeSize=0.01m maxInputCoverage=250 maxThreads={threads} -{canu_nano_or_pacbio} {longreads}",
-        logdir=logdir,
-        outfile="",
-    )
+    try:
+        canu = ExternalTool(
+            tool="canu",
+            input="",
+            output="",
+            params=f" -p canu -d {canu_output_dir} genomeSize=0.01m maxInputCoverage=250 stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} {longreads}",
+            logdir=logdir,
+            outfile="",
+        )
 
-    ExternalTool.run_tool(canu, to_stdout=False)
+        ExternalTool.run_tool(canu, to_stdout=False)
+    except Exception:
+        logger.info(
+            f"canu failed. This likely means that you have non-chromosomal reads to assemble anything. It is likely that you have no plasmids in this sample, but check the canu output in {logdir}."
+        )
 
 
 def make_blastdb(canu_output_dir, logdir):
@@ -169,28 +174,36 @@ def process_blast_output(canu_output_dir, outdir):
             # ensure the match is good
             if (
                 first_row["length"] < 500
-            ):  # less than 500bp repeat in the top hit - probably Insertion Seq not a real plasmid dupe
+            ):  # less than 500bp repeat in the top hit - probably Insertion Seq not a real plasmid dupe - otherwise probably legit
                 fasta_dict[contig]["dupe"] = False
             else:
-                # the repeat will be in the longest hit with qstart < 100  (usually 1 or very close to it)
                 try:
+                    # the repeat will be in the longest hit with qstart < 100  (usually 1 or very close to it)
+                    # heuristic i need to check i guess
+                    # just take until the next repeat element
+                    # this has been filtered for prior
                     best_row = tmp_df_sorted.iloc[0]
+                    fasta_dict[contig]["dupe"] = True
+                    fasta_dict[contig]["start"] = best_row["qstart"]
+                    fasta_dict[contig]["end"] = best_row["sstart"]
+
                     # if the query end is larger than the sstart - there is an overlap
                     # take 1 as the start and then the sstart as the end
-                    # otherwise check for  concatenation (within 50))
+                    # otherwise check for  concatenation (within 1000bp))
                     # otherwise exit just the whole plasmid
-                    if best_row["qend"] > best_row["sstart"]:
-                        fasta_dict[contig]["dupe"] = True
-                        fasta_dict[contig]["start"] = best_row["qstart"]
-                        fasta_dict[contig]["end"] = best_row["sstart"]
-                    elif (best_row["qend"] + 100) > best_row[
-                        "sstart"
-                    ]:  # likely to be pure duplication if within 100bp
-                        fasta_dict[contig]["dupe"] = True
-                        fasta_dict[contig]["start"] = best_row["qstart"]
-                        fasta_dict[contig]["end"] = best_row["qend"]
-                    else:
-                        fasta_dict[contig]["dupe"] = False
+                    # if best_row["qend"] > best_row["sstart"]:
+                    #     fasta_dict[contig]["dupe"] = True
+                    #     fasta_dict[contig]["start"] = best_row["qstart"]
+                    #     fasta_dict[contig]["end"] = best_row["sstart"]
+                    # #elif (best_row["qend"] + 1000) > best_row[
+                    #     #"sstart"
+                    # #]:  # the longest match is likely to be a duplication
+                    # else:
+                    #     fasta_dict[contig]["dupe"] = True
+                    #     fasta_dict[contig]["start"] = best_row["qstart"]
+                    #     fasta_dict[contig]["end"] = best_row["sstart"]
+                    # else:
+                    #     fasta_dict[contig]["dupe"] = False
                 except Exception:
                     logger.error("Flye not found. Please reinstall Plassembler.")
 

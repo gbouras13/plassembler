@@ -128,9 +128,7 @@ def check_dependencies():
     except Exception:
         logger.error("Flye not found. Please reinstall Plassembler.")
 
-    message = (
-        f"Flye version found is v{flye_major_version}.{flye_minor_version}.{flye_minorest_version}."
-    )
+    message = f"Flye version found is v{flye_major_version}.{flye_minor_version}.{flye_minorest_version}."
     logger.info(message)
 
     if flye_major_version != 2:
@@ -173,9 +171,7 @@ def check_dependencies():
         message = "Unicycler not found. Please re-install Unicycler, see instructions at https://github.com/gbouras13/plassembler."
         logger.error(message)
 
-    message = (
-        f"Unicycler version found is v{unicycler_major_version}.{unicycler_minor_version}.{unicycler_minorest_version}."
-    )
+    message = f"Unicycler version found is v{unicycler_major_version}.{unicycler_minor_version}.{unicycler_minorest_version}."
     logger.info(message)
 
     if unicycler_minor_version < 4:
@@ -264,7 +260,6 @@ def check_dependencies():
     except Exception:
         logger.error("mash not found")
 
-
     # canu
     try:
         process = sp.Popen(["canu", "--version"], stdout=sp.PIPE, stderr=sp.PIPE)
@@ -288,9 +283,7 @@ def check_dependencies():
         blast_major_version = int(blast_version.split(".")[0])
         blast_minor_version = int(blast_version.split(".")[1])
         blast_minorest_version = int(blast_version.split(".")[2])
-        message = (
-            f"BLAST version found is v{blast_major_version}.{blast_minor_version}.{blast_minorest_version}."
-        )
+        message = f"BLAST version found is v{blast_major_version}.{blast_minor_version}.{blast_minorest_version}."
         logger.info(message)
     except Exception:
         message = "BLAST not found."

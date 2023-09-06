@@ -57,7 +57,7 @@ def remove_intermediate_files(
     # long
     remove_file(os.path.join(out_dir, "plasmids_canu.fasta"))
     remove_file(os.path.join(out_dir, "plasmid_long.fastq"))
-    
+
     # chromosome
     if keep_chromosome is False:
         remove_file(os.path.join(out_dir, "chromosome.fasta"))

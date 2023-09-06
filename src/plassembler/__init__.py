@@ -1171,9 +1171,7 @@ def long(
         else:
             canu_nano_or_pacbio = "nanopore"
         canu_output_dir: Path = Path(outdir) / "canu"
-        run_canu(
-            threads, logdir, plasmidfastqs, canu_output_dir, canu_nano_or_pacbio
-        )
+        run_canu(threads, logdir, plasmidfastqs, canu_output_dir, canu_nano_or_pacbio)
         make_blastdb(canu_output_dir, logdir)
         run_blast(canu_output_dir, threads, logdir)
         process_blast_output(canu_output_dir, outdir)

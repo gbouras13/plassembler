@@ -435,16 +435,15 @@ class Plass:
         combined_sequences = []
 
         # Read and append sequences from the first FASTA file
-        for record in SeqIO.parse(chromosome, 'fasta'):
+        for record in SeqIO.parse(chromosome, "fasta"):
             combined_sequences.append(record)
 
         # Read and append sequences from the second FASTA file
-        for record in SeqIO.parse(plas_fasta, 'fasta'):
+        for record in SeqIO.parse(plas_fasta, "fasta"):
             combined_sequences.append(record)
 
         # Write the combined sequences to the output file
-        SeqIO.write(combined_sequences, combined_fasta, 'fasta')
-
+        SeqIO.write(combined_sequences, combined_fasta, "fasta")
 
         # map
         minimap_long_reads(

@@ -25,9 +25,18 @@ from plassembler.utils.mapping import minimap_long_reads, minimap_short_reads
 # import classes
 from plassembler.utils.plass_class import Assembly, Plass
 from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp
+from plassembler.utils.run_canu import (
+    make_blastdb,
+    process_blast_output,
+    run_blast,
+    run_canu,
+)
 from plassembler.utils.run_mash import mash_sketch, run_mash
 from plassembler.utils.run_unicycler import run_unicycler
-from plassembler.utils.sam_to_fastq import extract_bin_long_fastqs
+from plassembler.utils.sam_to_fastq import (
+    extract_long_fastqs_fast,
+    extract_long_fastqs_slow_keep_fastqs,
+)
 from plassembler.utils.test_incompatibility import incompatbility
 from plassembler.utils.util import get_version, print_citation
 
@@ -458,7 +467,12 @@ def run(
 
             # for long, custom function is quick enough
             logger.info("Processing Sam/Bam Files and extracting Fastqs.")
-            extract_bin_long_fastqs(outdir)
+            samfile: Path = Path(outdir) / "long_read.sam"
+            plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
+            if keep_fastqs is True:  # if keep_fastq
+                extract_long_fastqs_slow_keep_fastqs(outdir, samfile, plasmidfastqs)
+            else:
+                extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
             # for short, too slow so use samtools
             samfile: Path = Path(outdir) / "short_read.sam"
@@ -631,7 +645,12 @@ def run(
 
             # for long, custom function is quick enough
             logger.info("Processing Sam/Bam Files and extracting Fastqs.")
-            extract_bin_long_fastqs(outdir)
+            samfile: Path = Path(outdir) / "long_read.sam"
+            plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
+            if keep_fastqs is True:  # if keep_fastq
+                extract_long_fastqs_slow_keep_fastqs(outdir, samfile, plasmidfastqs)
+            else:
+                extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
             # for short, too slow so use samtools
             samfile: Path = Path(outdir) / "short_read.sam"
@@ -1128,88 +1147,74 @@ def long(
         logger.error(message)
 
     else:
-        ####################################################################
-        # Only 1 contig
-        ####################################################################
+        # no_plasmids_flag = False as obviously "plasmids"
+        plass.no_plasmids_flag = False
 
-        if plass.contig_count == 1:
-            # chromosome identified but no plasmids - just finish
-            # end plassembler
-            move_and_copy_files(
-                outdir,
-                prefix,
-                False,  # unicycler success
-                False,  # keep fastqs
-                True,  # assembled mode
-                False,  # long only
-                use_raven,
-            )
-            remove_intermediate_files(
-                outdir,
-                keep_chromosome,
-                False,  # assembled mode
-                True,  # long only
-                use_raven,
-            )
-            logger.error("Chromosome identified but no plasmids.")
+        logger.info("Mapping long reads.")
+        input_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
+        fasta: Path = Path(outdir) / "flye_renamed.fasta"
+        samfile: Path = Path(outdir) / "long_read.sam"
+        minimap_long_reads(
+            input_long_reads, fasta, samfile, threads, pacbio_model, logdir
+        )
 
-        ####################################################################
-        # Multiple Contigs
-        ####################################################################
+        # for long, custom function is quick enough
+        logger.info("Processing Sam/Bam Files and extracting Fastqs.")
+        samfile: Path = Path(outdir) / "long_read.sam"
+        plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
+        extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
-        elif plass.contig_count > 1:
-            # no_plasmids_flag = False as obviously "plasmids"
-            plass.no_plasmids_flag = False
+        # canu
+        logger.info("Running canu.")
+        if pacbio_model != "":
+            canu_nano_or_pacbio = "pacbio"
+        else:
+            canu_nano_or_pacbio = "nanopore"
+        canu_output_dir: Path = Path(outdir) / "canu"
+        run_canu(
+            threads, logdir, plasmidfastqs, canu_output_dir, canu_nano_or_pacbio
+        )
+        make_blastdb(canu_output_dir, logdir)
+        run_blast(canu_output_dir, threads, logdir)
+        process_blast_output(canu_output_dir, outdir)
 
-            logger.info("Mapping long reads.")
-            input_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
-            fasta: Path = Path(outdir) / "flye_renamed.fasta"
-            samfile: Path = Path(outdir) / "long_read.sam"
-            minimap_long_reads(
-                input_long_reads, fasta, samfile, threads, pacbio_model, logdir
-            )
+        # depth
+        plass.get_depth_long(logdir, pacbio_model, threads)
 
-            # for long, custom function is quick enough
-            logger.info("Processing Sam/Bam Files and extracting Fastqs.")
-            extract_bin_long_fastqs(outdir)
-            plass.get_depth_long(logdir, pacbio_model, threads)
+        # run mash
+        logger.info("Calculating mash distances to PLSDB.")
+        # mash sketches the plasmids
+        mash_sketch(outdir, os.path.join(outdir, "plasmids_canu.fasta"), logdir)
+        # runs mash
+        run_mash(outdir, database, logdir)
 
-            # run mash
-            logger.info("Calculating mash distances to PLSDB.")
+        # processes output
+        plass.process_mash_tsv(database)
 
-            # mash sketches the plasmids
-            mash_sketch(outdir, os.path.join(outdir, "plasmids_initial.fasta"), logdir)
+        # combine depth and mash tsvs
+        plass.combine_depth_mash_tsvs(prefix)
 
-            # runs mash
-            run_mash(outdir, database, logdir)
+        # rename contigs and update copy number with plsdb
+        plass.finalise_contigs_long(prefix)
 
-            # processes output
-            plass.process_mash_tsv(database)
+        # cleanup files
+        move_and_copy_files(
+            outdir,
+            prefix,
+            False,  # unicycler success
+            False,  # keep fastqs
+            False,  # assembled mode
+            True,  # long only
+            use_raven,
+        )
 
-            # combine depth and mash tsvs
-            plass.combine_depth_mash_tsvs(prefix)
-
-            # rename contigs and update copy bumber with plsdb
-            plass.finalise_contigs_long(prefix)
-
-            # cleanup files
-            move_and_copy_files(
-                outdir,
-                prefix,
-                False,  # unicycler success
-                False,  # keep fastqs
-                False,  # assembled mode
-                True,  # long only
-                use_raven,
-            )
-
-            remove_intermediate_files(
-                outdir,
-                keep_chromosome,
-                False,  # assembled mode
-                True,  # long only
-                use_raven,
-            )
+        remove_intermediate_files(
+            outdir,
+            keep_chromosome,
+            False,  # assembled mode
+            True,  # long only
+            use_raven,
+        )
 
     # end plassembler
     end_plassembler(start_time)

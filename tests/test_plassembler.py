@@ -39,7 +39,6 @@ from src.plassembler.utils.input_commands import (
 )
 from src.plassembler.utils.plass_class import Plass
 from src.plassembler.utils.qc import copy_sr_fastq_file
-from src.plassembler.utils.sam_to_fastq import extract_bin_long_fastqs
 
 # data
 test_data = Path("tests/test_data")
@@ -103,16 +102,6 @@ class test_unicycler_success(unittest.TestCase):
         expected_return = True
         unicycler_output_dir = Path(f"{test_data}/unicycler_output")
         plass.check_unicycler_success(unicycler_output_dir)
-        self.assertEqual(expected_return, True)
-
-
-class test_sam_to_fastq_long(unittest.TestCase):
-    """Test for sam to fastq convertion with pysam"""
-
-    # long read map
-    def test_sam_to_fastq_long(self):
-        expected_return = True
-        extract_bin_long_fastqs(map_dir)
         self.assertEqual(expected_return, True)
 
 
@@ -186,15 +175,9 @@ class TestInputCommands(unittest.TestCase):
 
     # bad pacbio model
     def test_deps(self):
-        # there is an error with Unicycler in the conda install of CI
-        # Error when importing C++ library: dlsym(0x213aad7c0, splitSequences): symbol not found
-        # Have you successfully built the library file using make
-        # address in README but still a pain
-        # so this test should cause system exit with github actions not success
-        # expected_return = True
-        with self.assertRaises(SystemExit):
-            check_dependencies()
-            # self.assertEqual(expected_return, True)
+        expected_return = True
+        check_dependencies()
+        self.assertEqual(expected_return, True)
 
 
 class test_concat(unittest.TestCase):

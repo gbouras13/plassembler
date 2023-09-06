@@ -1,1 +1,0 @@
-Command line: samtools view -b -h -@ 1 -L tests/test_data/map_dir/chromosome.bed tests/test_data/map_dir/short_read.bam

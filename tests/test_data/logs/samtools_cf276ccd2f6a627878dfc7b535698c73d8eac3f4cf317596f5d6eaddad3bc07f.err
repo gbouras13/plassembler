@@ -1,1 +1,0 @@
-Command line: samtools view -h -@ 1 -b tests/test_data/map_dir/sam_to_bam/test.sam

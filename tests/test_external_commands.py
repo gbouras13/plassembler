@@ -24,6 +24,10 @@ from src.plassembler.utils.mapping import minimap_long_reads, minimap_short_read
 from src.plassembler.utils.qc import chopper, fastp
 from src.plassembler.utils.run_mash import get_contig_count, mash_sketch, run_mash
 from src.plassembler.utils.run_unicycler import run_unicycler
+from src.plassembler.utils.sam_to_fastq import (
+    extract_long_fastqs_fast,
+    extract_long_fastqs_slow_keep_fastqs,
+)
 
 test_data = Path("tests/test_data")
 val_data = Path(f"{test_data}/validation")
@@ -83,6 +87,32 @@ class test_bam(unittest.TestCase):
     def test_bam_to_fastq_short(self):
         expected_return = True
         bam_to_fastq_short(map_dir, threads=1, logdir=logdir)
+        self.assertEqual(expected_return, True)
+
+
+class test_sam_to_fastq(unittest.TestCase):
+    """Tests for sam_to_fastq.py"""
+
+    # sam to bam
+    def test_extract_long_fastqs_slow_keep_fastqs(self):
+        expected_return = True
+        threads = 1
+        samfile: Path = Path(f"{map_dir}/long_read.sam")
+        # not in the dir to prevent overwriting
+        plasmidfastq: Path = Path(f"{map_dir}/sam_to_bam/plasmid_long.fastq")
+        outdir: Path = Path(f"{map_dir}/sam_to_bam/")
+        extract_long_fastqs_slow_keep_fastqs(outdir, samfile, plasmidfastq)
+        remove_file(plasmidfastq)
+        self.assertEqual(expected_return, True)
+
+    def test_extract_long_fastqs_fast(self):
+        expected_return = True
+        threads = 4
+        samfile: Path = Path(f"{map_dir}/long_read.sam")
+        # not in the dir to prevent overwriting
+        plasmidfastq: Path = Path(f"{map_dir}/sam_to_bam/plasmid_long.fastq")
+        extract_long_fastqs_fast(samfile, plasmidfastq, threads)
+        remove_file(plasmidfastq)
         self.assertEqual(expected_return, True)
 
 

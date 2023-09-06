@@ -1,18 +1,19 @@
 import os
+import subprocess as sp
 from collections import defaultdict
 
 import pysam
 
 
-def extract_bin_long_fastqs(out_dir):
+def extract_long_fastqs_slow_keep_fastqs(out_dir, samname, plasmidname):
     #################################################
     # Define file paths
     #################################################
 
-    sam_name = os.path.join(out_dir, "long_read.sam")
+    # sam_name = os.path.join(out_dir, "long_read.sam")
 
     # reads mapping to plasmids, or not mapping to any contigs
-    plasmidfile = open(os.path.join(out_dir, "plasmid_long.fastq"), "w")
+    plasmidfile = open(plasmidname, "w")
 
     # Open a FASTQ file for writing reads mapping to multiple contigs
     multimap_plasmid_chromosome_fastqfile = open(
@@ -32,7 +33,7 @@ def extract_bin_long_fastqs(out_dir):
     multi_read_names = []
 
     # open samfile
-    samfile = pysam.AlignmentFile(sam_name, "r")
+    samfile = pysam.AlignmentFile(samname, "r")
 
     # get list of all read names
     for read in samfile.fetch():
@@ -58,7 +59,7 @@ def extract_bin_long_fastqs(out_dir):
     # process all single reads and then get counts of plasmid vs chromosome ####
     #################################################
 
-    samfile = pysam.AlignmentFile(sam_name, "r")
+    samfile = pysam.AlignmentFile(samname, "r")
 
     # Create a defaultdict with int as the default  for the multimap reads
     plasmid_mm_dict = defaultdict(int)
@@ -113,7 +114,7 @@ def extract_bin_long_fastqs(out_dir):
     # process all multimap reads
     #################################################
 
-    samfile = pysam.AlignmentFile(sam_name, "r")
+    samfile = pysam.AlignmentFile(samname, "r")
 
     for read in samfile.fetch():
         read_name = read.query_name
@@ -175,3 +176,16 @@ def extract_bin_long_fastqs(out_dir):
 
     # Close the SAM file
     samfile.close()
+
+
+"""
+Thanks to @fanvanf
+"""
+
+
+def extract_long_fastqs_fast(sam_name, plasmidfile, threads):
+    # sam_name = os.path.join(out_dir, "long_read.sam")
+    # plasmidfile = os.path.join(out_dir, "plasmid_long.fastq")
+
+    cmd = f'samtools  view -@ {threads} {sam_name} | awk \'{{if((($3 ~ /plas/)&& ($2 == "0"|| $2 == "16"))||($2 == "4")) print "@"$1"\\n"$10"\\n+"$1"\\n"$11}}\' > {plasmidfile}'
+    sp.run(cmd, shell=True)

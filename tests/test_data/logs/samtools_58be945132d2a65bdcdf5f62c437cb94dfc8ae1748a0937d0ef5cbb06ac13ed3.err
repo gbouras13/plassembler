@@ -1,1 +1,0 @@
-Command line: samtools sort -@ nothing tests/test_data/assembly_class/depth/combined_long.sam -o tests/test_data/assembly_class/depth/combined_sorted_long.bam

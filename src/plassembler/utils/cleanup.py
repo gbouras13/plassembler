@@ -62,6 +62,13 @@ def remove_intermediate_files(
     if keep_chromosome is False:
         remove_file(os.path.join(out_dir, "chromosome.fasta"))
 
+    # canu
+    # remove_directory(os.path.join(out_dir, "canu"))
+    remove_file(os.path.join(out_dir, "long_combined.fasta"))
+
+    # dnaapler
+    remove_directory(os.path.join(out_dir, "dnaapler"))
+
 
 def move_and_copy_files(
     out_dir,

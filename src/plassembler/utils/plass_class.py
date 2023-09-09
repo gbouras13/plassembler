@@ -413,17 +413,17 @@ class Plass:
             summary_depth_df_short, summary_depth_df_long, circular_status
         )
 
-    def get_depth_long(self, logdir, pacbio_model, threads):
+    def get_depth_long(self, logdir, pacbio_model, threads, plas_fasta):
         """wrapper function to get depth of each plasmid
         :param pacbio_model:  pacbio_model
         :param threads: threads
         :param logdir: logdir
+        :plas_fasta: plasmids from dnaapler
         :return:
         """
         outdir = self.outdir
 
         input_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
-        plas_fasta: Path = Path(outdir) / "plasmids_canu.fasta"
         chromosome: Path = Path(outdir) / "chromosome.fasta"
         combined_fasta: Path = Path(outdir) / "long_combined.fasta"
         sam_file: Path = Path(outdir) / "combined_long.sam"

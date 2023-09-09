@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 import click
+from Bio import SeqIO
 from loguru import logger
 
 from plassembler.utils.assembly import run_flye, run_raven
@@ -31,6 +32,7 @@ from plassembler.utils.run_canu import (
     run_blast,
     run_canu,
 )
+from plassembler.utils.run_dnaapler import run_dnaapler
 from plassembler.utils.run_mash import mash_sketch, run_mash
 from plassembler.utils.run_unicycler import run_unicycler
 from plassembler.utils.sam_to_fastq import (
@@ -1172,54 +1174,68 @@ def long(
             canu_nano_or_pacbio = "nanopore"
         canu_output_dir: Path = Path(outdir) / "canu"
         run_canu(threads, logdir, plasmidfastqs, canu_output_dir, canu_nano_or_pacbio)
-        make_blastdb(canu_output_dir, logdir)
-        run_blast(canu_output_dir, threads, logdir)
-        process_blast_output(canu_output_dir, outdir)
 
-        # dnaapler
+        # check canu outdir has a plasmid
+        canu_fasta: Path = Path(canu_output_dir) / "canu.contigs.fasta"
+        contig_count = 0
+        for record in SeqIO.parse(canu_fasta, "fasta"):
+            contig_count += 1
 
+        logger.info(f"Canu assembled {contig_count} contigs.")
 
+        if contig_count == 0:  # end
+            logger.info("Your sample probably has no plasmids.")
 
-        
+        else:  # at least 1 canu contig
+            # run and parse blast
+            make_blastdb(canu_output_dir, logdir)
+            run_blast(canu_output_dir, threads, logdir)
+            process_blast_output(canu_output_dir, outdir)
 
+            # dnaapler
+            run_dnaapler(threads, logdir, outdir)
+            plasmids_for_sketching: Path = (
+                Path(outdir) / "dnaapler" / "dnaapler_all_reoriented.fasta"
+            )
 
-        # depth
-        plass.get_depth_long(logdir, pacbio_model, threads)
+            # depth
+            plass.get_depth_long(logdir, pacbio_model, threads, plasmids_for_sketching)
 
-        # run mash
-        logger.info("Calculating mash distances to PLSDB.")
-        # mash sketches the plasmids
-        mash_sketch(outdir, os.path.join(outdir, "plasmids_canu.fasta"), logdir)
-        # runs mash
-        run_mash(outdir, database, logdir)
+            # run mash
+            logger.info("Calculating mash distances to PLSDB.")
+            # mash sketches the plasmids
+            mash_sketch(outdir, plasmids_for_sketching, logdir)
+            # runs mash
+            run_mash(outdir, database, logdir)
 
-        # processes output
-        plass.process_mash_tsv(database)
+            # processes output
+            plass.process_mash_tsv(database)
 
-        # combine depth and mash tsvs
-        plass.combine_depth_mash_tsvs(prefix)
+            # combine depth and mash tsvs
+            plass.combine_depth_mash_tsvs(prefix)
 
-        # rename contigs and update copy number with plsdb
-        plass.finalise_contigs_long(prefix)
+            # rename contigs and update copy number with plsdb
+            plass.finalise_contigs_long(prefix)
 
-        # cleanup files
-        move_and_copy_files(
-            outdir,
-            prefix,
-            False,  # unicycler success
-            False,  # keep fastqs
-            False,  # assembled mode
-            True,  # long only
-            use_raven,
-        )
+    # wrap up
+    # cleanup files
+    move_and_copy_files(
+        outdir,
+        prefix,
+        False,  # unicycler success
+        False,  # keep fastqs
+        False,  # assembled mode
+        True,  # long only
+        use_raven,
+    )
 
-        remove_intermediate_files(
-            outdir,
-            keep_chromosome,
-            False,  # assembled mode
-            True,  # long only
-            use_raven,
-        )
+    remove_intermediate_files(
+        outdir,
+        keep_chromosome,
+        False,  # assembled mode
+        True,  # long only
+        use_raven,
+    )
 
     # end plassembler
     end_plassembler(start_time)

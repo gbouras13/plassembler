@@ -450,14 +450,14 @@ def run(
                 False,  # assembled mode
                 False,  # long only
                 use_raven,
+                skip_assembly
             )
             remove_intermediate_files(
                 outdir,
                 keep_chromosome,
                 False,  # assembled mode
                 False,  # long only
-                use_raven,
-                skip_assembly 
+                use_raven
             )
             message = "No chromosome was identified. Likely, there was insufficient long read depth to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. "
             logger.error(message)
@@ -584,14 +584,14 @@ def run(
                     False,  # assembled mode
                     False,  # long only
                     use_raven,
+                    skip_assembly
                 )
                 remove_intermediate_files(
                     outdir,
                     keep_chromosome,
                     False,  # assembled mode
                     False,  # long only
-                    use_raven,
-                    skip_assembly
+                    use_raven
                 )
 
     ####################################################################
@@ -743,14 +743,14 @@ def run(
                 False,  # assembled mode
                 False,  # long only
                 use_raven,
+                skip_assembly
             )
             remove_intermediate_files(
                 outdir,
                 keep_chromosome,
                 False,  # assembled mode
                 False,  # long only
-                use_raven,
-                skip_assembly
+                use_raven
             )
 
     # end plassembler
@@ -908,6 +908,7 @@ def assembled(
         True,  # assembled mode
         False,  # long only
         False,  # use raven
+        False # skip_assembly is false - no assembly
     )
     remove_intermediate_files(
         outdir,
@@ -915,7 +916,7 @@ def assembled(
         True,  # assembled
         False,  # long only
         False,  # use raven
-        skip_assembly
+
     )
 
     # end plassembler
@@ -1302,6 +1303,7 @@ def long(
         False,  # assembled mode
         True,  # long only
         False,  # no raven
+        skip_assembly
     )
 
     remove_intermediate_files(
@@ -1309,8 +1311,7 @@ def long(
         keep_chromosome,
         False,  # assembled mode
         True,  # long only
-        False,  # no raven
-        skip_assembly
+        False  # no raven
     )
 
     # end plassembler

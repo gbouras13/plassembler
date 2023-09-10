@@ -56,7 +56,7 @@ def get_contig_circularity(fasta):
     for dna_record in SeqIO.parse(fasta, "fasta"):
         dna_header = dna_record.id
         # check if circular is in unicycler output description
-        if "circular=true" in dna_record.description:
+        if "circular" in dna_record.description:
             circular_status[dna_header] = "circular"
         # circular chromsome
         elif "chromosome" in dna_record.id:

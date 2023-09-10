@@ -111,6 +111,27 @@ def validate_fastqs_assembled_mode(longreads, short_one, short_two):
 
     return (short_flag, long_flag, long_gzipped)
 
+def validate_flye_directory(flye_directory):
+    """Checks the flye directory exists and contains 
+        :param flye_directory: flye directory
+    :return:
+    """
+    if os.path.isdir(flye_directory) is False:
+        logger.error(f"Flye directory {flye_directory} is not a directory or does not exist.")
+
+    if os.path.isfile(os.path.join(flye_directory, "assembly.fasta")) is False:
+        fasta = os.path.join(flye_directory, "assembly.fasta")
+        logger.error(f"Flye assembly {fasta} does not exist.")
+
+    if os.path.isfile(os.path.join(flye_directory, "assembly.fasta")) is False:
+        info = os.path.join(flye_directory, "assembly_info.txt")
+        logger.error(f"Flye assembly information {info} does not exist.")
+
+    skip_assembly = True
+    return skip_assembly
+
+
+
 
 def check_dependencies():
     """Checks the version of Unicycler, spades and Raven

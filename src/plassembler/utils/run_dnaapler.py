@@ -5,16 +5,15 @@ from loguru import logger
 from plassembler.utils.external_tools import ExternalTool
 
 
-def run_dnaapler(threads, logdir, outdir):
+def run_dnaapler(threads, plasmid_fasta, logdir, outdir):
     """runs dnaapler bulk
     :param long: long read fastq
-    :param canu_output_dir: canu Output Directory
+    :param plasmid_fasta
     :param threads: threads
     :param logdir: logdir
     :return:
     """
 
-    canu_plasmid_fasta: Path = Path(outdir) / "plasmids_canu.fasta"
     dnaapler_outdir: Path = Path(outdir) / "dnaapler"
 
     try:
@@ -22,11 +21,17 @@ def run_dnaapler(threads, logdir, outdir):
             tool="dnaapler all",
             input="",
             output="",
-            params=f" -i {canu_plasmid_fasta} -o {dnaapler_outdir} -t {threads}",
+            params=f" -i {plasmid_fasta} -o {dnaapler_outdir} -t {threads}",
             logdir=logdir,
             outfile="",
         )
 
         ExternalTool.run_tool(dnaapler, to_stdout=False)
+        plasmids_for_sketching: Path = (
+            Path(outdir) / "dnaapler" / "dnaapler_all_reoriented.fasta"
+        )
+        return plasmids_for_sketching
     except Exception:
-        logger.error(f"Dnaapler failed.")
+        logger.warning(f"Dnaapler failed to reorient any plasmids.")
+        plasmids_for_sketching = plasmid_fasta
+        return plasmids_for_sketching

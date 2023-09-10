@@ -225,12 +225,6 @@ class Plass:
         )
         max_length = max(info_df["length"])
 
-        # get putative chromosome contig
-        # chrom_contig = info_df[info_df['length'] == max_length].iloc[0]['seq_name']
-
-        # comment out circ here
-        # chrom_circ = info_df[info_df['length'] == max_length].iloc[0]['circ']
-
         # to say that the chromosome has been correctly identified
         chromosome_flag = True
         if max_length < int(
@@ -297,34 +291,84 @@ class Plass:
                                 f"{dna_header}\t1\t{plas_len}\n"
                             )  # Write read name
                             i += 1
-            # if lony only is true, create new unicycler_output file (fake)
-            if long_only is True:
-                message = "Extracting possible plasmids from Flye assembly."
-                logger.info(message)
-                # remove bed if exists
-                if os.path.exists(os.path.join(outdir, "non_chromosome.bed")):
-                    os.remove(os.path.join(outdir, "non_chromosome.bed"))
-                with open(
-                    os.path.join(outdir, "plasmids_initial.fasta"), "w"
-                ) as rename_fa:
+
+        # add to object
+        self.chromosome_flag = chromosome_flag
+
+    def identify_chromosome_process_flye_long(self, chromosome_len):
+        """Identified chromosome and processes Flye output long only - renames chromosome contig and the others as plasmid_1, plasmid_2 etc
+        Also makes the chromosome bed file for downstream samtools mapping
+        :param outdir: output directory
+        :param chromosome_len: lower bound on length of chromosome from input command
+        :param keep_chromosome: whether the user wants to keep the chromosome as chromosome.fasta
+        :return chromosome_flag: bool whether chromosome assembles
+        """
+        outdir = self.outdir
+        long_only = self.long_only
+        info_file = os.path.join(outdir, "assembly_info.txt")
+        col_list = [
+            "seq_name",
+            "length",
+            "cov",
+            "circ",
+            "repeat",
+            "mult",
+            "alt_group",
+            "graph_path",
+        ]
+        info_df = pd.read_csv(
+            info_file, delimiter="\t", index_col=False, names=col_list, skiprows=1
+        )
+        max_length = max(info_df["length"])
+
+        # to say that the chromosome has been correctly identified
+        chromosome_flag = True
+        if max_length < int(
+            chromosome_len
+        ):  # no chromosome identified -> don't bother with the renaming
+            chromosome_flag = False
+        # assuming chromosome identified
+        else:
+            # make bed file with plasmid contigs to extract mapping reads
+            bed_file = open(os.path.join(outdir, "non_chromosome.bed"), "w")
+            bed_chrom_file = open(os.path.join(outdir, "chromosome.bed"), "w")
+            with open(os.path.join(outdir, "flye_renamed.fasta"), "w") as rename_fa:
+                # for chromosome fasta too
+                with open(os.path.join(outdir, "chromosome.fasta"), "w") as chrom_fa:
                     # for plasmid numbering
                     i = 1
+                    # for chromosome numbering (chromids, multiple plasmid contigs)
+                    c = 1
                     for dna_record in SeqIO.parse(
                         os.path.join(outdir, "assembly.fasta"), "fasta"
                     ):
                         # if the length is over chromosome length
                         contig_len = len(dna_record.seq)
-                        if contig_len < int(chromosome_len):
-                            dna_header = str(i)
-                            # get circularity
-                            circ = info_df.circ.loc[
-                                info_df["seq_name"] == dna_record.id
-                            ]
-                            plas_circ = str(circ.iloc[0])
-                            if plas_circ == "Y":
-                                dna_description = "circular=true"
+                        if contig_len > int(chromosome_len):
+                            # if the first chromosome (most cases), then just chromosome. Otherwise continue.
+                            if c == 1:
+                                dna_header = "chromosome"
                             else:
-                                dna_description = ""
+                                if c == "2":
+                                    message = "Multiple contigs above the specified chromosome length -c have been detected. \nIf you are hoping for plasmids from haploid bacteria, please check your value for -c."
+                                    logger.info(message)
+                                dna_header = "chromosome_" + str(c)
+                            dna_description = ""
+                            dna_record = SeqRecord(
+                                dna_record.seq,
+                                id=dna_header,
+                                description=dna_description,
+                            )
+                            SeqIO.write(dna_record, rename_fa, "fasta")
+                            SeqIO.write(dna_record, chrom_fa, "fasta")
+                            bed_chrom_file.write(
+                                f"{dna_header}\t1\t{contig_len}\n"
+                            )  # chromosome
+                            c += 1
+                        # plasmids
+                        else:
+                            dna_header = "plasmid_" + str(i)
+                            dna_description = ""
                             # get length for bed file
                             le = info_df.length.loc[
                                 info_df["seq_name"] == dna_record.id
@@ -721,9 +765,14 @@ class Plass:
                 id = dna_record.id
                 l = len(dna_record.seq)
                 copy_number = combined_depth_mash_df.plasmid_copy_number_long[i]
-                id_updated = f"{id} len={l} plasmid_copy_number_long={copy_number}x"
+                if "circular" in dna_record.description:  # circular contigs from canu
+                    desc = (
+                        f"len={l} plasmid_copy_number_long={copy_number}x circular=True"
+                    )
+                else:
+                    desc = f"len={l} plasmid_copy_number_long={copy_number}x"
                 i += 1
-                record = SeqRecord(dna_record.seq, id=id_updated, description="")
+                record = SeqRecord(dna_record.seq, id=id, description=desc)
                 SeqIO.write(record, dna_fa, "fasta")
 
 

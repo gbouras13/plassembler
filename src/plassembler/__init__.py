@@ -20,17 +20,17 @@ from plassembler.utils.input_commands import (
     validate_fastq,
     validate_fastqs_assembled_mode,
     validate_pacbio_model,
+    validate_flye_directory
 )
 from plassembler.utils.mapping import minimap_long_reads, minimap_short_reads
 
 # import classes
 from plassembler.utils.plass_class import Assembly, Plass
 from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp
-from plassembler.utils.run_canu import (
-    make_blastdb,
-    process_blast_output,
-    run_blast,
+from plassembler.utils.run_canu import (  # make_blastdb,; process_blast_output,; run_blast,
+    filter_entropy,
     run_canu,
+    trim_contigs,
 )
 from plassembler.utils.run_dnaapler import run_dnaapler
 from plassembler.utils.run_mash import mash_sketch, run_mash
@@ -246,6 +246,12 @@ def common_options(func):
             type=str,
             default="nothing",
         ),
+        click.option(
+            "--flye_directory",
+            help="Directory containing Flye long read assembly. Needs to contain assembly_info.txt and assembly_info.fasta. Allows Plassembler to Skip Flye assembly step.",
+            type=click.Path(),
+            default="nothing",
+)
     ]
     for option in reversed(options):
         func = option(func)
@@ -313,6 +319,7 @@ def run(
     raw_flag,
     keep_fastqs,
     keep_chromosome,
+    flye_directory,
     **kwargs,
 ):
     """Runs Plassembler"""
@@ -335,6 +342,7 @@ def run(
     logger.info(f"--pacbio_model is {pacbio_model}")
     logger.info(f"--keep_fastqs is {keep_fastqs}")
     logger.info(f"--keep_chromosome is {keep_chromosome}")
+    logger.info(f"--flye_directory is {flye_directory}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -379,16 +387,31 @@ def run(
         )
 
     # Raven for long only or '--use_raven'
-    if use_raven is True:
-        logger.info(
-            "You have specified --use_raven. Using Raven for long read assembly."
-        )
-        logger.info("Running Raven.")
-        run_raven(outdir, threads, logdir)
-    else:
-        logger.info("Running Flye.")
-        run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
 
+    skip_assembly = False
+    if flye_directory != "nothing":
+        skip_assembly = validate_flye_directory(flye_directory)
+
+    if skip_assembly is False:
+        if use_raven is True:
+            logger.info(
+                "You have specified --use_raven. Using Raven for long read assembly."
+            )
+            logger.info("Running Raven.")
+            run_raven(outdir, threads, logdir)
+        else:
+            logger.info("Running Flye.")
+            run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
+    else:
+        # copies the files to the outdir
+        shutil.copy2(
+        os.path.join(flye_directory, "assembly_info.txt"),
+        os.path.join(outdir, "assembly_info.txt")
+    )
+        shutil.copy2(
+            os.path.join(flye_directory, "assembly.fasta"),
+            os.path.join(outdir, "assembly.fasta")
+        )
     # instanatiate the class with some of the commands
     plass = Plass()
     plass.outdir = outdir
@@ -408,7 +431,7 @@ def run(
         plass.no_plasmids_flag = True
 
         # identifies chromosome and renames contigs
-        if use_raven is True:
+        if use_raven is True and skip_assembly is False:
             logger.info("Only one contig was assembled with Raven.")
             plass.identify_chromosome_process_raven(chromosome)
         else:
@@ -434,6 +457,7 @@ def run(
                 False,  # assembled mode
                 False,  # long only
                 use_raven,
+                skip_assembly 
             )
             message = "No chromosome was identified. Likely, there was insufficient long read depth to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. "
             logger.error(message)
@@ -567,6 +591,7 @@ def run(
                     False,  # assembled mode
                     False,  # long only
                     use_raven,
+                    skip_assembly
                 )
 
     ####################################################################
@@ -725,6 +750,7 @@ def run(
                 False,  # assembled mode
                 False,  # long only
                 use_raven,
+                skip_assembly
             )
 
     # end plassembler
@@ -889,6 +915,7 @@ def assembled(
         True,  # assembled
         False,  # long only
         False,  # use raven
+        skip_assembly
     )
 
     # end plassembler
@@ -956,6 +983,13 @@ def long_options(func):
             show_default=True,
         ),
         click.option(
+            "--plasmid_lb",
+            help="Lower-bound length (in Flye assembly) below which plasmids will be recovered by canu. This is not recommended to be changed.",
+            type=int,
+            default=10000,
+            show_default=True,
+        ),
+        click.option(
             "-o",
             "--outdir",
             help="Directory to write the output to.",
@@ -976,7 +1010,7 @@ def long_options(func):
             "--min_quality",
             help="minimum quality q-score for filtering long reads with chopper.",
             type=str,
-            default="15",
+            default="9",
             show_default=True,
         ),
         click.option(
@@ -1017,10 +1051,11 @@ def long_options(func):
             is_flag=True,
         ),
         click.option(
-            "--use_raven",
-            help="Uses Raven instead of Flye for long read assembly. \nMay be useful if you want to reduce runtime.",
-            is_flag=True,
-        ),
+            "--flye_directory",
+            help="Directory containing Flye long read assembly. Needs to contain assembly_info.txt and assembly_info.fasta. Allows Plassembler to Skip Flye assembly step.",
+            type=click.Path(),
+            default="nothing",
+)
     ]
     for option in reversed(options):
         func = option(func)
@@ -1043,11 +1078,11 @@ def long(
     threads,
     force,
     prefix,
-    use_raven,
     pacbio_model,
     skip_qc,
     raw_flag,
     keep_chromosome,
+    flye_directory,
     **kwargs,
 ):
     """
@@ -1069,6 +1104,7 @@ def long(
     logger.info(f"--raw_flag is {raw_flag}")
     logger.info(f"--pacbio_model is {pacbio_model}")
     logger.info(f"--keep_chromosome is {keep_chromosome}")
+    logger.info(f"--flye_directory is {flye_directory}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -1104,14 +1140,25 @@ def long(
             Path(f"{outdir}/chopper_long_reads.fastq.gz"),
         )
 
-    # Raven for long only or '--use_raven'
-    if use_raven is True:
-        logger.info(f"--use_raven is {use_raven}. Using Raven for long read assembly.")
-        logger.info("Running Raven.")
-        run_raven(outdir, threads, logdir)
-    else:
+    # flye - skip directory an option here
+
+    skip_assembly = False
+    if flye_directory != "nothing":
+        skip_assembly = validate_flye_directory(flye_directory)
+
+    if skip_assembly is False:
         logger.info("Running Flye.")
         run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
+    else:
+        # copies the files to the outdir
+        shutil.copy2(
+        os.path.join(flye_directory, "assembly_info.txt"),
+        os.path.join(outdir, "assembly_info.txt")
+    )
+        shutil.copy2(
+            os.path.join(flye_directory, "assembly.fasta"),
+            os.path.join(outdir, "assembly.fasta")
+        )
 
     # instanatiate the class with some of the commands
     plass = Plass()
@@ -1123,10 +1170,8 @@ def long(
     logger.info("Counting Contigs.")
     plass.get_contig_count()
 
-    if use_raven is True:
-        plass.identify_chromosome_process_raven(chromosome)
-    else:
-        plass.identify_chromosome_process_flye(chromosome)
+    # flye
+    plass.identify_chromosome_process_flye_long(chromosome)
 
     if plass.chromosome_flag is False:
         move_and_copy_files(
@@ -1136,21 +1181,31 @@ def long(
             False,  # keep fastqs
             False,  # assembled mode
             True,  # long only
-            use_raven,
+            False,  # raven false
         )
         remove_intermediate_files(
             outdir,
             keep_chromosome,
             False,  # assembled mode
             True,  # long only
-            use_raven,
+            False,  # raven false
+            skip_assembly
         )
-        message = "No chromosome was identified. Likely, there was insufficient long read depth to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. "
+        message = "No chromosome was identified. Likely, there was insufficient long read depth to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high "
         logger.error(message)
 
     else:
         # no_plasmids_flag = False as obviously "plasmids"
         plass.no_plasmids_flag = False
+
+        # get length of flye plasmid assembly for canu
+        total_flye_plasmid_length = 0
+        for record in SeqIO.parse(os.path.join(outdir, "assembly.fasta"), "fasta"):
+            if len(record.seq) < int(chromosome):  # get plasmid lengths for canu param
+                total_flye_plasmid_length += len(record.seq)
+
+        # add 10kbp in case small plasmids
+        total_flye_plasmid_length = total_flye_plasmid_length + 10000
 
         logger.info("Mapping long reads.")
         input_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
@@ -1167,16 +1222,25 @@ def long(
         extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
         # canu
-        logger.info("Running canu.")
-        if pacbio_model != "":
+        logger.info("Running canu to recover plasmids.")
+        if pacbio_model != "nothing":
             canu_nano_or_pacbio = "pacbio"
         else:
             canu_nano_or_pacbio = "nanopore"
         canu_output_dir: Path = Path(outdir) / "canu"
-        run_canu(threads, logdir, plasmidfastqs, canu_output_dir, canu_nano_or_pacbio)
+        run_canu(
+            threads,
+            logdir,
+            plasmidfastqs,
+            canu_output_dir,
+            canu_nano_or_pacbio,
+            total_flye_plasmid_length,
+        )
 
         # check canu outdir has a plasmid
         canu_fasta: Path = Path(canu_output_dir) / "canu.contigs.fasta"
+
+        # get contig count
         contig_count = 0
         for record in SeqIO.parse(canu_fasta, "fasta"):
             contig_count += 1
@@ -1186,16 +1250,27 @@ def long(
         if contig_count == 0:  # end
             logger.info("Your sample probably has no plasmids.")
 
-        else:  # at least 1 canu contig
+        else:  # at least 1 contig
             # run and parse blast
-            make_blastdb(canu_output_dir, logdir)
-            run_blast(canu_output_dir, threads, logdir)
-            process_blast_output(canu_output_dir, outdir)
+
+            # filter for low entropy repeats in canu output (just assembly crap)
+            filtered_contig_fasta = filter_entropy(canu_fasta, outdir)
+
+            # trim coordinates based on the contig header
+            trimmed_contig_fasta = trim_contigs(filtered_contig_fasta, outdir)
+
+            # make_blastdb(canu_output_dir, combined_plasmid_file, logdir)
+            # run_blast(canu_output_dir,combined_plasmid_file, threads, logdir)
+            # plasmid_dedup = process_blast_output(canu_output_dir,combined_plasmid_file, outdir)
+
+            #############
+            # to do
+            #############
 
             # dnaapler
-            run_dnaapler(threads, logdir, outdir)
-            plasmids_for_sketching: Path = (
-                Path(outdir) / "dnaapler" / "dnaapler_all_reoriented.fasta"
+            # returns dnaapler
+            plasmids_for_sketching = run_dnaapler(
+                threads, trimmed_contig_fasta, logdir, outdir
             )
 
             # depth
@@ -1226,7 +1301,7 @@ def long(
         False,  # keep fastqs
         False,  # assembled mode
         True,  # long only
-        use_raven,
+        False,  # no raven
     )
 
     remove_intermediate_files(
@@ -1234,7 +1309,8 @@ def long(
         keep_chromosome,
         False,  # assembled mode
         True,  # long only
-        use_raven,
+        False,  # no raven
+        skip_assembly
     )
 
     # end plassembler

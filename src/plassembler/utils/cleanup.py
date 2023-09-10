@@ -63,10 +63,13 @@ def remove_intermediate_files(
         remove_file(os.path.join(out_dir, "chromosome.fasta"))
 
     # canu
+    # leave the canu directory for long
     # remove_directory(os.path.join(out_dir, "canu"))
     remove_file(os.path.join(out_dir, "long_combined.fasta"))
+    remove_file(os.path.join(out_dir, "canu_filtered_contigs.fasta"))
+    remove_file(os.path.join(out_dir, "canu_filtered_trimmed_contigs.fasta"))
 
-    # dnaapler
+    # remove dnaapler for long
     remove_directory(os.path.join(out_dir, "dnaapler"))
 
 
@@ -78,11 +81,16 @@ def move_and_copy_files(
     assembled_mode,
     long_only,
     use_raven,
+    skip_assembly
 ):
     """moves and copies files
     :param out_dir:  Output Directory
     :param prefix: prefix
     :param unicycler_success_flag: whether or not unicycler worked
+    :param assembled_mode: whether or not unicycler worked
+    :param long_only: whether or not unicycler worked
+    :param use_raven: whether or not unicycler worked
+    :param skip_assembly: --flye_directory specified
     :return:
     """
 
@@ -95,9 +103,10 @@ def move_and_copy_files(
                 os.mkdir(flye_dir)
             shutil.move(os.path.join(out_dir, "assembly.fasta"), flye_dir)
             shutil.move(os.path.join(out_dir, "assembly_info.txt"), flye_dir)
-            shutil.move(os.path.join(out_dir, "flye.log"), flye_dir)
-            shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), flye_dir)
-            shutil.move(os.path.join(out_dir, "assembly_graph.gv"), flye_dir)
+            if skip_assembly is False:
+                shutil.move(os.path.join(out_dir, "flye.log"), flye_dir)
+                shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), flye_dir)
+                shutil.move(os.path.join(out_dir, "assembly_graph.gv"), flye_dir)
         else:
             # make raven dir
             raven_dir = os.path.join(out_dir, "raven_output")

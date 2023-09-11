@@ -69,7 +69,6 @@ class test_plass_class(unittest.TestCase):
         remove_file(Path(f"{plass_class_depth_dir}/combined_short.sam"))
         remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_long.bam"))
         remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_short.bam"))
-        remove_file(Path(f"{plass_class_depth_dir}/combined.fasta"))
         self.assertEqual(expected, True)
 
     def test_check_get_depth_long(self):

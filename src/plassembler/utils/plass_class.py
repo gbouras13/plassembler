@@ -208,7 +208,6 @@ class Plass:
         :return chromosome_flag: bool whether chromosome assembles
         """
         outdir = self.outdir
-        long_only = self.long_only
         info_file = os.path.join(outdir, "assembly_info.txt")
         col_list = [
             "seq_name",
@@ -304,7 +303,6 @@ class Plass:
         :return chromosome_flag: bool whether chromosome assembles
         """
         outdir = self.outdir
-        long_only = self.long_only
         info_file = os.path.join(outdir, "assembly_info.txt")
         col_list = [
             "seq_name",
@@ -763,14 +761,12 @@ class Plass:
         with open(os.path.join(outdir, prefix + "_plasmids.fasta"), "w") as dna_fa:
             for dna_record in SeqIO.parse(plasmid_fasta, "fasta"):
                 id = dna_record.id
-                l = len(dna_record.seq)
+                length = len(dna_record.seq)
                 copy_number = combined_depth_mash_df.plasmid_copy_number_long[i]
                 if "circular" in dna_record.description:  # circular contigs from canu
-                    desc = (
-                        f"len={l} plasmid_copy_number_long={copy_number}x circular=True"
-                    )
+                    desc = f"len={length} plasmid_copy_number_long={copy_number}x circular=True"
                 else:
-                    desc = f"len={l} plasmid_copy_number_long={copy_number}x"
+                    desc = f"len={length} plasmid_copy_number_long={copy_number}x"
                 i += 1
                 record = SeqRecord(dna_record.seq, id=id, description=desc)
                 SeqIO.write(record, dna_fa, "fasta")

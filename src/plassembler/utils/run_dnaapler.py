@@ -32,6 +32,6 @@ def run_dnaapler(threads, plasmid_fasta, logdir, outdir):
         )
         return plasmids_for_sketching
     except Exception:
-        logger.warning(f"Dnaapler failed to reorient any plasmids.")
+        logger.warning("Dnaapler failed to reorient any plasmids.")
         plasmids_for_sketching = plasmid_fasta
         return plasmids_for_sketching

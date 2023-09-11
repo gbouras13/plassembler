@@ -96,7 +96,6 @@ class test_sam_to_fastq(unittest.TestCase):
     # sam to bam
     def test_extract_long_fastqs_slow_keep_fastqs(self):
         expected_return = True
-        threads = 1
         samfile: Path = Path(f"{map_dir}/long_read.sam")
         # not in the dir to prevent overwriting
         plasmidfastq: Path = Path(f"{map_dir}/sam_to_bam/plasmid_long.fastq")

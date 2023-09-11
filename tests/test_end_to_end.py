@@ -72,7 +72,7 @@ def test_citation():
 
 
 # test running end to end
-#### for cases 1,2,3
+# for cases 1,2,3
 # uncomment for mac running to check
 # 70kbp, 44kbp and 9kbp plasmid reads are from
 # the 70kbp is a fake chromosome
@@ -91,7 +91,7 @@ class test_end_to_end(unittest.TestCase):
         remove_directory(outdir)
 
     def test_plassembler_case_2(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             """test plassembler run case 2 no chromosome assembled"""
             longreads: Path = f"{end_to_end}/input_fastq.gz"
             s1: Path = f"{end_to_end}/input_R1.fastq.gz"
@@ -114,11 +114,11 @@ class test_end_to_end(unittest.TestCase):
         remove_directory(outdir)
 
     def test_plassembler_case_4(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             """test plassembler run case 4. Only chromosome assembled with flye, no plasmid in recovery."""
             longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
             s1: Path = f"{end_to_end}/abaumanii_reads_R1.fastq.gz"
-            s2: Path = f"{end_to_end}/aabaumanii_reads_R2.fastq.gz"
+            s2: Path = f"{end_to_end}/abaumanii_reads_R2.fastq.gz"
             chromosome = 100000
             outdir: Path = f"{end_to_end}/test_out"
             cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
@@ -128,7 +128,7 @@ class test_end_to_end(unittest.TestCase):
     # skipqc
 
     def test_plassembler_skipqc(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             """test plassembler run case 4. Only chromosome assembled with flye, no plasmid in recovery."""
             longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
             s1: Path = f"{end_to_end}/abaumanii_reads_R1.fastq.gz"
@@ -141,8 +141,8 @@ class test_end_to_end(unittest.TestCase):
 
     # flye_dir
     def test_plassembler_flye_dir(self):
-        with self.assertRaises(ValueError):
-            """test plassembler run case 4. With flye directory."""
+        with self.assertRaises(RuntimeError):
+            """test plassembler run case 4. With flye directory. Should fail out (Saves time)."""
             longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
             s1: Path = f"{end_to_end}/abaumanii_reads_R1.fastq.gz"
             s2: Path = f"{end_to_end}/abaumanii_reads_R2.fastq.gz"
@@ -157,7 +157,7 @@ class test_end_to_end(unittest.TestCase):
     long
     """
 
-    def test_plassembler_long():
+    def test_plassembler_long(self):
         """test plassembler long"""
         longreads: Path = f"{end_to_end}/input_fastq.gz"
         chromosome = 50000
@@ -166,8 +166,8 @@ class test_end_to_end(unittest.TestCase):
         exec_command(cmd)
         remove_directory(outdir)
 
-    def test_plassembler_long_no_chrom():
-        with self.assertRaises(ValueError):
+    def test_plassembler_long_no_chrom(self):
+        with self.assertRaises(RuntimeError):
             """test plassembler long - no chromosome recovered"""
             longreads: Path = f"{end_to_end}/input_fastq.gz"
             chromosome = 500000
@@ -176,8 +176,8 @@ class test_end_to_end(unittest.TestCase):
             exec_command(cmd)
             remove_directory(outdir)
 
-    def test_plassembler_long_no_plasmids():
-        """test plassembler long - no plasmids"""
+    def test_plassembler_long_no_plasmids(self):
+        """test plassembler long - no plasmids recovered at all"""
         longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
         chromosome = 50000
         outdir: Path = f"{end_to_end}/test_out"
@@ -186,10 +186,10 @@ class test_end_to_end(unittest.TestCase):
         remove_directory(outdir)
 
     """
-    assembled 
+    assembled
     """
 
-    def test_plassembler_assembled():
+    def test_plassembler_assembled(self):
         """test plassembler assembled"""
         longreads: Path = f"{end_to_end}/input_fastq.gz"
         s1: Path = f"{end_to_end}/input_R1.fastq.gz"

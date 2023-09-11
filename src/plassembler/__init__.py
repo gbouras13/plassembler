@@ -406,7 +406,7 @@ def run(
         logger.info(
             f"You have specified a {flye_directory} with an existing flye assembly."
         )
-        logger.info(f"Copying files.")
+        logger.info("Copying files.")
         # copies the files to the outdir
         shutil.copy2(
             os.path.join(flye_directory, "assembly_info.txt"),
@@ -1150,7 +1150,7 @@ def long(
         logger.info(
             f"You have specified a {flye_directory} with an existing flye assembly."
         )
-        logger.info(f"Copying files.")
+        logger.info("Copying files.")
         # copies the files to the outdir
         shutil.copy2(
             os.path.join(flye_directory, "assembly_info.txt"),
@@ -1238,7 +1238,7 @@ def long(
                 canu_nano_or_pacbio,
                 total_flye_plasmid_length,
             )
-        except:
+        except Exception:
             logger.warning(
                 "canu failed to assemble anything from the unmapped reads. This likely means you have 0 plasmids in this sample."
             )

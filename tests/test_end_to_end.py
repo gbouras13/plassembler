@@ -77,8 +77,8 @@ def test_citation():
 # 70kbp, 44kbp and 9kbp plasmid reads are from
 # the 70kbp is a fake chromosome
 
-class test_end_to_end(unittest.TestCase):
 
+class test_end_to_end(unittest.TestCase):
     def test_plassembler_case_1(self):
         """test plassembler run - chromosome only assembled with Flye, no plasmids - plasmids recovered from the short reads"""
         longreads: Path = f"{end_to_end}/case1.fastq.gz"
@@ -89,7 +89,6 @@ class test_end_to_end(unittest.TestCase):
         cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
         exec_command(cmd)
         remove_directory(outdir)
-
 
     def test_plassembler_case_2(self):
         with self.assertRaises(ValueError):
@@ -103,7 +102,6 @@ class test_end_to_end(unittest.TestCase):
             exec_command(cmd)
             remove_directory(outdir)
 
-
     def test_plassembler_case_3(self):
         """test plassembler run - chromosome and plasmids assembled with Flye"""
         longreads: Path = f"{end_to_end}/input_fastq.gz"
@@ -114,7 +112,6 @@ class test_end_to_end(unittest.TestCase):
         cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
         exec_command(cmd)
         remove_directory(outdir)
-
 
     def test_plassembler_case_4(self):
         with self.assertRaises(ValueError):
@@ -128,9 +125,7 @@ class test_end_to_end(unittest.TestCase):
             exec_command(cmd)
             remove_directory(outdir)
 
-
-# skipqc
-
+    # skipqc
 
     def test_plassembler_skipqc(self):
         with self.assertRaises(ValueError):
@@ -143,7 +138,6 @@ class test_end_to_end(unittest.TestCase):
             cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --skip_qc -f"
             exec_command(cmd)
             remove_directory(outdir)
-
 
     # flye_dir
     def test_plassembler_flye_dir(self):
@@ -159,11 +153,9 @@ class test_end_to_end(unittest.TestCase):
             exec_command(cmd)
             remove_directory(outdir)
 
-
     """
     long
     """
-
 
     def test_plassembler_long():
         """test plassembler long"""
@@ -173,7 +165,6 @@ class test_end_to_end(unittest.TestCase):
         cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
         exec_command(cmd)
         remove_directory(outdir)
-
 
     def test_plassembler_long_no_chrom():
         with self.assertRaises(ValueError):
@@ -185,7 +176,6 @@ class test_end_to_end(unittest.TestCase):
             exec_command(cmd)
             remove_directory(outdir)
 
-
     def test_plassembler_long_no_plasmids():
         """test plassembler long - no plasmids"""
         longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
@@ -194,7 +184,6 @@ class test_end_to_end(unittest.TestCase):
         cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
         exec_command(cmd)
         remove_directory(outdir)
-
 
     """
     assembled 

@@ -454,7 +454,7 @@ def run(
                 False,  # assembled mode
                 False,  # long only
                 use_raven,
-                skip_assembly
+                skip_assembly,
             )
             remove_intermediate_files(
                 outdir,
@@ -565,7 +565,7 @@ def run(
                     False,  # assembled mode
                     False,  # long only
                     use_raven,
-                    skip_assembly
+                    skip_assembly,
                 )
                 remove_intermediate_files(
                     outdir,
@@ -587,7 +587,7 @@ def run(
                     False,  # assembled mode
                     False,  # long only
                     use_raven,
-                    skip_assembly
+                    skip_assembly,
                 )
                 remove_intermediate_files(
                     outdir,
@@ -626,7 +626,7 @@ def run(
                 False,  # assembled
                 False,  # long only
                 use_raven,
-                skip_assembly
+                skip_assembly,
             )
             remove_intermediate_files(
                 outdir,
@@ -745,7 +745,7 @@ def run(
                 False,  # assembled mode
                 False,  # long only
                 use_raven,
-                skip_assembly
+                skip_assembly,
             )
             remove_intermediate_files(
                 outdir,
@@ -909,13 +909,10 @@ def assembled(
         True,  # assembled mode
         False,  # long only
         False,  # use raven
-        False  # skip_assembly is false 
+        False,  # skip_assembly is false
     )
     remove_intermediate_files(
-        outdir,
-        False,  # keep chrom
-        True,  # assembled
-        False  # long only
+        outdir, False, True, False  # keep chrom  # assembled  # long only
     )
 
     # end plassembler
@@ -1186,7 +1183,7 @@ def long(
             False,  # assembled mode
             True,  # long only
             False,  # raven false
-            skip_assembly # skip assembly
+            skip_assembly,  # skip assembly
         )
         remove_intermediate_files(
             outdir,
@@ -1260,7 +1257,7 @@ def long(
                 False,  # assembled mode
                 True,  # long only
                 False,  # no raven
-                skip_assembly
+                skip_assembly,
             )
 
             remove_intermediate_files(
@@ -1334,7 +1331,7 @@ def long(
         False,  # assembled mode
         True,  # long only
         False,  # no raven
-        skip_assembly
+        skip_assembly,
     )
 
     remove_intermediate_files(

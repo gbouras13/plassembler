@@ -7,9 +7,7 @@ import shutil
 ##########################################################
 
 
-def remove_intermediate_files(
-    out_dir, keep_chromosome, assembled_mode, long_only
-):
+def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_only):
     """removes intermediate files
     :param out_dir:  Output Directory
     :return:
@@ -81,7 +79,7 @@ def move_and_copy_files(
     assembled_mode,
     long_only,
     use_raven,
-    skip_assembly
+    skip_assembly,
 ):
     """moves and copies files
     :param out_dir:  Output Directory
@@ -142,8 +140,7 @@ def move_and_copy_files(
             os.path.join(fastqs_dir, "plasmids_long.fastq"),
         )
 
-        if long_only is False: # for the hybrid only
-
+        if long_only is False:  # for the hybrid only
             # move fastqs
             shutil.move(
                 os.path.join(out_dir, "short_read_concat_R1.fastq"),
@@ -153,7 +150,7 @@ def move_and_copy_files(
                 os.path.join(out_dir, "short_read_concat_R2.fastq"),
                 os.path.join(fastqs_dir, "plasmids_R2.fastq"),
             )
-        
+
             shutil.move(
                 os.path.join(out_dir, "multimap_plasmid_chromosome_long.fastq"),
                 os.path.join(fastqs_dir, "multimap_long.fastq"),
@@ -173,9 +170,11 @@ def touch_output_fail_files(out_dir, prefix):
     touch_file(os.path.join(out_dir, prefix + "_plasmids.gfa"))
     touch_file(os.path.join(out_dir, prefix + "_summary.tsv"))
 
+
 def touch_output_fail_files_long(out_dir, prefix):
     touch_file(os.path.join(out_dir, prefix + "_plasmids.fasta"))
     touch_file(os.path.join(out_dir, prefix + "_summary.tsv"))
+
 
 def remove_file(file_path):
     if os.path.exists(file_path):

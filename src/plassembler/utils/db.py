@@ -3,14 +3,16 @@
 taken from pharokka and therefore from bakta
 """
 
+import hashlib
 import os
 import shutil
 import tarfile
-import hashlib
 from pathlib import Path
+
 import requests
 from alive_progress import alive_bar
 from loguru import logger
+
 from plassembler.utils.cleanup import remove_directory
 
 
@@ -50,7 +52,7 @@ def get_database_zenodo(db_dir: Path):
     tar_path = Path(f"{db_dir}/plsdb_110222_plassembler_v0.1.4_databases.tar.gz")
     db_url = "https://zenodo.org/record/7499200/files/plsdb_110222_plassembler_v0.1.4_databases.tar.gz"
     requiredmd5 = "f5144045e6e5d0d5a6b7f78d0c08840d"
-    
+
     # remvoe the directory
     if os.path.exists(db_dir):
         shutil.rmtree(db_dir)
@@ -59,11 +61,8 @@ def get_database_zenodo(db_dir: Path):
     if not os.path.exists(db_dir):
         os.mkdir(db_dir)
 
-
     try:
-        with tar_path.open("wb") as fh_out, requests.get(
-            db_url, stream=True
-        ) as resp:
+        with tar_path.open("wb") as fh_out, requests.get(db_url, stream=True) as resp:
             total_length = resp.headers.get("content-length")
             if total_length is not None:  # content length header is set
                 total_length = int(total_length)
@@ -79,7 +78,7 @@ def get_database_zenodo(db_dir: Path):
     md5_sum = calc_md5_sum(tar_path)
 
     if md5_sum == requiredmd5:
-            logger.info(f"Database file download OK: {md5_sum}")
+        logger.info(f"Database file download OK: {md5_sum}")
     else:
         logger.error(
             f"Error: corrupt database file! MD5 should be '{requiredmd5}' but is '{md5_sum}'"
@@ -89,7 +88,6 @@ def get_database_zenodo(db_dir: Path):
     untar(tar_path, db_dir)
     tar_path.unlink()
     logger.info(f"Plassembler Database download into {db_dir} successful.")
-
 
 
 def calc_md5_sum(tarball_path: Path, buffer_size: int = 1024 * 1024) -> str:
@@ -116,11 +114,15 @@ def untar(tarball_path: Path, output_path: Path):
             tar_file.extractall(path=str(output_path))
 
         # get untarred directory
-        untarpath = os.path.join(output_path, "plsdb_110222_plassembler_v0.1.4_databases")
+        untarpath = os.path.join(
+            output_path, "plsdb_110222_plassembler_v0.1.4_databases"
+        )
 
         # Get a list of all files in the source directory
         files_to_move = [
-            f for f in os.listdir(untarpath) if os.path.isfile(os.path.join(untarpath, f))
+            f
+            for f in os.listdir(untarpath)
+            if os.path.isfile(os.path.join(untarpath, f))
         ]
 
         # Move each file to the destination directory

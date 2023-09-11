@@ -19,8 +19,8 @@ from plassembler.utils.input_commands import (
     validate_fastas_assembled_mode,
     validate_fastq,
     validate_fastqs_assembled_mode,
+    validate_flye_directory,
     validate_pacbio_model,
-    validate_flye_directory
 )
 from plassembler.utils.mapping import minimap_long_reads, minimap_short_reads
 
@@ -251,7 +251,7 @@ def common_options(func):
             help="Directory containing Flye long read assembly. Needs to contain assembly_info.txt and assembly_info.fasta. Allows Plassembler to Skip Flye assembly step.",
             type=click.Path(),
             default="nothing",
-)
+        ),
     ]
     for option in reversed(options):
         func = option(func)
@@ -403,16 +403,18 @@ def run(
             logger.info("Running Flye.")
             run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
     else:
-        logger.info(f"You have specified a {flye_directory} with an existing flye assembly.")
+        logger.info(
+            f"You have specified a {flye_directory} with an existing flye assembly."
+        )
         logger.info(f"Copying files.")
         # copies the files to the outdir
         shutil.copy2(
-        os.path.join(flye_directory, "assembly_info.txt"),
-        os.path.join(outdir, "assembly_info.txt")
-    )
+            os.path.join(flye_directory, "assembly_info.txt"),
+            os.path.join(outdir, "assembly_info.txt"),
+        )
         shutil.copy2(
             os.path.join(flye_directory, "assembly.fasta"),
-            os.path.join(outdir, "assembly.fasta")
+            os.path.join(outdir, "assembly.fasta"),
         )
     # instanatiate the class with some of the commands
     plass = Plass()
@@ -452,7 +454,7 @@ def run(
                 False,  # assembled mode
                 False,  # long only
                 use_raven,
-                skip_assembly
+                skip_assembly,
             )
             remove_intermediate_files(
                 outdir,
@@ -584,7 +586,7 @@ def run(
                     False,  # assembled mode
                     False,  # long only
                     use_raven,
-                    skip_assembly
+                    skip_assembly,
                 )
                 remove_intermediate_files(
                     outdir,
@@ -741,7 +743,7 @@ def run(
                 False,  # assembled mode
                 False,  # long only
                 use_raven,
-                skip_assembly
+                skip_assembly,
             )
             remove_intermediate_files(
                 outdir,
@@ -905,14 +907,13 @@ def assembled(
         True,  # assembled mode
         False,  # long only
         False,  # use raven
-        False # skip_assembly is false - no assembly
+        False,  # skip_assembly is false - no assembly
     )
     remove_intermediate_files(
         outdir,
         False,  # keep chrom
         True,  # assembled
         False,  # long only
-
     )
 
     # end plassembler
@@ -1052,7 +1053,7 @@ def long_options(func):
             help="Directory containing Flye long read assembly. Needs to contain assembly_info.txt and assembly_info.fasta. Allows Plassembler to Skip Flye assembly step.",
             type=click.Path(),
             default="nothing",
-)
+        ),
     ]
     for option in reversed(options):
         func = option(func)
@@ -1147,16 +1148,18 @@ def long(
         logger.info("Running Flye.")
         run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
     else:
-        logger.info(f"You have specified a {flye_directory} with an existing flye assembly.")
+        logger.info(
+            f"You have specified a {flye_directory} with an existing flye assembly."
+        )
         logger.info(f"Copying files.")
         # copies the files to the outdir
         shutil.copy2(
-        os.path.join(flye_directory, "assembly_info.txt"),
-        os.path.join(outdir, "assembly_info.txt")
-    )
+            os.path.join(flye_directory, "assembly_info.txt"),
+            os.path.join(outdir, "assembly_info.txt"),
+        )
         shutil.copy2(
             os.path.join(flye_directory, "assembly.fasta"),
-            os.path.join(outdir, "assembly.fasta")
+            os.path.join(outdir, "assembly.fasta"),
         )
 
     # instanatiate the class with some of the commands
@@ -1236,9 +1239,15 @@ def long(
                 total_flye_plasmid_length,
             )
         except:
-            logger.warning("canu failed to assemble anything from the unmapped reads. This likely means you have 0 plasmids in this sample.")
-            logger.warning(f"Also check the {outdir}/plasmid_fastqs/long_plasmid.fastq file. If this is small (indicating few unmapped reads and therefore canu failing due to low depth), then your sample likely has no plasmids.")
-            logger.warning(f"If you think your sample should still have plasmids, please check for errors in the canu log files in the {outdir}/logs directory.")
+            logger.warning(
+                "canu failed to assemble anything from the unmapped reads. This likely means you have 0 plasmids in this sample."
+            )
+            logger.warning(
+                f"Also check the {outdir}/plasmid_fastqs/long_plasmid.fastq file. If this is small (indicating few unmapped reads and therefore canu failing due to low depth), then your sample likely has no plasmids."
+            )
+            logger.warning(
+                f"If you think your sample should still have plasmids, please check for errors in the canu log files in the {outdir}/logs directory."
+            )
             logger.info("Cleaning up intermediate files and exiting Plassembler.")
             move_and_copy_files(
                 outdir,
@@ -1248,19 +1257,14 @@ def long(
                 False,  # assembled mode
                 True,  # long only
                 False,  # no raven
-                skip_assembly
+                skip_assembly,
             )
 
-
             remove_intermediate_files(
-                outdir,
-                keep_chromosome,
-                False,  # assembled mode
-                True,  # long only
+                outdir, keep_chromosome, False, True  # assembled mode  # long only
             )
             end_plassembler(start_time)
             sys.exit()
-
 
         # check canu outdir has a plasmid
         canu_fasta: Path = Path(canu_output_dir) / "canu.contigs.fasta"
@@ -1327,7 +1331,7 @@ def long(
         False,  # assembled mode
         True,  # long only
         False,  # no raven
-        skip_assembly
+        skip_assembly,
     )
 
     remove_intermediate_files(

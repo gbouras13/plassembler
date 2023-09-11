@@ -77,133 +77,138 @@ def test_citation():
 # 70kbp, 44kbp and 9kbp plasmid reads are from
 # the 70kbp is a fake chromosome
 
+class test_end_to_end(unittest.TestCase):
 
-def test_plassembler_case_1():
-    """test plassembler run - chromosome only assembled with Flye, no plasmids - plasmids recovered from the short reads"""
-    longreads: Path = f"{end_to_end}/case1.fastq.gz"
-    s1: Path = f"{end_to_end}/input_R1.fastq.gz"
-    s2: Path = f"{end_to_end}/input_R2.fastq.gz"
-    chromosome = 50000
-    outdir: Path = f"{end_to_end}/test_out"
-    cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
-    exec_command(cmd)
-    remove_directory(outdir)
-
-
-def test_plassembler_case_2():
-    """test plassembler run case 2 no chromosome assembled"""
-    longreads: Path = f"{end_to_end}/input_fastq.gz"
-    s1: Path = f"{end_to_end}/input_R1.fastq.gz"
-    s2: Path = f"{end_to_end}/input_R2.fastq.gz"
-    chromosome = 500000  # higher than 70k
-    outdir: Path = f"{end_to_end}/test_out"
-    cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
-    exec_command(cmd)
-    remove_directory(outdir)
+    def test_plassembler_case_1(self):
+        """test plassembler run - chromosome only assembled with Flye, no plasmids - plasmids recovered from the short reads"""
+        longreads: Path = f"{end_to_end}/case1.fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
 
 
-def test_plassembler_case_3():
-    """test plassembler run - chromosome and plasmids assembled with Flye"""
-    longreads: Path = f"{end_to_end}/input_fastq.gz"
-    s1: Path = f"{end_to_end}/input_R1.fastq.gz"
-    s2: Path = f"{end_to_end}/input_R2.fastq.gz"
-    chromosome = 50000
-    outdir: Path = f"{end_to_end}/test_out"
-    cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
-    exec_command(cmd)
-    remove_directory(outdir)
+    def test_plassembler_case_2(self):
+        with self.assertRaises(ValueError):
+            """test plassembler run case 2 no chromosome assembled"""
+            longreads: Path = f"{end_to_end}/input_fastq.gz"
+            s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+            s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+            chromosome = 500000  # higher than 70k
+            outdir: Path = f"{end_to_end}/test_out"
+            cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+            exec_command(cmd)
+            remove_directory(outdir)
 
 
-def test_plassembler_case_4():
-    """test plassembler run case 4. Only chromosome assembled with flye, no plasmid in recovery."""
-    longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
-    s1: Path = f"{end_to_end}/abaumanii_plasmid_R1.fastq.gz"
-    s2: Path = f"{end_to_end}/abaumanii_plasmid_R2.fastq.gz"
-    chromosome = 100000
-    outdir: Path = f"{end_to_end}/test_out"
-    cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
-    exec_command(cmd)
-    remove_directory(outdir)
+    def test_plassembler_case_3(self):
+        """test plassembler run - chromosome and plasmids assembled with Flye"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+
+    def test_plassembler_case_4(self):
+        with self.assertRaises(ValueError):
+            """test plassembler run case 4. Only chromosome assembled with flye, no plasmid in recovery."""
+            longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
+            s1: Path = f"{end_to_end}/abaumanii_reads_R1.fastq.gz"
+            s2: Path = f"{end_to_end}/aabaumanii_reads_R2.fastq.gz"
+            chromosome = 100000
+            outdir: Path = f"{end_to_end}/test_out"
+            cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+            exec_command(cmd)
+            remove_directory(outdir)
 
 
 # skipqc
 
 
-def test_plassembler_skipqc():
-    """test plassembler run case 4. Only chromosome assembled with flye, no plasmid in recovery."""
-    longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
-    s1: Path = f"{end_to_end}/abaumanii_plasmid_R1.fastq.gz"
-    s2: Path = f"{end_to_end}/abaumanii_plasmid_R2.fastq.gz"
-    chromosome = 1000000
-    outdir: Path = f"{end_to_end}/test_out"
-    cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --skip_qc -f"
-    exec_command(cmd)
-    remove_directory(outdir)
+    def test_plassembler_skipqc(self):
+        with self.assertRaises(ValueError):
+            """test plassembler run case 4. Only chromosome assembled with flye, no plasmid in recovery."""
+            longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
+            s1: Path = f"{end_to_end}/abaumanii_reads_R1.fastq.gz"
+            s2: Path = f"{end_to_end}/abaumanii_reads_R2.fastq.gz"
+            chromosome = 1000000
+            outdir: Path = f"{end_to_end}/test_out"
+            cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --skip_qc -f"
+            exec_command(cmd)
+            remove_directory(outdir)
 
 
-# flye_dir
-def test_plassembler_flye_dir():
-    """test plassembler run case 4. With flye directory."""
-    longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
-    s1: Path = f"{end_to_end}/abaumanii_plasmid_R1.fastq.gz"
-    s2: Path = f"{end_to_end}/abaumanii_plasmid_R2.fastq.gz"
-    flye_dir: Path = f"{end_to_end}/abaumanii_plasmid_flye_output"
-    chromosome = 1000000
-    outdir: Path = f"{end_to_end}/test_out"
-    cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --flye_directory {flye_dir} -f"
-    exec_command(cmd)
-    remove_directory(outdir)
+    # flye_dir
+    def test_plassembler_flye_dir(self):
+        with self.assertRaises(ValueError):
+            """test plassembler run case 4. With flye directory."""
+            longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
+            s1: Path = f"{end_to_end}/abaumanii_reads_R1.fastq.gz"
+            s2: Path = f"{end_to_end}/abaumanii_reads_R2.fastq.gz"
+            flye_dir: Path = f"{end_to_end}/abaumanii_plasmid_flye_output"
+            chromosome = 1000000
+            outdir: Path = f"{end_to_end}/test_out"
+            cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --flye_directory {flye_dir} -f"
+            exec_command(cmd)
+            remove_directory(outdir)
 
 
-"""
-long
-"""
+    """
+    long
+    """
 
 
-def test_plassembler_long():
-    """test plassembler long"""
-    longreads: Path = f"{end_to_end}/input_fastq.gz"
-    chromosome = 50000
-    outdir: Path = f"{end_to_end}/test_out"
-    cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
-    exec_command(cmd)
-    remove_directory(outdir)
+    def test_plassembler_long():
+        """test plassembler long"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
 
 
-def test_plassembler_long_no_chrom():
-    """test plassembler long - no chromosome recovered"""
-    longreads: Path = f"{end_to_end}/input_fastq.gz"
-    chromosome = 500000
-    outdir: Path = f"{end_to_end}/test_out"
-    cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
-    exec_command(cmd)
-    remove_directory(outdir)
+    def test_plassembler_long_no_chrom():
+        with self.assertRaises(ValueError):
+            """test plassembler long - no chromosome recovered"""
+            longreads: Path = f"{end_to_end}/input_fastq.gz"
+            chromosome = 500000
+            outdir: Path = f"{end_to_end}/test_out"
+            cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+            exec_command(cmd)
+            remove_directory(outdir)
 
 
-def test_plassembler_long_no_plasmids():
-    """test plassembler long - no plasmids"""
-    longreads: Path = f"{end_to_end}/abaumanii_plasmid.gz"
-    chromosome = 500000
-    outdir: Path = f"{end_to_end}/test_out"
-    cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
-    exec_command(cmd)
-    remove_directory(outdir)
+    def test_plassembler_long_no_plasmids():
+        """test plassembler long - no plasmids"""
+        longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
 
 
-"""
-assembled 
-"""
+    """
+    assembled 
+    """
 
-
-def test_plassembler_assembled():
-    """test plassembler assembled"""
-    longreads: Path = f"{end_to_end}/input_fastq.gz"
-    s1: Path = f"{end_to_end}/input_R1.fastq.gz"
-    s2: Path = f"{end_to_end}/input_R2.fastq.gz"
-    outdir: Path = f"{end_to_end}/test_out"
-    chromosome = 50000
-    input_plasmids = f"{end_to_end}/test_plasmids.fasta"
-    input_chromosome = f"{end_to_end}/test_chromosome.fasta"
-    cmd = f"plassembler assembled -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir} --input_plasmids {input_plasmids} --input_chromosome {input_chromosome}  -t 8 -f"
-    exec_command(cmd)
-    remove_directory(outdir)
+    def test_plassembler_assembled():
+        """test plassembler assembled"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        outdir: Path = f"{end_to_end}/test_out"
+        chromosome = 50000
+        input_plasmids = f"{end_to_end}/test_plasmids.fasta"
+        input_chromosome = f"{end_to_end}/test_chromosome.fasta"
+        cmd = f"plassembler assembled -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir} --input_plasmids {input_plasmids} --input_chromosome {input_chromosome}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)

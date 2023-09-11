@@ -625,6 +625,7 @@ def run(
                 False,  # assembled
                 False,  # long only
                 use_raven,
+                skip_assembly,
             )
             remove_intermediate_files(
                 outdir,

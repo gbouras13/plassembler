@@ -1,0 +1,8 @@
+digraph {
+nodesep = 0.5;
+node [shape = circle, label = "", height = 0.3];
+"0" -> "0" [label = "id 1\l44k 33x", color = "black"] ;
+"1" -> "1" [label = "id -1\l44k 33x", color = "black"] ;
+"2" -> "2" [label = "id 2\l70k 53x", color = "black"] ;
+"3" -> "3" [label = "id -2\l70k 53x", color = "black"] ;
+}

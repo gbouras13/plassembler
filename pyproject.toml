@@ -23,6 +23,8 @@ pyyaml = ">=6.0"
 pandas = ">=1.4.2"
 biopython = ">=1.76"
 pysam = ">=0.16.0"
+alive-progress = ">=3.0.1"
+requests = ">=2.25.1"
 
 
 [tool.poetry.dev-dependencies]

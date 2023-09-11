@@ -403,6 +403,8 @@ def run(
             logger.info("Running Flye.")
             run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
     else:
+        logger.info(f"You have specified a {flye_directory} with an existing flye assembly.")
+        logger.info(f"Copying files.")
         # copies the files to the outdir
         shutil.copy2(
         os.path.join(flye_directory, "assembly_info.txt"),
@@ -457,7 +459,6 @@ def run(
                 keep_chromosome,
                 False,  # assembled mode
                 False,  # long only
-                use_raven
             )
             message = "No chromosome was identified. Likely, there was insufficient long read depth to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high. "
             logger.error(message)
@@ -568,7 +569,6 @@ def run(
                     keep_chromosome,
                     False,  # assembled mode
                     False,  # long only
-                    use_raven,
                 )
 
                 ####################################################################
@@ -591,7 +591,6 @@ def run(
                     keep_chromosome,
                     False,  # assembled mode
                     False,  # long only
-                    use_raven
                 )
 
     ####################################################################
@@ -630,7 +629,6 @@ def run(
                 keep_chromosome,
                 False,  # assembled mode
                 False,  # long only
-                use_raven,
             )
 
             end_plassembler(start_time)
@@ -750,7 +748,6 @@ def run(
                 keep_chromosome,
                 False,  # assembled mode
                 False,  # long only
-                use_raven
             )
 
     # end plassembler
@@ -915,7 +912,6 @@ def assembled(
         False,  # keep chrom
         True,  # assembled
         False,  # long only
-        False,  # use raven
 
     )
 
@@ -1151,6 +1147,8 @@ def long(
         logger.info("Running Flye.")
         run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
     else:
+        logger.info(f"You have specified a {flye_directory} with an existing flye assembly.")
+        logger.info(f"Copying files.")
         # copies the files to the outdir
         shutil.copy2(
         os.path.join(flye_directory, "assembly_info.txt"),
@@ -1189,8 +1187,6 @@ def long(
             keep_chromosome,
             False,  # assembled mode
             True,  # long only
-            False,  # raven false
-            skip_assembly
         )
         message = "No chromosome was identified. Likely, there was insufficient long read depth to assemble a chromosome. \nIncreasing sequencing depth is recommended. \nAlso please check your -c or --chromosome parameter, it may be too high "
         logger.error(message)
@@ -1229,14 +1225,42 @@ def long(
         else:
             canu_nano_or_pacbio = "nanopore"
         canu_output_dir: Path = Path(outdir) / "canu"
-        run_canu(
-            threads,
-            logdir,
-            plasmidfastqs,
-            canu_output_dir,
-            canu_nano_or_pacbio,
-            total_flye_plasmid_length,
-        )
+
+        try:
+            run_canu(
+                threads,
+                logdir,
+                plasmidfastqs,
+                canu_output_dir,
+                canu_nano_or_pacbio,
+                total_flye_plasmid_length,
+            )
+        except:
+            logger.warning("canu failed to assemble anything from the unmapped reads. This likely means you have 0 plasmids in this sample.")
+            logger.warning(f"Also check the {outdir}/plasmid_fastqs/long_plasmid.fastq file. If this is small (indicating few unmapped reads and therefore canu failing due to low depth), then your sample likely has no plasmids.")
+            logger.warning(f"If you think your sample should still have plasmids, please check for errors in the canu log files in the {outdir}/logs directory.")
+            logger.info("Cleaning up intermediate files and exiting Plassembler.")
+            move_and_copy_files(
+                outdir,
+                prefix,
+                False,  # unicycler success
+                True,  # keep fastqs - because we are keeping the plasmid_long
+                False,  # assembled mode
+                True,  # long only
+                False,  # no raven
+                skip_assembly
+            )
+
+
+            remove_intermediate_files(
+                outdir,
+                keep_chromosome,
+                False,  # assembled mode
+                True,  # long only
+            )
+            end_plassembler(start_time)
+            sys.exit()
+
 
         # check canu outdir has a plasmid
         canu_fasta: Path = Path(canu_output_dir) / "canu.contigs.fasta"
@@ -1311,7 +1335,6 @@ def long(
         keep_chromosome,
         False,  # assembled mode
         True,  # long only
-        False  # no raven
     )
 
     # end plassembler

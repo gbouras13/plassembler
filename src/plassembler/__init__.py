@@ -1271,14 +1271,18 @@ def long(
 
         # get contig count
         contig_count = 0
-        for record in SeqIO.parse(canu_fasta, "fasta"):
-            contig_count += 1
+
+        # first check if canu output a FASTA (if no reads, it won't)
+        if os.path.exists(canu_fasta) is False:
+            contig_count = 0
+        else:  # assuming there is a canu fasta
+            for record in SeqIO.parse(canu_fasta, "fasta"):
+                contig_count += 1
 
         logger.info(f"Canu assembled {contig_count} contigs.")
 
         if contig_count == 0:  # end
             logger.info("Your sample probably has no plasmids.")
-
         else:  # at least 1 contig
             # run and parse blast
 
@@ -1288,21 +1292,16 @@ def long(
             # trim coordinates based on the contig header
             trimmed_contig_fasta = trim_contigs(filtered_contig_fasta, outdir)
 
-            # make_blastdb(canu_output_dir, combined_plasmid_file, logdir)
-            # run_blast(canu_output_dir,combined_plasmid_file, threads, logdir)
-            # plasmid_dedup = process_blast_output(canu_output_dir,combined_plasmid_file, outdir)
-
-            #############
-            # to do
-            #############
-
+            ##################
             # dnaapler
-            # returns dnaapler
+            # returns plasmids for sketching
+            ##################
+
             plasmids_for_sketching = run_dnaapler(
                 threads, trimmed_contig_fasta, logdir, outdir
             )
 
-            # depth
+            # calculate depth
             plass.get_depth_long(logdir, pacbio_model, threads, plasmids_for_sketching)
 
             # run mash
@@ -1335,10 +1334,7 @@ def long(
     )
 
     remove_intermediate_files(
-        outdir,
-        keep_chromosome,
-        False,  # assembled mode
-        True,  # long only
+        outdir, keep_chromosome, False, True  # assembled mode  # long only
     )
 
     # end plassembler

@@ -138,6 +138,10 @@ def trim_contigs(canu_filtered_fasta, outdir):
         # Extract the header
         header = record.description
 
+        # instantiate the start and end coords
+        start_coord = 0
+        end_coord = len(record.seq)
+
         # Check if 'trim=' is present in the header
         if "trim=" in header and "suggestCircular=yes" in header:
             # Extract the coordinates from the header

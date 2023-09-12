@@ -110,13 +110,18 @@ class ExternalTool:
                 logger.warning(
                     "Unicycler has failed. This usually means that you have no plasmids. Checking."
                 )
+            elif tool.tool_str == "dnaapler all":  # for dnaapler errors
+                logger.warning(
+                    "Dnaapler failed to reorient any putative plasmids to begin with repA."
+                )
+                logger.warning("Continuing with the un-reoriented contigs.")
             else:
-                logger.error(
+                logger.warning(
                     f"Error calling {tool.command_as_str} (return code {error.returncode})"
                 )
-                logger.error(f"Please check stdout log file: {tool.out_log}")
-                logger.error(f"Please check stderr log file: {tool.err_log}")
-                logger.error("Temporary files are preserved for debugging")
+                logger.warning(f"Please check stdout log file: {tool.out_log}")
+                logger.warning(f"Please check stderr log file: {tool.err_log}")
+                logger.warning("Temporary files are preserved for debugging")
                 logger.error("Exiting...")
 
                 if ctx:

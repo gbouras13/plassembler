@@ -65,9 +65,7 @@ class test_plass_class(unittest.TestCase):
         # set to the depth dir for  intermediate files
         plass.outdir = plass_class_depth_dir
         plass.get_depth(logdir, pacbio_model, threads)
-        remove_file(Path(f"{plass_class_depth_dir}/combined_long.sam"))
         remove_file(Path(f"{plass_class_depth_dir}/combined_short.sam"))
-        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_long.bam"))
         remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_short.bam"))
         self.assertEqual(expected, True)
 

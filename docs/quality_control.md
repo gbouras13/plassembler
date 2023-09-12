@@ -24,13 +24,13 @@ conda deactivate
 
 #### Running Plassembler 
 
-First install plassembler. If you need Mac see the [instructions](https://github.com/gbouras13/plassembler#installation).
+First install plassembler. If you have a Mac see the [instructions](https://github.com/gbouras13/plassembler#installation) for extra details.
 And then download the database.
 
 ```
 mamba create -n plassembler plassembler 
 conda activate plassembler
-install_database.py plassembler_db
+plassembler download -d plassembler_db
 ```
 The below was run on my Mac Mini M1 (2021).
 

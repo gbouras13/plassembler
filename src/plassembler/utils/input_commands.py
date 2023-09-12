@@ -112,6 +112,28 @@ def validate_fastqs_assembled_mode(longreads, short_one, short_two):
     return (short_flag, long_flag, long_gzipped)
 
 
+def validate_flye_directory(flye_directory):
+    """Checks the flye directory exists and contains
+        :param flye_directory: flye directory
+    :return:
+    """
+    if os.path.isdir(flye_directory) is False:
+        logger.error(
+            f"Flye directory {flye_directory} is not a directory or does not exist."
+        )
+
+    if os.path.isfile(os.path.join(flye_directory, "assembly.fasta")) is False:
+        fasta = os.path.join(flye_directory, "assembly.fasta")
+        logger.error(f"Flye assembly {fasta} does not exist.")
+
+    if os.path.isfile(os.path.join(flye_directory, "assembly.fasta")) is False:
+        info = os.path.join(flye_directory, "assembly_info.txt")
+        logger.error(f"Flye assembly information {info} does not exist.")
+
+    skip_assembly = True
+    return skip_assembly
+
+
 def check_dependencies():
     """Checks the version of Unicycler, spades and Raven
     :return:
@@ -128,15 +150,7 @@ def check_dependencies():
     except Exception:
         logger.error("Flye not found. Please reinstall Plassembler.")
 
-    message = (
-        "Flye version found is v"
-        + str(flye_major_version)
-        + "."
-        + str(flye_minor_version)
-        + "."
-        + flye_minorest_version
-        + "."
-    )
+    message = f"Flye version found is v{flye_major_version}.{flye_minor_version}.{flye_minorest_version}."
     logger.info(message)
 
     if flye_major_version != 2:
@@ -155,7 +169,7 @@ def check_dependencies():
         raven_out, _ = process.communicate()
         raven_version = raven_out.decode()
         raven_version = raven_version.split("\n")[0]
-        message = "Raven v" + str(raven_version) + " found."
+        message = f"Raven v{raven_version} found."
         logger.info(message)
         message = "Raven version is ok."
         logger.info(message)
@@ -163,6 +177,7 @@ def check_dependencies():
         logger.error("Raven not found")
 
     # unicycler
+
     try:
         process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT)
         unicycler_out, _ = process.communicate()
@@ -175,18 +190,10 @@ def check_dependencies():
         unicycler_minor_version = int(unicycler_version.split(".")[1])
         unicycler_minorest_version = int(unicycler_version.split(".")[2])
     except Exception:
-        message = "Unicycler not found. Please reinstall Plassembler, see instructions at https://github.com/gbouras13/plassembler."
+        message = "Unicycler not found. Please re-install Unicycler, see instructions at https://github.com/gbouras13/plassembler."
         logger.error(message)
 
-    message = (
-        "Unicycler version found is v"
-        + str(unicycler_major_version)
-        + "."
-        + str(unicycler_minor_version)
-        + "."
-        + str(unicycler_minorest_version)
-        + "."
-    )
+    message = f"Unicycler version found is v{unicycler_major_version}.{unicycler_minor_version}.{unicycler_minorest_version}."
     logger.info(message)
 
     if unicycler_minor_version < 4:
@@ -209,7 +216,7 @@ def check_dependencies():
         spades_out = spades_out.decode()
         spades_version = spades_out.split(" ")[3]
         spades_version = spades_version.split("\n")[0]
-        message = "SPAdes " + str(spades_version) + " found."
+        message = f"SPAdes {spades_version} found."
         logger.info(message)
     except Exception:
         logger.error("SPAdes not found.")
@@ -222,7 +229,7 @@ def check_dependencies():
         samtools_version = samtools_out.split("\n")[0].split(" ")[
             1
         ]  # get second line, and then second component of line
-        message = "Samtools v" + str(samtools_version) + " found."
+        message = f"Samtools v{samtools_version} found."
         logger.info(message)
     except Exception:
         logger.error("Samtools not found.")
@@ -233,7 +240,7 @@ def check_dependencies():
         minimap2_out, _ = process.communicate()
         minimap2_version = minimap2_out.decode()
         minimap2_version = minimap2_version.split("\n")[0]
-        message = "minimap2 v" + str(minimap2_version) + " found."
+        message = f"minimap2 v{minimap2_version} found."
         logger.info(message)
     except Exception:
         logger.error("minimap2 not found.")
@@ -244,7 +251,7 @@ def check_dependencies():
         _, fastp_out = process.communicate()
         fastp_version = fastp_out.decode()
         fastp_version = fastp_version.split("\n")[0].split(" ")[1]
-        message = "fastp v" + str(fastp_version) + " found."
+        message = f"fastp v{fastp_version} found."
         logger.info(message)
     except Exception:
         logger.error("fastp not found.")
@@ -255,7 +262,7 @@ def check_dependencies():
         chopper_out, _ = process.communicate()
         chopper_version = chopper_out.decode()
         chopper_version = chopper_version.split("\n")[0].split(" ")[1]
-        message = "chopper v" + str(chopper_version) + " found."
+        message = f"chopper v{chopper_version} found."
         logger.info(message)
     except Exception:
         logger.error("chopper not found.")
@@ -270,10 +277,50 @@ def check_dependencies():
             if "version" in line:
                 version_line.append(line)
         mash_version = version_line[0].split(" ")[2]
-        message = "mash v" + str(mash_version) + " found."
+        message = f"mash v{mash_version} found."
         logger.info(message)
     except Exception:
         logger.error("mash not found")
+
+    # canu
+    try:
+        process = sp.Popen(["canu", "--version"], stdout=sp.PIPE, stderr=sp.PIPE)
+        canu_out, _ = process.communicate()
+        canu_out = canu_out.decode()
+        canu_out = canu_out.split("\n")[0].split(" ")[1]
+        message = f"canu v{canu_out} found."
+        logger.info(message)
+    except Exception:
+        logger.error("canu not found")
+
+    # dnaapler
+    try:
+        process = sp.Popen(["dnaapler", "--version"], stdout=sp.PIPE, stderr=sp.PIPE)
+        dnaapler_out, _ = process.communicate()
+        dnaapler_out = dnaapler_out.decode()
+        dnaapler_out = dnaapler_out.split("\n")[0].split("version ")[1]
+        message = f"dnaapler v{dnaapler_out} found."
+        logger.info(message)
+    except Exception:
+        logger.error("dnaapler not found")
+
+    # blast
+
+    try:
+        process = sp.Popen(["blastn", "-version"], stdout=sp.PIPE, stderr=sp.STDOUT)
+        blast_out, _ = process.communicate()
+        blast_out = blast_out.decode().strip()
+        blast_out = blast_out.split("\n")[0]
+        blast_version = blast_out.split(" ")[1]
+        blast_version = blast_version.strip("+")
+        blast_major_version = int(blast_version.split(".")[0])
+        blast_minor_version = int(blast_version.split(".")[1])
+        blast_minorest_version = int(blast_version.split(".")[2])
+        message = f"BLAST version found is v{blast_major_version}.{blast_minor_version}.{blast_minorest_version}."
+        logger.info(message)
+    except Exception:
+        message = "BLAST not found."
+        logger.error(message)
 
     # all dependencies found
     logger.info("All dependencies found.")

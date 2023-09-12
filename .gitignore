@@ -9,6 +9,9 @@ __pycache__/
 fastp.json
 fastp.html
 
+tests/test_data/logs
+tests/test_data/logs/*
+
 # Distribution / packaging
 .Python
 env/

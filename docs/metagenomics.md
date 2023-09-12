@@ -32,7 +32,6 @@ plassembler run -d Plassembler_DB -l ERR7287988.fastq.gz -1 ERR7255689_1.fastq.g
 
 So in theory `plassembler`  might work on metagenomes, but I would caution against using it, for now.
 
-
 Contigs 34, 61, 87, 101 and 109 match what was found in the ground truth.
 
 | contig | length | mean_depth_short | circularity  | PLSDB_hit | ACC_NUCCORE   | Description_NUCCORE                                                                                                 | plasmid_copy_number_short | plasmid_copy_number_long |

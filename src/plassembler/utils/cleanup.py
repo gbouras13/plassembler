@@ -7,9 +7,7 @@ import shutil
 ##########################################################
 
 
-def remove_intermediate_files(
-    out_dir, keep_chromosome, assembled_mode, long_only, use_raven
-):
+def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_only):
     """removes intermediate files
     :param out_dir:  Output Directory
     :return:
@@ -54,12 +52,23 @@ def remove_intermediate_files(
     remove_file(os.path.join(out_dir, "chopper_long_reads.fastq.gz"))
     remove_file(os.path.join(out_dir, "multimap_plasmid_chromosome_long.fastq"))
 
-    # multimer
-    remove_file(os.path.join(out_dir, "mapping.paf"))
+    # long
+    remove_file(os.path.join(out_dir, "plasmids_canu.fasta"))
+    remove_file(os.path.join(out_dir, "plasmid_long.fastq"))
 
     # chromosome
     if keep_chromosome is False:
         remove_file(os.path.join(out_dir, "chromosome.fasta"))
+
+    # canu
+    # leave the canu directory for long
+    # remove_directory(os.path.join(out_dir, "canu"))
+    remove_file(os.path.join(out_dir, "long_combined.fasta"))
+    remove_file(os.path.join(out_dir, "canu_filtered_contigs.fasta"))
+    remove_file(os.path.join(out_dir, "canu_filtered_trimmed_contigs.fasta"))
+
+    # remove dnaapler for long
+    remove_directory(os.path.join(out_dir, "dnaapler"))
 
 
 def move_and_copy_files(
@@ -70,11 +79,16 @@ def move_and_copy_files(
     assembled_mode,
     long_only,
     use_raven,
+    skip_assembly,
 ):
     """moves and copies files
     :param out_dir:  Output Directory
     :param prefix: prefix
     :param unicycler_success_flag: whether or not unicycler worked
+    :param assembled_mode: whether or not unicycler worked
+    :param long_only: whether or not unicycler worked
+    :param use_raven: whether or not unicycler worked
+    :param skip_assembly: --flye_directory specified
     :return:
     """
 
@@ -87,9 +101,10 @@ def move_and_copy_files(
                 os.mkdir(flye_dir)
             shutil.move(os.path.join(out_dir, "assembly.fasta"), flye_dir)
             shutil.move(os.path.join(out_dir, "assembly_info.txt"), flye_dir)
-            shutil.move(os.path.join(out_dir, "flye.log"), flye_dir)
-            shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), flye_dir)
-            shutil.move(os.path.join(out_dir, "assembly_graph.gv"), flye_dir)
+            if skip_assembly is False:
+                shutil.move(os.path.join(out_dir, "flye.log"), flye_dir)
+                shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), flye_dir)
+                shutil.move(os.path.join(out_dir, "assembly_graph.gv"), flye_dir)
         else:
             # make raven dir
             raven_dir = os.path.join(out_dir, "raven_output")
@@ -109,6 +124,8 @@ def move_and_copy_files(
         else:
             # to touch empty versions of the output files if no plasmids
             touch_output_fail_files(out_dir, prefix)
+    else:
+        touch_output_fail_files_long(out_dir, prefix)
 
     # put kept fastqs into separate directory
     # make fastqs dir
@@ -117,23 +134,27 @@ def move_and_copy_files(
         if not os.path.exists(fastqs_dir):
             os.mkdir(fastqs_dir)
 
-        # move fastqs
-        shutil.move(
-            os.path.join(out_dir, "short_read_concat_R1.fastq"),
-            os.path.join(fastqs_dir, "plasmids_R1.fastq"),
-        )
-        shutil.move(
-            os.path.join(out_dir, "short_read_concat_R2.fastq"),
-            os.path.join(fastqs_dir, "plasmids_R2.fastq"),
-        )
+        # always move plasmid_long
         shutil.move(
             os.path.join(out_dir, "plasmid_long.fastq"),
             os.path.join(fastqs_dir, "plasmids_long.fastq"),
         )
-        shutil.move(
-            os.path.join(out_dir, "multimap_plasmid_chromosome_long.fastq"),
-            os.path.join(fastqs_dir, "multimap_long.fastq"),
-        )
+
+        if long_only is False:  # for the hybrid only
+            # move fastqs
+            shutil.move(
+                os.path.join(out_dir, "short_read_concat_R1.fastq"),
+                os.path.join(fastqs_dir, "plasmids_R1.fastq"),
+            )
+            shutil.move(
+                os.path.join(out_dir, "short_read_concat_R2.fastq"),
+                os.path.join(fastqs_dir, "plasmids_R2.fastq"),
+            )
+
+            shutil.move(
+                os.path.join(out_dir, "multimap_plasmid_chromosome_long.fastq"),
+                os.path.join(fastqs_dir, "multimap_long.fastq"),
+            )
 
 
 # function to touch create a file
@@ -147,6 +168,11 @@ def touch_file(path):
 def touch_output_fail_files(out_dir, prefix):
     touch_file(os.path.join(out_dir, prefix + "_plasmids.fasta"))
     touch_file(os.path.join(out_dir, prefix + "_plasmids.gfa"))
+    touch_file(os.path.join(out_dir, prefix + "_summary.tsv"))
+
+
+def touch_output_fail_files_long(out_dir, prefix):
+    touch_file(os.path.join(out_dir, prefix + "_plasmids.fasta"))
     touch_file(os.path.join(out_dir, prefix + "_summary.tsv"))
 
 

@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-12, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest]
         python-version: ["3.8", "3.9"]
 
     steps:
@@ -37,12 +37,20 @@ jobs:
         run: |
           mamba install python=${{ matrix.python-version }}
           just install
+          python -m pip install --upgrade pip
+          pip3 install git+https://github.com/rrwick/Unicycler.git
+          unicycler --help
       - name: Check formatting
         shell: bash -l {0}
         run: just check-fmt
       - name: Test and generate coverage report with pytest
         shell: bash -l {0}
-        run: just test-ci
+        # need to set TERM to linux for some reason,kept getting a nasty error that was breaking unicycler 
+        # https://github.com/cypress-io/cypress/issues/15679
+        run: |
+          export TERM=linux
+          unicycler --version
+          just test-ci
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
       

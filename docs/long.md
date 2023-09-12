@@ -32,20 +32,20 @@ Everything was run on my Macbook Pro M1 (2020) with 8 threads. I was too lazy to
 | Isolate                     | Ground Truth                                   | `plassembler long` v1.2.0                                            | Time (s) | Flye (Within `plassembler long` )                  |
 | --------------------------- | ---------------------------------------------- | ------------------------------------------------------------------ | -------- | ------------------------------------------ |
 | C222                        | 2473                                           | 2473                                                               | 1917     | Nothing - missed 2473                      |
-| Acinetobacter baumannii J9  | 145059; 6078                                   | 145058 (c); 6078 (c)                                               | 967      | 145059; 10771                              |
+| _Acinetobacter baumannii_ J9  | 145059; 6078                                   | 145058 (c); 6078 (c)                                               | 967      | 145059; 10771                              |
 | CAV1217                     | 181436;  70606; 44015; 9294                    | 181429 (c);  70603 (c); 44015 (c); 9294 (c)                        | 1230     | 181433;  70605; 44015; 9294                |
-| Citrobacter koseri MINF 9D  | 64962; 9294                                    | 93661 (chimera includes 64962 plasmid); 9294 (c)                   | 1196     | 64961; 9294                                |
-| Enterobacter kobei MSB1 1B  | 136482;  108411;  4665;  3715;  2370           | 136477 (c);  108402 (c);  4665 (c);  3715 (c);  2367 (c)           | 1374     | 136477; 108408 - missed 3 small plasmids   |
-| Klebsiella oxytoca MSB1 2C  | 118161;  58472; 9975; 4574                     | 118159 (c);  58467 (c); 9973 (c); 4573 (c); extra 18290 (chimera)  | 1646     | 118161;  58472; 9975 - missed 4574         |
-| Klebsiella variicola INF345 | 250980;  243620;  31780 (linear);  5783;  3514 | 250968 (c);  243616 (c);  3514 (c) - missing linear plasmid + 5783 | 3544     | 249712; 243617; 31645 - missed 5783 + 3514 |
+| _Citrobacter koseri_ MINF 9D  | 64962; 9294                                    | 93661 (chimera includes 64962 plasmid); 9294 (c)                   | 1196     | 64961; 9294                                |
+| _Enterobacter kobei_ MSB1 1B  | 136482;  108411;  4665;  3715;  2370           | 136477 (c);  108402 (c);  4665 (c);  3715 (c);  2367 (c)           | 1374     | 136477; 108408 - missed 3 small plasmids   |
+| _Klebsiella oxytoca_ MSB1 2C  | 118161;  58472; 9975; 4574                     | 118159 (c);  58467 (c); 9973 (c); 4573 (c); extra 18290 (chimera)  | 1646     | 118161;  58472; 9975 - missed 4574         |
+| _Klebsiella variicola_ INF345 | 250980;  243620;  31780 (linear);  5783;  3514 | 250968 (c);  243616 (c);  3514 (c) - missing linear plasmid + 5783 | 3544     | 249712; 243617; 31645 - missed 5783 + 3514 |
 
 
 ## Overall
 
 | Total                     | Missed Small Plasmids | Missassembled         |
 | ------------------------- | --------------------- | --------------------- |
-| `plassembler long` v1.2.0   | 1 + linear plasmid    | 1 (C. koseri 64962)   |
-| Flye (Within `plassembler`) | 6                     | 1 (A. baumannii 6078) |
+| `plassembler long` v1.2.0   | 1 + linear plasmid    | 2 (_C. koseri_ 64962) and _K oxtyoca_ chimera   |
+| Flye (Within `plassembler`) | 6                     | 1 (_A. baumannii_ 6078) |
 
 ## Summary
 

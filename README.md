@@ -14,7 +14,7 @@
 
 ## Automated Bacterial Plasmid Assembly Program
 
-Plassembler is a program that is designed for automated & fast assembly of plasmids in  bacterial genomes that have been hybrid sequenced with long read & paired-end short read sequencing. It was originally designed for Oxford Nanopore Technologies long reads, but will also work with Pacbio reads. 
+`plassembler` is a program that is designed for automated & fast assembly of plasmids in  bacterial genomes that have been hybrid sequenced with long read & paired-end short read sequencing. It was originally designed for Oxford Nanopore Technologies long reads, but will also work with Pacbio reads. 
 
 If you are assembling a small number of bacterial genomes manually, I would recommend starting by using [Trycycler](https://github.com/rrwick/Trycycler) to recover the chromosome before using Plassembler to recover plasmids, especially the small ones. If you have more genomes or want to assemble your genomes in a more automated way, try [dragonflye](https://github.com/rpetit3/dragonflye), especially if you are used to Shovill, or my own work-in-progress pipeline [hybracter](https://github.com/gbouras13/hybracter) that is more appropriate for large datasets.  
 
@@ -25,11 +25,11 @@ Additionally, I would recommend reading the following guides to bacterial genome
 
 ## Manuscript
 
-Plassembler has been recently published in *Bioinformatics*:
+`plassembler` has been recently published in *Bioinformatics*:
 
 George Bouras, Anna E. Sheppard, Vijini Mallawaarachchi, Sarah Vreugde, Plassembler: an automated bacterial plasmid assembly tool, Bioinformatics, Volume 39, Issue 7, July 2023, btad409, https://doi.org/10.1093/bioinformatics/btad409.
 
-If you use Plassembler, please see the full [Citations](#citations) section for a list of all programs Plassembler uses under the hood, in order to fully recognise the creators of these tools for their work.
+If you use `plassembler`, please see the full [Citations](#citations) section for a list of all programs `plassembler` uses under the hood, in order to fully recognise the creators of these tools for their work.
 
 ## Table of Contents
 
@@ -38,7 +38,7 @@ If you use Plassembler, please see the full [Citations](#citations) section for 
   - [Manuscript](#manuscript)
   - [Table of Contents](#table-of-contents)
   - [Quick Start](#quick-start)
-  - [Latest Version](#latest-version)
+  - [`plassembler` v1.2.0 Updates (12 September 2023)](#plassembler-v120-updates-12-september-2023)
   - [Why Does Plassembler Exist?](#why-does-plassembler-exist)
   - [Why Not Just Use Unicycler?](#why-not-just-use-unicycler)
   - [Documentation](#documentation)
@@ -62,7 +62,7 @@ If you use Plassembler, please see the full [Citations](#citations) section for 
 
 ## Quick Start
 
-The easiest way to install plassembler is via conda:
+The easiest way to install `plassembler` is via conda:
 
 `conda install -c bioconda plassembler`
 
@@ -70,29 +70,28 @@ Followed by database download and installation:
 
 `plassembler download -d <databse directory>`
 
-And finally run plassembler:
+And finally run `plassembler`:
 
 `plassembler run -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length>`
 
 Please read the [Installation](#installation) section for more details, especially if you are an inexperienced command line user.
 
-## Latest Version
+## `plassembler` v1.2.0 Updates (12 September 2023)
 
-Please use version 1.1.0, as it contains all recently added features and command line interface changes.
+`plassembler` v1.2.0 implements the following new features:
 
-If you use older versions (especially v1.0.0), you should get similar results to v1.1.0, but it is not recommended.
-
-Once on bioconda, to force v1.1.0 install please use:
-
-`conda install -c bioconda plassembler==1.1.0`
+* `plassembler long` officially released and implemented using [Canu](https://github.com/marbl/canu) and [dnaapler](https://github.com/gbouras13/dnaapler) to reassemble unmapped reads in place of Unicycler for `plassembler run`. While we'd still recommend getting short reads if you really want to recover plasmids, as long as your long reads are short enough (i.e. not size selected), `plassembler long` should hopefully recover most small plasmids.
+* For more information on `plassembler long`, see the [documentation](https://plassembler.readthedocs.io/en/latest/long/).
+* Faster mapping thanks to @[fanvanf](https://github.com/fanvanf)'s [issue](https://github.com/gbouras13/plassembler/issues/29).
+* The ability to specify a `--flye directory` if you already have a Flye assembly for your long reads, which will tell `plassembler` to skip the long read assembly step.
 
 ## Why Does Plassembler Exist?
 
 In long-read assembled bacterial genomes, small plasmids are difficult to assemble correctly with long read assemblers. They commonly have circularisation issues and can be duplicated or missed (see [this](https://doi.org/10.1371/journal.pcbi.1010905), [this](https://f1000research.com/articles/8-2138) and [this](https://github.com/rrwick/Trycycler/wiki/Clustering-contigs)). This recent [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.001024) in _Microbial Genomics_ by Johnson et al also suggests that long read assemblers particularly miss small plasmids.
 
-Plassembler was therefore created as a fast automated tool to ensure plasmids are assembled correctly without duplicated regions for high-throughput uses - like Unicycler but a lot laster - and to provide some useful statistics as well (such as estimate plasmid copy numbers for both long and short read sets).  
+`plassembler` was therefore created as a fast automated tool to ensure plasmids are assembled correctly without duplicated regions for high-throughput uses - like Unicycler but a lot laster - and to provide some useful statistics as well (such as estimate plasmid copy numbers for both long and short read sets).  
 
-As it turns out (though this wasn't a motivation for making it), Plassembler also recovers more small plasmids than the existing gold standard tool Unicycler. I think this is because it throws away chromosomal reads, similar to subsampling short reads sets which can improve recovery. As there are more plasmid reads a proportion of the overall read set, there seems to be a higher chance of recovering smaller plasmids.
+As it turns out (though this wasn't a motivation for making it), `plassembler` also recovers more small plasmids than the existing gold standard tool Unicycler. I think this is because it throws away chromosomal reads, similar to subsampling short reads sets which can improve recovery. As there are more plasmid reads a proportion of the overall read set, there seems to be a higher chance of recovering smaller plasmids.
 
 You can see this increase in accuracy and speed in the benchmarking results for [simulated](docs/benchmarking_results_sim.md) and [real](docs/benchmarking_results_real.md) datasets.
 
@@ -102,13 +101,13 @@ Additionally, due to its mapping approach, Plassembler can also be used as a qua
 
 ## Why Not Just Use Unicycler?
 
-Unicycler is awesome and still a good way to assemble plasmids from hybrid sequencing - plassembler uses it! But there are a few reasons to use plassembler instead:
+Unicycler is awesome and still a good way to assemble plasmids from hybrid sequencing - `plassembler` uses it! But there are a few reasons to use plassembler instead:
 
 1. Time. Plassember throws away all the chromosomal reads (i.e. most of them) before running Unicycler, so it is much faster (wall clock 3-10x faster generally). 
-2. Accuracy. Benchmarking has shown Plassembler is better than Unicycler in terms of recovering small plasmids.
-3. Plassembler will output only the likely plasmids, and can more easily be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://doi.org/10.1371/journal.pcbi.1010905) so Plassembler can get you only what is necessary from Unicycler.
-4. Plassembler will give you summary depth and copy number stats for both long and short reads.
-5. Plassembler can be used as a quality control to check if your short and long reads come from the same sample - if plassembler results in many non-circular contigs (particularly those that have no hits in PLSDB), it is likely because your read sets do not come from the same isolate! See [Quality Control](#quality-control).
+2. Accuracy. Benchmarking has shown `plassembler` is better than Unicycler in terms of recovering small plasmids.
+3. `plassembler` will output only the likely plasmids, and can more easily be integrated into pipelines. You shouldn't be assembling the chromosome using Unicycler [anymore](https://doi.org/10.1371/journal.pcbi.1010905) so `plassembler` can get you only what is necessary from Unicycler.
+4. `plassembler` will give you summary depth and copy number stats for both long and short reads.
+5. `plassembler` can be used as a quality control to check if your short and long reads come from the same sample - if `plassembler` results in many non-circular contigs (particularly those that have no hits in PLSDB), it is likely because your read sets do not come from the same isolate! See [Quality Control](#quality-control).
 6. You will get information whether each assembled contig has a similar entry in [PLSDB](https://doi.org/10.1093/nar/gkab1111). Especially for common pathogen species that are well represented in databases, this will likely tell you specifically what plasmid you have in your sample. 
 * Note: Especially for less commonly sequenced species, I would not suggest that that absence of a PLSDB hit is necessary meaningful, especially for circular contigs - those would likely be novel plasmids uncaptured by PLSDB.
 
@@ -124,7 +123,7 @@ Documentation can be found at http://plassembler.readthedocs.io/.
 
 1. Long reads are filtered using [chopper](https://github.com/wdecoster/chopper) ..
 2. Long-read only assembly is conducted with [Flye](https://github.com/fenderglass/Flye) or optionally [Raven](https://github.com/lbcb-sci/raven) if `--use_raven` is specified.
-3. If the resulting assembly is checked. Contigs bigger than the provided chromosome size `-c`, are identified as chromosomal and extracted. Any other contigs are extracted as putative plasmid contigs, if Flye assembled any. If no contigs were larger than `-c`, plassembler will exit - you probably need to get some more long reads to complete your assembly (or check `-c` wasn't too big).
+3. If the resulting assembly is checked. Contigs bigger than the provided chromosome size `-c`, are identified as chromosomal and extracted. Any other contigs are extracted as putative plasmid contigs, if Flye assembled any. If no contigs were larger than `-c`, `plassembler` will exit - you probably need to get some more long reads to complete your assembly (or check `-c` wasn't too big).
 4. Short reads are filtered using [fastp](https://github.com/OpenGene/fastp).
 5. Long and short reads are mapped to a reference containing the chromosomal contigs plus putative plasmid contigs using [minimap2](https://github.com/lh3/minimap2#uguide).
 6. All reads that map to the putative plasmid contigs and all reads that are unmapped are extracted and combined.
@@ -179,7 +178,7 @@ Plassembler has been tested on Linux and MacOS machines.
 
 ### Conda
 
-The easiest way to install plassembler is via conda - Plassembler is on bioconda. 
+The easiest way to install `plassembler` is via conda - Plassembler is on bioconda. 
 
 ```
 conda install -c bioconda plassembler
@@ -191,7 +190,7 @@ or mamba for quicker solving:
 mamba install -c bioconda plassembler
 ```
 
-This will install all the dependencies along with plassembler.
+This will install all the dependencies along with `plassembler`.
 
 ### Pip
 
@@ -214,7 +213,7 @@ You will then need to install the external dependencies separately, which can be
 
 ### Source
 
-Alternatively, the development version of plassembler can be installed manually via github.
+Alternatively, the development version of `plassembler` can be installed manually via github.
 
 ```
 git clone https://github.com/gbouras13/plassembler.git
@@ -228,13 +227,13 @@ pip install -e .
 
 **Linux**
 
-For Linux environments, Unicycler v0.5.0 should be installed automaticall with the plassembler bioconda installation.
+For Linux environments, Unicycler v0.5.0 should be installed automaticall with the `plassembler` bioconda installation.
 
 You can force it as follows:
 
 `conda install -c bioconda plassembler unicycler==0.5.0`
 
-or manually install Unicycler v0.5.0 after installing plassembler:
+or manually install Unicycler v0.5.0 after installing `plassembler`:
 
 ```
 conda install -c bioconda plassembler
@@ -271,7 +270,7 @@ python3 setup.py install --makeargs "CXX=g++"
 
 ## Running plassembler
 
-To run plassembler, first you need to install the database in a directory of your chosing:
+To run `plassembler`, first you need to install the database in a directory of your chosing:
 
 `plassembler download -d <database directory>`
 
@@ -355,9 +354,9 @@ Plassembler will output a `_plasmids.fasta` file, which will contain the assembl
 
 Plassembler also outputs a `_summary.tsv` file, which gives the estimated copy number for each plasmid, for both short reads and long reads (see this [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2) for more details about plasmid copy numbers) and also gives each contig's top hit by mash distance in the PLSDB (if there is a hit), along with all its supporting information. 
 
-If plassembler fails to assemble any plasmids at all in `_plasmids.fasta`, all these files will still exist, but will be empty (to ensure plassembler can be easily integrated into workflow managers like Snakemake).
+If `plassembler` fails to assemble any plasmids at all in `_plasmids.fasta`, all these files will still exist, but will be empty (to ensure `plassembler` can be easily integrated into workflow managers like Snakemake).
 
-plassembler will also output a log file, a `flye_output` directory, which contains the output from Flye (it may be useful to decide whether you need more sequencing reads, or some strange assembly artifact occured) and a `unicycler_output` directory containing the output from Unicycler. If `--use_raven` is specified, a `raven_output` directory will be present instead.
+`plassembler` will also output a log file, a `flye_output` directory, which contains the output from Flye (it may be useful to decide whether you need more sequencing reads, or some strange assembly artifact occured) and a `unicycler_output` directory containing the output from Unicycler. If `--use_raven` is specified, a `raven_output` directory will be present instead.
 
 ## Benchmarking
 
@@ -391,9 +390,11 @@ Further, other approaches may be more appropriate for Kit 14 long read only asse
 
 ## Citations
 
-Plassembler manuscript is under review :)
+`plassembler` has been recently published in *Bioinformatics*:
 
-If you use plassembler, please consider citing:
+George Bouras, Anna E. Sheppard, Vijini Mallawaarachchi, Sarah Vreugde, Plassembler: an automated bacterial plasmid assembly tool, Bioinformatics, Volume 39, Issue 7, July 2023, btad409, https://doi.org/10.1093/bioinformatics/btad409.
+
+If you use `plassembler`, please also consider citing where relevant:
 
 * Kolmogorov, M., Yuan, J., Lin, Y. et al. Assembly of long, error-prone reads using repeat graphs. Nat Biotechnol 37, 540–546 (2019). https://doi.org/10.1038/s41587-019-0072-8
 * Li H., Minimap2: pairwise alignment for nucleotide sequences, Bioinformatics, Volume 34, Issue 18 Pages 3094–3100 (2018), https://doi.org/10.1093/bioinformatics/bty191
@@ -404,3 +405,5 @@ If you use plassembler, please consider citing:
 * Ondov, B.D., Treangen, T.J., Melsted, P. et al. Mash: fast genome and metagenome distance estimation using MinHash. Genome Biol 17, 132 (2016). https://doi.org/10.1186/s13059-016-0997-x.
 * De Coster,W. and Rademakers,R. (2023) NanoPack2: population-scale evaluation of long-read sequencing data. Bioinformatics, 39, btad311. https://doi.org/10.1093/bioinformatics/btad311.
 * Vaser,R. and Šikić,M. (2021) Time-and memory-efficient genome assembly with Raven. Nat. Comput. Sci., 1, 332–336. https://doi.org/10.1038/s43588-021-00073-4.
+* Koren S, Walenz BP, Berlin K, Miller JR, Bergman NH, Phillippy AM. (2017) Canu: scalable and accurate long-read assembly via adaptive k-mer weighting and repeat separation. Genome Res. 2017 May;27(5):722-736. doi: https://doi.org/10.1101/gr.215087.116. 
+* Bouras, G., Roach, M. J., Mallawaarachchi V., Grigson., S., Papudeshi., B. (2023) Dnaapler: A tool to reorient circular microbial genomes https://github.com/gbouras13/dnaapler

@@ -1229,42 +1229,14 @@ def long(
             canu_nano_or_pacbio = "nanopore"
         canu_output_dir: Path = Path(outdir) / "canu"
 
-        try:
-            run_canu(
-                threads,
-                logdir,
-                plasmidfastqs,
-                canu_output_dir,
-                canu_nano_or_pacbio,
-                total_flye_plasmid_length,
-            )
-        except Exception:
-            logger.warning(
-                "canu failed to assemble anything from the unmapped reads. This likely means you have 0 plasmids in this sample."
-            )
-            logger.warning(
-                f"Also check the {outdir}/plasmid_fastqs/long_plasmid.fastq file. If this is small (indicating few unmapped reads and therefore canu failing due to low depth), then your sample likely has no plasmids."
-            )
-            logger.warning(
-                f"If you think your sample should still have plasmids, please check for errors in the canu log files in the {outdir}/logs directory."
-            )
-            logger.info("Cleaning up intermediate files and exiting Plassembler.")
-            move_and_copy_files(
-                outdir,
-                prefix,
-                False,  # unicycler success
-                True,  # keep fastqs - because we are keeping the plasmid_long
-                False,  # assembled mode
-                True,  # long only
-                False,  # no raven
-                skip_assembly,
-            )
-
-            remove_intermediate_files(
-                outdir, keep_chromosome, False, True  # assembled mode  # long only
-            )
-            end_plassembler(start_time)
-            sys.exit()
+        run_canu(
+            threads,
+            logdir,
+            plasmidfastqs,
+            canu_output_dir,
+            canu_nano_or_pacbio,
+            total_flye_plasmid_length,
+        )
 
         # check canu outdir has a plasmid
         canu_fasta: Path = Path(canu_output_dir) / "canu.contigs.fasta"
@@ -1283,6 +1255,11 @@ def long(
 
         if contig_count == 0:  # end
             logger.info("Your sample probably has no plasmids.")
+            logger.info(f"Check the {outdir}/plasmid_fastqs/long_plasmid.fastq file.")
+            logger.info(
+                "If this is small (indicating few unmapped reads and therefore canu failing due to low depth), then your sample likely has no plasmids."
+            )
+            logger.info("Cleaning up intermediate files and exiting Plassembler.")
         else:  # at least 1 contig
             # run and parse blast
 

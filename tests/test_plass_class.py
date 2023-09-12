@@ -74,7 +74,9 @@ class test_plass_class(unittest.TestCase):
         plass = Plass()
         pacbio_model = "nothing"
         threads = 1
-        plasmids_for_sketching = Path(f"{plass_class_depth_dir}/combined.fasta")
+        plasmids_for_sketching = Path(
+            f"{plass_class_depth_dir}/plasmids_for_sketching.fasta"
+        )
         # set to the depth dir for  intermediate files
         plass.outdir = plass_class_depth_dir
         plass.get_depth_long(logdir, pacbio_model, threads, plasmids_for_sketching)

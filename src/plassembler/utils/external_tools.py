@@ -115,6 +115,13 @@ class ExternalTool:
                     "Dnaapler failed to reorient any putative plasmids to begin with repA."
                 )
                 logger.warning("Continuing with the un-reoriented contigs.")
+            elif tool.tool_str == "canu":  # for dnaapler errors
+                logger.warning(
+                    "canu failed to assemble anything from the unmapped reads."
+                )
+                logger.warning(
+                    f"If you think your sample should still have plasmids, please check stdout log file: {tool.out_log} and stderr log file: {tool.err_log}"
+                )
             else:
                 logger.warning(
                     f"Error calling {tool.command_as_str} (return code {error.returncode})"

@@ -1,5 +1,15 @@
 # History
 
+1.2.0 (2023-09-12)
+------------------
+
+`plassembler` v1.2.0 implements the following features:
+
+* `plassembler long` officially released and implemented using [Canu](https://github.com/marbl/canu) and [dnaapler](https://github.com/gbouras13/dnaapler) to reassemble unmapped reads in place of Unicycler for `plassembler run`. While we'd still recommend getting short reads if you really want to recover plasmids, as long as your long reads are short enough (i.e. not size selected), `plassembler long` should hopefully recover most small plasmids.
+* For more information, see the [documentation](https://plassembler.readthedocs.io/en/latest/long/).
+* Faster mapping thanks to @[fanvanf](https://github.com/fanvanf)'s [issue](https://github.com/gbouras13/plassembler/issues/29).
+* The ability to specify a `--flye directory` if you already have a Flye assembly for your long reads, which will tell `plassembler` to skip the long read assembly step.
+
 1.1.0 (2023-06-02)
 ------------------
 

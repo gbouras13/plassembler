@@ -38,7 +38,7 @@ If you use Plassembler, please see the full [Citations](#citations) section for 
   - [Manuscript](#manuscript)
   - [Table of Contents](#table-of-contents)
   - [Quick Start](#quick-start)
-  - [Latest Version](#latest-version)
+  - [`plassembler` v1.2.0 Updates (12 September 2023)](#plassembler-v120-updates-12-september-2023)
   - [Why Does Plassembler Exist?](#why-does-plassembler-exist)
   - [Why Not Just Use Unicycler?](#why-not-just-use-unicycler)
   - [Documentation](#documentation)
@@ -76,15 +76,14 @@ And finally run plassembler:
 
 Please read the [Installation](#installation) section for more details, especially if you are an inexperienced command line user.
 
-## Latest Version
+## `plassembler` v1.2.0 Updates (12 September 2023)
 
-Please use version 1.1.0, as it contains all recently added features and command line interface changes.
+`plassembler` v1.2.0 implements the following new features:
 
-If you use older versions (especially v1.0.0), you should get similar results to v1.1.0, but it is not recommended.
+* `plassembler long` officially released and implemented using [Canu](https://github.com/marbl/canu) and [dnaapler](https://github.com/gbouras13/dnaapler) to reassemble unmapped reads in place of Unicycler for `plassembler run`. While we'd still recommend getting short reads if you really want to recover plasmids, as long as your long reads are short enough (i.e. not size selected), `plassembler long` should hopefully recover most small plasmids.
+* For more information on `plassembler long`, see the [documentation](https://plassembler.readthedocs.io/en/latest/long/).
+* Faster mapping thanks to @[fanvanf](https://github.com/fanvanf)'s [issue](https://github.com/gbouras13/plassembler/issues/29).
 
-Once on bioconda, to force v1.1.0 install please use:
-
-`conda install -c bioconda plassembler==1.1.0`
 
 ## Why Does Plassembler Exist?
 

@@ -45,11 +45,14 @@ To skip quality control (chopper and fastp), use `--skip_qc`
 
 `plassembler run -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> --skip_qc`
 
+To specify a directory containing an existing Flye assembly for your long reads  use `--flye_directory` 
+
+`plassembler run -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads> --flye_directory <flye directory>`
+
 To use assembled mode to calculate plasmid copy numbers, you need to use `plassembler assembled`, along with an already assembled chromosome with `--input_chromosome` and plasmids with `--input_plasmids`.
 
 `plassembler assembled -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads>  -a --input_chromosome <path to chromosome FASTA> --input_plasmids <path to plasmids FASTA> `
 
-You can also use `plassembler long`, which will simply run Flye and keep all contigs below `-c` and denote them as 'plasmids', but this is experimental only for now and I do not vouch for its performance.
 
 ```
 Usage: plassembler run [OPTIONS]

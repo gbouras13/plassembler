@@ -140,7 +140,7 @@ class test_end_to_end(unittest.TestCase):
     # flye_dir
     def test_plassembler_flye_dir(self):
         with self.assertRaises(RuntimeError):
-            """test plassembler run case 4. With flye directory. Should fail out (Saves time)."""
+            """test plassembler run case 4. With flye directory. Should error out (Saves time)."""
             longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
             s1: Path = f"{end_to_end}/abaumanii_reads_R1.fastq.gz"
             s2: Path = f"{end_to_end}/abaumanii_reads_R2.fastq.gz"
@@ -166,7 +166,7 @@ class test_end_to_end(unittest.TestCase):
 
     def test_plassembler_long_no_chrom(self):
         with self.assertRaises(RuntimeError):
-            """test plassembler long - no chromosome recovered"""
+            """test plassembler long - no chromosome recovered - should error out"""
             longreads: Path = f"{end_to_end}/input_fastq.gz"
             chromosome = 500000
             outdir: Path = f"{end_to_end}/test_out"
@@ -175,14 +175,13 @@ class test_end_to_end(unittest.TestCase):
             remove_directory(outdir)
 
     def test_plassembler_long_no_plasmids(self):
-        with self.assertRaises(RuntimeError):
-            """test plassembler long - no plasmids recovered at all"""
-            longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
-            chromosome = 50000
-            outdir: Path = f"{end_to_end}/test_out"
-            cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
-            exec_command(cmd)
-            remove_directory(outdir)
+        """test plassembler long - no plasmids recovered at all"""
+        longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
 
     """
     assembled

@@ -82,6 +82,10 @@ Options:
                             pacbio-corr for PacBio reads that were corrected
                             with other methods (<3 percent error) or pacbio-
                             hifi for PacBio HiFi reads (<1 percent error).
+  --flye_directory PATH     Directory containing Flye long read assembly.
+                            Needs to contain assembly_info.txt and
+                            assembly_info.fasta. Allows Plassembler to Skip
+                            Flye assembly step.
   -r, --raw_flag            Use --nano-raw for Flye.  Designed for Guppy fast
                             configuration reads.  By default, Flye will assume
                             SUP or HAC reads and use --nano-hq.

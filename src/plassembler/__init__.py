@@ -1083,7 +1083,7 @@ def long(
     **kwargs,
 ):
     """
-    Plassembler with long reads only - experimental and untested
+    Plassembler with long reads only
     """
 
     # start times

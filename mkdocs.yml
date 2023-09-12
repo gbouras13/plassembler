@@ -19,6 +19,8 @@ nav:
       - Usage: run.md
     - OUTPUT:
       - Output: output.md
+    - CITATION:
+      - Citation: citation.md
     - BENCHMARKING:
       - Fastq Preparation: fastqs.md
       - Simulated Read Results: benchmarking_results_sim.md

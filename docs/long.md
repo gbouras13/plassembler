@@ -4,13 +4,13 @@ After reading this [paper](https://doi.org/10.1099/mgen.0.001024) by Johnson et 
 
 Therefore, from v1.2.0, `plassembler long` will follow all the same steps as `plassembler run` (i.e. hybrid mode), but instead of Unicycler, it will run Canu to recover plasmids in the unmapped reads.
 
-Of course, another big issue with long read is size selection - if your read set doesn't have many reads small enough to be a part of your <10kbp plasmids>, then nothing will work - your best bit is still to get some short read sequencing data. 
+Of course, another big issue with long read is size selection - if your read set doesn't have many reads small enough to be a part of your <10kbp plasmids>, then nothing will work - your best bet is still to get some short read sequencing data. 
 
-But assuming they are in the read set, `plassembler long` should recover your small plasmids.
+But assuming they are in the read set, `plassembler long` should hopefully recover your small plasmids.
 
 # Results
 
-I tested `plassembler long` on 8 samples. These are on the 60x simulated reads I generated for benchmarking `plassembler` for the manuscript and can be found [here](https://zenodo.org/record/7996690). from Wick et al, C222 (Houtak et al) and Cav1217 (Mathers et al) (find more information [here](https://plassembler.readthedocs.io/en/latest/benchmarking_results_sim) and [here](https://github.com/gbouras13/plassembler_simulation_benchmarking)).
+I tested `plassembler long` on the 60x simulated reads I generated for benchmarking `plassembler` for the manuscript and can be found [here](https://zenodo.org/record/7996690). from Wick et al, C222 (Houtak et al) and Cav1217 (Mathers et al) (find more information [here](https://plassembler.readthedocs.io/en/latest/benchmarking_results_sim) and [here](https://github.com/gbouras13/plassembler_simulation_benchmarking)).
 
 Overall, it seems to work pretty well - not perfect (it missed a linear and small plasmid in _K variicola_ and also tends to assemble some non-circular chimeric contigs), but it seems anything circular is a real plasmid from the ground truth. 
 
@@ -26,6 +26,8 @@ Ryan also [thinks](https://rrwick.github.io/2023/05/05/ont-only-accuracy-with-r1
 Everything was run on my Macbook Pro M1 (2020) with 8 threads. I was too lazy to run QUAST but I would recommend polishing the output with your favourite long read polisher (Medaka) anyway. Below are the results (in terms of lengths).
 
 ## By Isolate
+
+(c) = Canu marked the plasmid as circular 
 
 | Isolate                     | Ground Truth                                   | `plassembler long` v1.2.0                                            | Time (s) | Flye (Within `plassembler long` )                  |
 | --------------------------- | ---------------------------------------------- | ------------------------------------------------------------------ | -------- | ------------------------------------------ |
@@ -59,7 +61,7 @@ Options:
   -d, --database PATH       Directory of PLSDB database.  [required]
   -l, --longreads PATH      FASTQ file of long reads.  [required]
   -c, --chromosome INTEGER  Approximate lower-bound chromosome length of
-                            bacteria (in base pairs).  [default: 1000000]
+                            bacteria (in base pairs).  [default: 1000000]git
   -o, --outdir PATH         Directory to write the output to.  [default:
                             plassembler.output/]
   -m, --min_length TEXT     minimum length for filtering long reads with

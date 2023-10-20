@@ -117,20 +117,61 @@ def validate_flye_directory(flye_directory):
         :param flye_directory: flye directory
     :return:
     """
+
+    # default skip
+    skip_assembly = True
+    
     if os.path.isdir(flye_directory) is False:
-        logger.error(
+        logger.warning(
             f"Flye directory {flye_directory} is not a directory or does not exist."
         )
+        logger.warning("Long read assembly will not be skipped.")
+        skip_assembly = False
 
     if os.path.isfile(os.path.join(flye_directory, "assembly.fasta")) is False:
         fasta = os.path.join(flye_directory, "assembly.fasta")
-        logger.error(f"Flye assembly {fasta} does not exist.")
+        logger.warning(f"Flye assembly FASTA file {fasta} does not exist.")
+        logger.warning("Long read assembly will not be skipped.")
+        skip_assembly = False
 
     if os.path.isfile(os.path.join(flye_directory, "assembly.fasta")) is False:
         info = os.path.join(flye_directory, "assembly_info.txt")
-        logger.error(f"Flye assembly information {info} does not exist.")
+        logger.warning(f"Flye assembly info file {info} does not exist.")
+        logger.warning("Long read assembly will not be skipped.")
+        skip_assembly = False
 
-    skip_assembly = True
+    
+    return skip_assembly
+
+def validate_flye_assembly_info(flye_assembly, flye_info):
+    """Checks the flye assembly exists and contains
+        :param assembly: flye FASTA assembly
+    :return:
+    """
+
+    # default no skip
+    skip_assembly = False
+
+    if flye_assembly != "nothing" and flye_info != "nothing":
+        if os.path.isfile(flye_assembly) is False:
+            logger.error(f"Flye assembly FASTA file {flye_assembly} does not exist.")
+
+        if os.path.isfile(flye_info) is False:
+            logger.error(f"Flye assembly info file {flye_info} does not exist.")
+
+        skip_assembly = True
+
+    if flye_assembly != "nothing" and flye_info == "nothing":
+        logger.warning(f"You have specified a Flye assembly FASTA file {flye_assembly} without a flye info file with --flye_info.")
+        logger.warning(f"Assembly will not be skipped.")
+        skip_assembly = False
+
+    if flye_assembly == "nothing" and flye_info != "nothing":
+        logger.warning(f"You have specified a Flye assembly info file {flye_info} without a flye assembly FASTA file with --flye_assembly.")
+        logger.warning(f"Assembly will not be skipped.")
+        skip_assembly = False
+
+
     return skip_assembly
 
 

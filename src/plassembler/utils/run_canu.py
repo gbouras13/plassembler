@@ -10,13 +10,15 @@ from plassembler.utils.external_tools import ExternalTool
 
 
 def run_canu(
-    threads,
-    logdir,
-    longreads,
-    canu_output_dir,
-    canu_nano_or_pacbio,
-    total_flye_plasmid_length,
-):
+    threads: Path,
+    logdir: Path,
+    longreads: Path,
+    canu_output_dir: Path,
+    canu_nano_or_pacbio: str,
+    total_flye_plasmid_length: int,
+    corrected_error_rate: float,
+    
+) -> None:
     """runs canu
     :param long: long read fastq
     :param canu_output_dir: canu Output Directory
@@ -24,7 +26,6 @@ def run_canu(
     :param logdir: logdir
     :return:
     """
-    # canu -p C308_canu -d C308_canu genomeSize=0.01m maxInputCoverage=200 maxThreads=8 -nanopore plasmid_long.fastq
     # for the assembly param need to divide by a million
     total_flye_plasmid_length = round(total_flye_plasmid_length / 1000000, 5)
     try:
@@ -32,7 +33,7 @@ def run_canu(
             tool="canu",
             input="",
             output="",
-            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage=250 stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} {longreads}",
+            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage=100 stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
             logdir=logdir,
             outfile="",
         )

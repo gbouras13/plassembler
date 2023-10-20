@@ -21,6 +21,7 @@ from plassembler.utils.input_commands import (
     validate_fastqs_assembled_mode,
     validate_flye_directory,
     validate_pacbio_model,
+    validate_flye_assembly_info
 )
 from plassembler.utils.mapping import minimap_long_reads, minimap_short_reads
 
@@ -34,7 +35,7 @@ from plassembler.utils.run_canu import (  # make_blastdb,; process_blast_output,
 )
 from plassembler.utils.run_dnaapler import run_dnaapler
 from plassembler.utils.run_mash import mash_sketch, run_mash
-from plassembler.utils.run_unicycler import run_unicycler
+from plassembler.utils.run_unicycler import run_unicycler, run_unicycler_long
 from plassembler.utils.sam_to_fastq import (
     extract_long_fastqs_fast,
     extract_long_fastqs_slow_keep_fastqs,
@@ -257,6 +258,34 @@ def common_options(func):
         func = option(func)
     return func
 
+def flye_options(func):
+    """
+    Define common command line args here, and include them with the @common_options decorator below.
+    """
+    options = [
+        click.option(
+            "--flye_directory",
+            help="Directory containing Flye long read assembly. Needs to contain assembly_info.txt and assembly_info.fasta. Allows Plassembler to Skip Flye assembly step.",
+            type=click.Path(),
+            default="nothing",
+        ),
+        click.option(
+            "--flye_assembly",
+            help="Path to file containing Flye long read assembly FASTA. Allows Plassembler to Skip Flye assembly step in conjunction with  --flye_info.",
+            type=click.Path(),
+            default="nothing",
+        ),
+        click.option(
+            "--flye_info",
+            help="Path to file containing Flye long read assembly info text file. Allows Plassembler to Skip Flye assembly step in conjunction with  --flye_assembly.",
+            type=click.Path(),
+            default="nothing",
+        )
+    ]
+    for option in reversed(options):
+        func = option(func)
+    return func
+
 
 # click
 
@@ -300,6 +329,7 @@ main
     help="Uses Raven instead of Flye for long read assembly. \nMay be useful if you want to reduce runtime.",
     is_flag=True,
 )
+@flye_options
 def run(
     ctx,
     database,
@@ -320,6 +350,8 @@ def run(
     keep_fastqs,
     keep_chromosome,
     flye_directory,
+    flye_assembly,
+    flye_info,
     **kwargs,
 ):
     """Runs Plassembler"""
@@ -343,6 +375,8 @@ def run(
     logger.info(f"--keep_fastqs is {keep_fastqs}")
     logger.info(f"--keep_chromosome is {keep_chromosome}")
     logger.info(f"--flye_directory is {flye_directory}")
+    logger.info(f"--flye_assembly is {flye_assembly}")
+    logger.info(f"--flye_info is {flye_info}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -391,6 +425,8 @@ def run(
     skip_assembly = False
     if flye_directory != "nothing":
         skip_assembly = validate_flye_directory(flye_directory)
+    else: # 
+        skip_assembly = validate_flye_assembly_info(flye_assembly, flye_info)
 
     if skip_assembly is False:
         if use_raven is True:
@@ -1048,10 +1084,15 @@ def long_options(func):
             is_flag=True,
         ),
         click.option(
-            "--flye_directory",
-            help="Directory containing Flye long read assembly. Needs to contain assembly_info.txt and assembly_info.fasta. Allows Plassembler to Skip Flye assembly step.",
-            type=click.Path(),
-            default="nothing",
+            "--canu_flag",
+            help="Runs canu instead of Unicycler. As of v1.3.0, Unicycler is the chosen assembler for long reads. Cany is only recommended if you have lower quality reads (e.g. ONT R9).",
+            is_flag=True,
+        ),
+        click.option(
+            "--corrected_error_rate",
+            help="Corrected error rate parameter for canu. For advanced users only.",
+            type=str,
+            default="none",
         ),
     ]
     for option in reversed(options):
@@ -1064,6 +1105,7 @@ def long_options(func):
 @click.version_option(get_version(), "--version", "-V")
 @click.pass_context
 @long_options
+@flye_options
 def long(
     ctx,
     database,
@@ -1080,6 +1122,10 @@ def long(
     raw_flag,
     keep_chromosome,
     flye_directory,
+    flye_assembly,
+    flye_info,
+    canu_flag,
+    corrected_error_rate,
     **kwargs,
 ):
     """
@@ -1102,6 +1148,8 @@ def long(
     logger.info(f"--pacbio_model is {pacbio_model}")
     logger.info(f"--keep_chromosome is {keep_chromosome}")
     logger.info(f"--flye_directory is {flye_directory}")
+    logger.info(f"--flye_assembly is {flye_assembly}")
+    logger.info(f"--flye_info is {flye_info}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -1142,6 +1190,8 @@ def long(
     skip_assembly = False
     if flye_directory != "nothing":
         skip_assembly = validate_flye_directory(flye_directory)
+    else: 
+        skip_assembly = validate_flye_assembly_info(flye_assembly, flye_info)
 
     if skip_assembly is False:
         logger.info("Running Flye.")
@@ -1221,70 +1271,128 @@ def long(
         plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
         extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
-        # canu
-        logger.info("Running canu to recover plasmids.")
-        if pacbio_model != "nothing":
-            canu_nano_or_pacbio = "pacbio"
-        else:
-            canu_nano_or_pacbio = "nanopore"
-        canu_output_dir: Path = Path(outdir) / "canu"
+        # unicycler 
 
-        run_canu(
-            threads,
-            logdir,
-            plasmidfastqs,
-            canu_output_dir,
-            canu_nano_or_pacbio,
-            total_flye_plasmid_length,
-        )
+        if canu_flag is True:
 
-        # check canu outdir has a plasmid
-        canu_fasta: Path = Path(canu_output_dir) / "canu.contigs.fasta"
+            assembler = "canu"
 
-        # get contig count
-        contig_count = 0
+            # canu
+            logger.info("Running canu to recover plasmids.")
+            canu_nano_or_pacbio = "pacbio-hifi"
 
-        # first check if canu output a FASTA (if no reads, it won't)
-        if os.path.exists(canu_fasta) is False:
-            contig_count = 0
-        else:  # assuming there is a canu fasta
-            for record in SeqIO.parse(canu_fasta, "fasta"):
-                contig_count += 1
+            if corrected_error_rate == "none": # if none by default
+                if pacbio_model != "nothing":
+                    pacbio_model = validate_pacbio_model(pacbio_model)
+                    if pacbio_model == "pacbio-hifi":
+                        canu_nano_or_pacbio = "pacbio-hifi"
+                        corrected_error_rate = 0.005
+                    else:
+                        canu_nano_or_pacbio = "pacbio"
+                        corrected_error_rate = 0.045
+                else:
+                    canu_nano_or_pacbio = "nanopore"
+                    if raw_flag is True: # ont raw
+                        corrected_error_rate = 0.12
+                    else:
+                        corrected_error_rate = 0.005
+            else: # if none by default
+                try:
+                    float(corrected_error_rate) > 0
+                    corrected_error_rate = float(corrected_error_rate)
+                    if corrected_error_rate < 0 or corrected_error_rate > 1 :
+                        logger.error(f"{corrected_error_rate} is less than 0 or more than 1. Canu will fail. Please give a value between 0 and 1.")
+                except ValueError as e:
+                    logger.error(f"Error: {corrected_error_rate} is not a float. {e}")
+                if pacbio_model != "nothing":
+                    pacbio_model = validate_pacbio_model(pacbio_model)
+                    if pacbio_model == "pacbio-hifi":
+                        canu_nano_or_pacbio = "pacbio-hifi"
+                    else:
+                        canu_nano_or_pacbio = "pacbio"
+                else:
+                    canu_nano_or_pacbio = "nanopore"
 
-        logger.info(f"Canu assembled {contig_count} contigs.")
 
-        if contig_count == 0:  # end
-            logger.info("Your sample probably has no plasmids.")
-            logger.info(f"Check the {outdir}/plasmid_fastqs/long_plasmid.fastq file.")
-            logger.info(
-                "If this is small (indicating few unmapped reads and therefore canu failing due to low depth), then your sample likely has no plasmids."
+            canu_output_dir: Path = Path(outdir) / "canu"
+
+            run_canu(
+                threads,
+                logdir,
+                plasmidfastqs,
+                canu_output_dir,
+                canu_nano_or_pacbio,
+                total_flye_plasmid_length,
+                corrected_error_rate
+                
             )
-            logger.info("Cleaning up intermediate files and exiting Plassembler.")
-        else:  # at least 1 contig
+
+            canu_fasta: Path = Path(canu_output_dir) / "canu.contigs.fasta"
+
             # run and parse blast
 
             # filter for low entropy repeats in canu output (just assembly crap)
             filtered_contig_fasta = filter_entropy(canu_fasta, outdir)
 
             # trim coordinates based on the contig header
-            trimmed_contig_fasta = trim_contigs(filtered_contig_fasta, outdir)
+            trimmed_canu_fasta = trim_contigs(filtered_contig_fasta, outdir)
 
             ##################
             # dnaapler
             # returns plasmids for sketching
             ##################
 
-            plasmids_for_sketching = run_dnaapler(
-                threads, trimmed_contig_fasta, logdir, outdir
+            assembled_fasta = run_dnaapler(
+                threads, trimmed_canu_fasta, logdir, outdir
             )
+            # for the next step after
+            unicycler_success = True
+
+        # default == run unicycler 
+        else:
+            assembler = "unicycler"
+            unicycler_dir: Path = Path(outdir) / "unicycler_output"
+            run_unicycler_long(threads, logdir,  plasmidfastqs, unicycler_dir)
+            assembled_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
+
+ 
+            # check if unicycler succeded according to the output (it won't if no plasmids)
+            unicycler_success = os.path.isfile(assembled_fasta)
+            if (
+                os.path.isfile(assembled_fasta) is True
+                and os.stat(assembled_fasta).st_size == 0
+            ):
+                unicycler_success = False
+
+        # check output has a plasmid
+        # get contig count
+        contig_count = 0
+
+        # first check if canu output a FASTA (if no reads, it won't)
+        if os.path.exists(assembled_fasta) is False or unicycler_success is False:
+            contig_count = 0
+        else:  # assuming there is a canu fasta
+            for record in SeqIO.parse(assembled_fasta, "fasta"):
+                contig_count += 1
+
+        logger.info(f"{assembler} assembled {contig_count} contigs.")
+
+        if contig_count == 0:  # end
+            logger.info("Your sample probably has no plasmids.")
+            logger.info(f"Check the {outdir}/plasmid_fastqs/long_plasmid.fastq file.")
+            logger.info(
+                f"If this is small (indicating few unmapped reads and therefore {assembler} failed due to low depth), then your sample likely has no plasmids."
+            )
+            logger.info("Cleaning up intermediate files and exiting Plassembler.")
+        else:  # at least 1 contig
 
             # calculate depth
-            plass.get_depth_long(logdir, pacbio_model, threads, plasmids_for_sketching)
+            plass.get_depth_long(logdir, pacbio_model, threads, assembled_fasta)
 
             # run mash
             logger.info("Calculating mash distances to PLSDB.")
             # mash sketches the plasmids
-            mash_sketch(outdir, plasmids_for_sketching, logdir)
+            mash_sketch(outdir, assembled_fasta, logdir)
             # runs mash
             run_mash(outdir, database, logdir)
 
@@ -1302,7 +1410,7 @@ def long(
     move_and_copy_files(
         outdir,
         prefix,
-        False,  # unicycler success
+        unicycler_success,  # unicycler success
         False,  # keep fastqs
         False,  # assembled mode
         True,  # long only

@@ -30,11 +30,6 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
     remove_directory(os.path.join(out_dir, "30-contigger"))
     remove_directory(os.path.join(out_dir, "40-polishing"))
 
-    if long_only is True:
-        # the fake unicycler directory only in long only mode
-        remove_directory(os.path.join(out_dir, "unicycler_output"))
-        remove_file(os.path.join(out_dir, "plasmids_initial.fasta"))
-
     if assembled_mode is True:
         remove_directory(os.path.join(out_dir, "flye_output"))
         remove_file(os.path.join(out_dir, "plassembler_plasmids.fasta"))
@@ -125,7 +120,14 @@ def move_and_copy_files(
             # to touch empty versions of the output files if no plasmids
             touch_output_fail_files(out_dir, prefix)
     else:
-        touch_output_fail_files_long(out_dir, prefix)
+        if unicycler_success_flag is True:
+            # move unicycler graph output to main directory
+            shutil.copy2(
+                os.path.join(out_dir, "unicycler_output", "assembly.gfa"),
+                os.path.join(out_dir, prefix + "_plasmids.gfa"),
+            )
+        else:
+            touch_output_fail_files_long(out_dir, prefix)
 
     # put kept fastqs into separate directory
     # make fastqs dir

@@ -106,7 +106,7 @@ class ExternalTool:
             else:  # if tool needs to write to stdout
                 tool.run_to_stdout()
         except subprocess.CalledProcessError as error:
-            if tool.tool_str == "unicycler":  # for unicycler errors
+            if "unicycler" in tool.tool_str:  # for unicycler errors
                 logger.warning(
                     "Unicycler has failed. This usually means that you have no plasmids. Checking."
                 )

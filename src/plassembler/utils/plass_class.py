@@ -1097,7 +1097,7 @@ class Assembly:
 
     def combine_depth_mash_tsvs(self, prefix, no_copy_numbers):
         """
-        Combine depth and mash dataframes - if not --no_copy_numbers 
+        Combine depth and mash dataframes - if not --no_copy_numbers
         :param outdir: output directory
         :return: mash_empty: boolean whether there was a mash hit
         """
@@ -1116,7 +1116,6 @@ class Assembly:
         else:
             combined_depth_mash_df = self.mash_df
 
-        
         combined_depth_mash_df.to_csv(
             os.path.join(outdir, prefix + "_summary.tsv"), sep="\t", index=False
         )

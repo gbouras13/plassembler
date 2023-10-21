@@ -833,7 +833,7 @@ assembled mode
 @click.option(
     "--no_copy_numbers",
     help="Only run the PLSDB mash screen, not copy number estimation",
-    is_flag=True
+    is_flag=True,
 )
 def assembled(
     ctx,
@@ -899,7 +899,6 @@ def assembled(
     validate_fastas_assembled_mode(input_chromosome, input_plasmids, no_copy_numbers)
 
     if no_copy_numbers is False:
-
         # check fastqs
         logger.info("Checking input fastqs.")
 
@@ -916,7 +915,13 @@ def assembled(
             if skip_qc is False:
                 logger.info("Filtering long reads with chopper")
                 chopper(  # due to the stdin side of this, just implement the class maually in py
-                    longreads, outdir, min_length, min_quality, long_zipped, threads, logdir
+                    longreads,
+                    outdir,
+                    min_length,
+                    min_quality,
+                    long_zipped,
+                    threads,
+                    logdir,
                 )
 
             else:  # copy the input to the outdir

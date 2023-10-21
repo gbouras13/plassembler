@@ -9,6 +9,42 @@ from loguru import logger
 from plassembler.utils.external_tools import ExternalTool
 
 
+def run_canu_correct(
+    threads: Path,
+    logdir: Path,
+    longreads: Path,
+    canu_output_dir: Path,
+    canu_nano_or_pacbio: str,
+    total_flye_plasmid_length: int,
+    corrected_error_rate: float,
+    coverage: int,
+) -> None:
+    """runs canu correct
+    :param long: long read fastq
+    :param canu_output_dir: canu Output Directory
+    :param threads: threads
+    :param logdir: logdir
+    :return:
+    """
+    # for the assembly param need to divide by a million
+    total_flye_plasmid_length = round(total_flye_plasmid_length / 1000000, 5)
+    try:
+        canu = ExternalTool(
+            tool="canu",
+            input="",
+            output="",
+            params=f" -correct -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
+            logdir=logdir,
+            outfile="",
+        )
+
+        ExternalTool.run_tool(canu, to_stdout=False)
+    except Exception:
+        logger.info(
+            f"canu correct failed. This likely means that you have non-chromosomal reads to assemble anything. It is likely that you have no plasmids in this sample, but check the canu output in {logdir}."
+        )
+
+
 def run_canu(
     threads: Path,
     logdir: Path,
@@ -17,7 +53,7 @@ def run_canu(
     canu_nano_or_pacbio: str,
     total_flye_plasmid_length: int,
     corrected_error_rate: float,
-    
+    coverage: int,
 ) -> None:
     """runs canu
     :param long: long read fastq
@@ -33,7 +69,7 @@ def run_canu(
             tool="canu",
             input="",
             output="",
-            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage=100 stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
+            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
             logdir=logdir,
             outfile="",
         )

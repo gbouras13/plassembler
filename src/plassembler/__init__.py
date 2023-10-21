@@ -11,7 +11,12 @@ from loguru import logger
 
 from plassembler.utils.assembly import run_flye, run_raven
 from plassembler.utils.bam import bam_to_fastq_short, sam_to_bam, split_bams
-from plassembler.utils.cleanup import move_and_copy_files, remove_intermediate_files
+from plassembler.utils.cleanup import (
+    move_and_copy_files,
+    remove_directory,
+    remove_file,
+    remove_intermediate_files,
+)
 from plassembler.utils.concat import concatenate_short_fastqs
 from plassembler.utils.db import check_db_installation
 from plassembler.utils.input_commands import (
@@ -19,9 +24,9 @@ from plassembler.utils.input_commands import (
     validate_fastas_assembled_mode,
     validate_fastq,
     validate_fastqs_assembled_mode,
+    validate_flye_assembly_info,
     validate_flye_directory,
     validate_pacbio_model,
-    validate_flye_assembly_info
 )
 from plassembler.utils.mapping import minimap_long_reads, minimap_short_reads
 
@@ -31,11 +36,16 @@ from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp
 from plassembler.utils.run_canu import (  # make_blastdb,; process_blast_output,; run_blast,
     filter_entropy,
     run_canu,
+    run_canu_correct,
     trim_contigs,
 )
 from plassembler.utils.run_dnaapler import run_dnaapler
 from plassembler.utils.run_mash import mash_sketch, run_mash
-from plassembler.utils.run_unicycler import run_unicycler, run_unicycler_long
+from plassembler.utils.run_unicycler import (
+    corrected_fasta_to_fastq,
+    run_unicycler,
+    run_unicycler_long,
+)
 from plassembler.utils.sam_to_fastq import (
     extract_long_fastqs_fast,
     extract_long_fastqs_slow_keep_fastqs,
@@ -258,6 +268,7 @@ def common_options(func):
         func = option(func)
     return func
 
+
 def flye_options(func):
     """
     Define common command line args here, and include them with the @common_options decorator below.
@@ -280,7 +291,7 @@ def flye_options(func):
             help="Path to file containing Flye long read assembly info text file. Allows Plassembler to Skip Flye assembly step in conjunction with  --flye_assembly.",
             type=click.Path(),
             default="nothing",
-        )
+        ),
     ]
     for option in reversed(options):
         func = option(func)
@@ -425,7 +436,7 @@ def run(
     skip_assembly = False
     if flye_directory != "nothing":
         skip_assembly = validate_flye_directory(flye_directory)
-    else: # 
+    else:  #
         skip_assembly = validate_flye_assembly_info(flye_assembly, flye_info)
 
     if skip_assembly is False:
@@ -819,6 +830,11 @@ assembled mode
     default="nothing",
     show_default=False,
 )
+@click.option(
+    "--no_copy_numbers",
+    help="Only run the PLSDB mash screen, not copy number estimation",
+    is_flag=True
+)
 def assembled(
     ctx,
     database,
@@ -836,6 +852,7 @@ def assembled(
     input_chromosome,
     input_plasmids,
     pacbio_model,
+    no_copy_numbers,
     **kwargs,
 ):
     """Runs assembled mode"""
@@ -854,6 +871,7 @@ def assembled(
     logger.info(f"Thread count is {threads}")
     logger.info(f"--skip_qc is {skip_qc}")
     logger.info(f"--pacbio_model is {pacbio_model}")
+    logger.info(f"--no_copy_numbers is {no_copy_numbers}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -878,47 +896,49 @@ def assembled(
 
     # check FASTAs
     logger.info("Checking input FASTAs.")
-    validate_fastas_assembled_mode(input_chromosome, input_plasmids)
+    validate_fastas_assembled_mode(input_chromosome, input_plasmids, no_copy_numbers)
 
-    # check fastqs
-    logger.info("Checking input fastqs.")
+    if no_copy_numbers is False:
 
-    (short_flag, long_flag, long_zipped) = validate_fastqs_assembled_mode(
-        longreads, short_one, short_two
-    )
+        # check fastqs
+        logger.info("Checking input fastqs.")
 
-    # assign the flags to object
-    assembly.short_flag = short_flag
-    assembly.long_flag = long_flag
+        (short_flag, long_flag, long_zipped) = validate_fastqs_assembled_mode(
+            longreads, short_one, short_two
+        )
 
-    # filtering long readfastq
-    if long_flag is True:
-        if skip_qc is False:
-            logger.info("Filtering long reads with chopper")
-            chopper(  # due to the stdin side of this, just implement the class maually in py
-                longreads, outdir, min_length, min_quality, long_zipped, threads, logdir
-            )
+        # assign the flags to object
+        assembly.short_flag = short_flag
+        assembly.long_flag = long_flag
 
-        else:  # copy the input to the outdir
-            shutil.copy2(
-                longreads,
-                Path(f"{outdir}/chopper_long_reads.fastq.gz"),
-            )
+        # filtering long readfastq
+        if long_flag is True:
+            if skip_qc is False:
+                logger.info("Filtering long reads with chopper")
+                chopper(  # due to the stdin side of this, just implement the class maually in py
+                    longreads, outdir, min_length, min_quality, long_zipped, threads, logdir
+                )
 
-    if short_flag is True:
-        if skip_qc is True:  # copy the input to the outdir
-            logger.info("Skipping short read trimming as --skip_qc was specified")
-            out_one: Path = Path(outdir) / "trimmed_R1.fastq"
-            out_two: Path = Path(outdir) / "trimmed_R2.fastq"
-            copy_sr_fastq_file(Path(short_one), out_one)
-            copy_sr_fastq_file(Path(short_two), out_two)
-        else:
-            logger.info("Trimming short reads.")
-            fastp(short_one, short_two, outdir, logdir)
+            else:  # copy the input to the outdir
+                shutil.copy2(
+                    longreads,
+                    Path(f"{outdir}/chopper_long_reads.fastq.gz"),
+                )
 
-    logger.info("Calculating Depths.")
-    assembly.combine_input_fastas(Path(input_chromosome), Path(input_plasmids))
-    assembly.get_depth(logdir, threads, pacbio_model)
+        if short_flag is True:
+            if skip_qc is True:  # copy the input to the outdir
+                logger.info("Skipping short read trimming as --skip_qc was specified")
+                out_one: Path = Path(outdir) / "trimmed_R1.fastq"
+                out_two: Path = Path(outdir) / "trimmed_R2.fastq"
+                copy_sr_fastq_file(Path(short_one), out_one)
+                copy_sr_fastq_file(Path(short_two), out_two)
+            else:
+                logger.info("Trimming short reads.")
+                fastp(short_one, short_two, outdir, logdir)
+
+        logger.info("Calculating Depths.")
+        assembly.combine_input_fastas(Path(input_chromosome), Path(input_plasmids))
+        assembly.get_depth(logdir, threads, pacbio_model)
 
     # run mash
     logger.info("Calculating mash distances to PLSDB.")
@@ -934,7 +954,7 @@ def assembled(
     # processes output
     assembly.process_mash_tsv(database, input_plasmids)
     # combine depth and mash tsvs
-    assembly.combine_depth_mash_tsvs(prefix)
+    assembly.combine_depth_mash_tsvs(prefix, no_copy_numbers)
 
     # rename contigs and update copy number with plsdb
     move_and_copy_files(
@@ -1016,13 +1036,6 @@ def long_options(func):
             show_default=True,
         ),
         click.option(
-            "--plasmid_lb",
-            help="Lower-bound length (in Flye assembly) below which plasmids will be recovered by canu. This is not recommended to be changed.",
-            type=int,
-            default=10000,
-            show_default=True,
-        ),
-        click.option(
             "-o",
             "--outdir",
             help="Directory to write the output to.",
@@ -1090,7 +1103,7 @@ def long_options(func):
         ),
         click.option(
             "--corrected_error_rate",
-            help="Corrected error rate parameter for canu. For advanced users only.",
+            help="Corrected error rate parameter for canu correction. For advanced users only.",
             type=str,
             default="none",
         ),
@@ -1190,26 +1203,39 @@ def long(
     skip_assembly = False
     if flye_directory != "nothing":
         skip_assembly = validate_flye_directory(flye_directory)
-    else: 
+    else:
         skip_assembly = validate_flye_assembly_info(flye_assembly, flye_info)
 
     if skip_assembly is False:
         logger.info("Running Flye.")
         run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
     else:
-        logger.info(
-            f"You have specified a {flye_directory} with an existing flye assembly."
-        )
-        logger.info("Copying files.")
-        # copies the files to the outdir
-        shutil.copy2(
-            os.path.join(flye_directory, "assembly_info.txt"),
-            os.path.join(outdir, "assembly_info.txt"),
-        )
-        shutil.copy2(
-            os.path.join(flye_directory, "assembly.fasta"),
-            os.path.join(outdir, "assembly.fasta"),
-        )
+        if flye_directory != "nothing":
+            logger.info(
+                f"You have specified a {flye_directory} with an existing flye assembly."
+            )
+            logger.info("Copying files.")
+            # copies the files to the outdir
+            shutil.copy2(
+                os.path.join(flye_directory, "assembly_info.txt"),
+                os.path.join(outdir, "assembly_info.txt"),
+            )
+            shutil.copy2(
+                os.path.join(flye_directory, "assembly.fasta"),
+                os.path.join(outdir, "assembly.fasta"),
+            )
+        else:
+            logger.info(
+                f"You have specified a {flye_assembly} and {flye_info} from an existing flye assembly."
+            )
+            shutil.copy2(
+                flye_assembly,
+                os.path.join(outdir, "assembly.fasta"),
+            )
+            shutil.copy2(
+                flye_info,
+                os.path.join(outdir, "assembly_info.txt"),
+            )
 
     # instanatiate the class with some of the commands
     plass = Plass()
@@ -1255,7 +1281,12 @@ def long(
                 total_flye_plasmid_length += len(record.seq)
 
         # add 10kbp in case small plasmids
-        total_flye_plasmid_length = total_flye_plasmid_length + 10000
+        # set coverage to high if nothing recovered
+        if total_flye_plasmid_length == 0:
+            total_flye_plasmid_length = 10000
+            coverage = 250
+        else:
+            coverage = 50
 
         logger.info("Mapping long reads.")
         input_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
@@ -1271,48 +1302,46 @@ def long(
         plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
         extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
-        # unicycler 
+        # to set error rate
+        canu_nano_or_pacbio = "pacbio-hifi"
+
+        if corrected_error_rate == "none":  # if none by default
+            if pacbio_model != "nothing":
+                pacbio_model = validate_pacbio_model(pacbio_model)
+                if pacbio_model == "pacbio-hifi":
+                    canu_nano_or_pacbio = "pacbio-hifi"
+                    corrected_error_rate = 0.005
+                else:
+                    canu_nano_or_pacbio = "pacbio"
+                    corrected_error_rate = 0.045
+            else:
+                canu_nano_or_pacbio = "nanopore"
+                if raw_flag is True:  # ont raw
+                    corrected_error_rate = 0.12
+                else:
+                    corrected_error_rate = 0.03
+        else:  # if none by default
+            try:
+                float(corrected_error_rate) > 0
+                corrected_error_rate = float(corrected_error_rate)
+                if corrected_error_rate < 0 or corrected_error_rate > 1:
+                    logger.error(
+                        f"{corrected_error_rate} is less than 0 or more than 1. Canu will fail. Please give a value between 0 and 1."
+                    )
+            except ValueError as e:
+                logger.error(f"Error: {corrected_error_rate} is not a float. {e}")
+            if pacbio_model != "nothing":
+                pacbio_model = validate_pacbio_model(pacbio_model)
+                if pacbio_model == "pacbio-hifi":
+                    canu_nano_or_pacbio = "pacbio-hifi"
+                else:
+                    canu_nano_or_pacbio = "pacbio"
+            else:
+                canu_nano_or_pacbio = "nanopore"
 
         if canu_flag is True:
-
             assembler = "canu"
-
-            # canu
             logger.info("Running canu to recover plasmids.")
-            canu_nano_or_pacbio = "pacbio-hifi"
-
-            if corrected_error_rate == "none": # if none by default
-                if pacbio_model != "nothing":
-                    pacbio_model = validate_pacbio_model(pacbio_model)
-                    if pacbio_model == "pacbio-hifi":
-                        canu_nano_or_pacbio = "pacbio-hifi"
-                        corrected_error_rate = 0.005
-                    else:
-                        canu_nano_or_pacbio = "pacbio"
-                        corrected_error_rate = 0.045
-                else:
-                    canu_nano_or_pacbio = "nanopore"
-                    if raw_flag is True: # ont raw
-                        corrected_error_rate = 0.12
-                    else:
-                        corrected_error_rate = 0.005
-            else: # if none by default
-                try:
-                    float(corrected_error_rate) > 0
-                    corrected_error_rate = float(corrected_error_rate)
-                    if corrected_error_rate < 0 or corrected_error_rate > 1 :
-                        logger.error(f"{corrected_error_rate} is less than 0 or more than 1. Canu will fail. Please give a value between 0 and 1.")
-                except ValueError as e:
-                    logger.error(f"Error: {corrected_error_rate} is not a float. {e}")
-                if pacbio_model != "nothing":
-                    pacbio_model = validate_pacbio_model(pacbio_model)
-                    if pacbio_model == "pacbio-hifi":
-                        canu_nano_or_pacbio = "pacbio-hifi"
-                    else:
-                        canu_nano_or_pacbio = "pacbio"
-                else:
-                    canu_nano_or_pacbio = "nanopore"
-
 
             canu_output_dir: Path = Path(outdir) / "canu"
 
@@ -1323,8 +1352,8 @@ def long(
                 canu_output_dir,
                 canu_nano_or_pacbio,
                 total_flye_plasmid_length,
-                corrected_error_rate
-                
+                corrected_error_rate,
+                coverage,
             )
 
             canu_fasta: Path = Path(canu_output_dir) / "canu.contigs.fasta"
@@ -1342,20 +1371,47 @@ def long(
             # returns plasmids for sketching
             ##################
 
-            assembled_fasta = run_dnaapler(
-                threads, trimmed_canu_fasta, logdir, outdir
-            )
+            assembled_fasta = run_dnaapler(threads, trimmed_canu_fasta, logdir, outdir)
             # for the next step after
             unicycler_success = True
 
-        # default == run unicycler 
+        # default == run unicycler
         else:
             assembler = "unicycler"
+
+            # correct reads with canu
+
+            canu_output_dir: Path = Path(outdir) / "canu"
+
+            try:
+                run_canu_correct(
+                    threads,
+                    logdir,
+                    plasmidfastqs,
+                    canu_output_dir,
+                    canu_nano_or_pacbio,
+                    total_flye_plasmid_length,
+                    corrected_error_rate,
+                    coverage,
+                )
+                # convert to fastq
+                canu_reads: Path = (
+                    Path(canu_output_dir) / "canu.correctedReads.fasta.gz"
+                )
+                corrected_fastqs: Path = Path(outdir) / "corrected_plasmid_long.fastq"
+                corrected_fasta_to_fastq(canu_reads, corrected_fastqs)
+                remove_directory(canu_output_dir)
+            except:
+                logger.warning(
+                    "canu correct failed to correct any reads. Advancing with uncorrected reads"
+                )
+                corrected_fastqs = plasmidfastqs
+
             unicycler_dir: Path = Path(outdir) / "unicycler_output"
-            run_unicycler_long(threads, logdir,  plasmidfastqs, unicycler_dir)
+            run_unicycler_long(threads, logdir, corrected_fastqs, unicycler_dir)
+            remove_file(corrected_fastqs)
             assembled_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
 
- 
             # check if unicycler succeded according to the output (it won't if no plasmids)
             unicycler_success = os.path.isfile(assembled_fasta)
             if (
@@ -1385,7 +1441,6 @@ def long(
             )
             logger.info("Cleaning up intermediate files and exiting Plassembler.")
         else:  # at least 1 contig
-
             # calculate depth
             plass.get_depth_long(logdir, pacbio_model, threads, assembled_fasta)
 

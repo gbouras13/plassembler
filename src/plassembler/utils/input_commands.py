@@ -48,22 +48,23 @@ def validate_fasta(filename):
             logger.error(f"Input file {filename} is not in the FASTA format.")
 
 
-def validate_fastas_assembled_mode(input_chromosome, input_plasmids):
+def validate_fastas_assembled_mode(input_chromosome, input_plasmids, no_copy_numbers):
     """Checks the input insta is really a fasta
         :param file: fasta file
     :return:
     """
     # chromosome
-    validate_fasta(input_chromosome)
+    if no_copy_numbers is False:
+        validate_fasta(input_chromosome)
 
-    with open(input_chromosome, "r") as fasta:
-        # count contigs
-        records = list(SeqIO.parse(fasta, "fasta"))
-        num_contigs = len(records)
-        if num_contigs > 1:
-            logger.error(
-                f"Error: There are multiple contigs in your chromosome FASTA {input_chromosome}. Please input a completed chromosome.."
-            )
+        with open(input_chromosome, "r") as fasta:
+            # count contigs
+            records = list(SeqIO.parse(fasta, "fasta"))
+            num_contigs = len(records)
+            if num_contigs > 1:
+                logger.error(
+                    f"Error: There are multiple contigs in your chromosome FASTA {input_chromosome}. Please input a completed chromosome."
+                )
 
     # plasmids
     validate_fasta(input_plasmids)
@@ -120,7 +121,7 @@ def validate_flye_directory(flye_directory):
 
     # default skip
     skip_assembly = True
-    
+
     if os.path.isdir(flye_directory) is False:
         logger.warning(
             f"Flye directory {flye_directory} is not a directory or does not exist."
@@ -140,8 +141,8 @@ def validate_flye_directory(flye_directory):
         logger.warning("Long read assembly will not be skipped.")
         skip_assembly = False
 
-    
     return skip_assembly
+
 
 def validate_flye_assembly_info(flye_assembly, flye_info):
     """Checks the flye assembly exists and contains
@@ -162,15 +163,18 @@ def validate_flye_assembly_info(flye_assembly, flye_info):
         skip_assembly = True
 
     if flye_assembly != "nothing" and flye_info == "nothing":
-        logger.warning(f"You have specified a Flye assembly FASTA file {flye_assembly} without a flye info file with --flye_info.")
+        logger.warning(
+            f"You have specified a Flye assembly FASTA file {flye_assembly} without a flye info file with --flye_info."
+        )
         logger.warning(f"Assembly will not be skipped.")
         skip_assembly = False
 
     if flye_assembly == "nothing" and flye_info != "nothing":
-        logger.warning(f"You have specified a Flye assembly info file {flye_info} without a flye assembly FASTA file with --flye_assembly.")
+        logger.warning(
+            f"You have specified a Flye assembly info file {flye_info} without a flye assembly FASTA file with --flye_assembly."
+        )
         logger.warning(f"Assembly will not be skipped.")
         skip_assembly = False
-
 
     return skip_assembly
 

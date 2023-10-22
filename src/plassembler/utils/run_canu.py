@@ -151,6 +151,7 @@ def filter_entropy(canu_fasta, outdir):
 
     return output_filename
 
+
 def filter_entropy_fastqs(fastq: Path, output_filename: Path) -> None:
     """Filter FASTQ records based on entropy and write the filtered records to a new FASTQ file.
 
@@ -170,8 +171,6 @@ def filter_entropy_fastqs(fastq: Path, output_filename: Path) -> None:
     # Write the filtered records to a new FASTQ file.
     with open(output_filename, "w") as output_handle:
         SeqIO.write(filtered_records, output_handle, "fastq")
-
-
 
 
 """

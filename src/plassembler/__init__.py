@@ -35,10 +35,10 @@ from plassembler.utils.plass_class import Assembly, Plass
 from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp
 from plassembler.utils.run_canu import (  # make_blastdb,; process_blast_output,; run_blast,
     filter_entropy,
+    filter_entropy_fastqs,
     run_canu,
     run_canu_correct,
     trim_contigs,
-    filter_entropy_fastqs
 )
 from plassembler.utils.run_dnaapler import run_dnaapler
 from plassembler.utils.run_mash import mash_sketch, run_mash
@@ -470,7 +470,6 @@ def run(
                 flye_info,
                 os.path.join(outdir, "assembly_info.txt"),
             )
-
 
     # instanatiate the class with some of the commands
     plass = Plass()
@@ -1394,17 +1393,15 @@ def long(
 
             canu_output_dir: Path = Path(outdir) / "canu"
 
-            logger.info(
-                    "Removing junk low entropy reads."
-                )
+            logger.info("Removing junk low entropy reads.")
 
             # filter entropy of fastq (to remove rubbish repeats) so they don't survive the correction step
-            entropy_filtered_fastq = Path(outdir) / "plasmid_long_entropy_filtered.fastq"
+            entropy_filtered_fastq = (
+                Path(outdir) / "plasmid_long_entropy_filtered.fastq"
+            )
             filter_entropy_fastqs(plasmidfastqs, entropy_filtered_fastq)
 
-            logger.info(
-                    "Correcting reads with canu prior to running Unicycler."
-                )
+            logger.info("Correcting reads with canu prior to running Unicycler.")
 
             try:
                 run_canu_correct(

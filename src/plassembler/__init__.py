@@ -1414,7 +1414,7 @@ def long(
                     corrected_error_rate,
                     coverage,
                 )
-                # convert to fastq
+                # convert the corrected .fasta.gz from Canu to fastq
                 canu_reads: Path = (
                     Path(canu_output_dir) / "canu.correctedReads.fasta.gz"
                 )

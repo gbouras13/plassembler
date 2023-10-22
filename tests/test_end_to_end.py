@@ -251,7 +251,7 @@ class test_end_to_end(unittest.TestCase):
         remove_directory(outdir)
 
     def test_plassembler_assembled(self):
-        """test plassembler assembled """
+        """test plassembler assembled"""
         longreads: Path = f"{end_to_end}/input_fastq.gz"
         s1: Path = f"{end_to_end}/input_R1.fastq.gz"
         s2: Path = f"{end_to_end}/input_R2.fastq.gz"

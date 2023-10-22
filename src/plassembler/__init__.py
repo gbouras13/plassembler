@@ -1117,8 +1117,8 @@ def long_options(func):
         click.option(
             "--corrected_error_rate",
             help="Corrected error rate parameter for canu correction. For advanced users only.",
-            type=str,
-            default="none",
+            type=float,
+            default=0.12,
         ),
     ]
     for option in reversed(options):
@@ -1176,6 +1176,7 @@ def long(
     logger.info(f"--flye_directory is {flye_directory}")
     logger.info(f"--flye_assembly is {flye_assembly}")
     logger.info(f"--flye_info is {flye_info}")
+    logger.info(f"--corrected_error_rate is {corrected_error_rate}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -1197,6 +1198,18 @@ def long(
     # pacbio model check that the string is valid if legit
     if pacbio_model != "nothing":
         pacbio_model = validate_pacbio_model(pacbio_model)
+
+    # check error rate 
+
+    try:
+        float(corrected_error_rate) > 0
+        corrected_error_rate = float(corrected_error_rate)
+        if corrected_error_rate < 0 or corrected_error_rate > 1:
+            logger.error(
+                f"{corrected_error_rate} is less than 0 or more than 1. canu -correct will fail. Please give a value between 0 and 1."
+            )
+    except ValueError as e:
+        logger.error(f"Error: {corrected_error_rate} is not a float. {e}")
 
     if skip_qc is False:
         # filtering long readfastq
@@ -1316,38 +1329,20 @@ def long(
         extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
         # to set error rate
-        canu_nano_or_pacbio = "pacbio-hifi"
+        canu_nano_or_pacbio = "nanopore"
 
-        if corrected_error_rate == "none":  # if none by default
-            if pacbio_model != "nothing":
-                pacbio_model = validate_pacbio_model(pacbio_model)
-                if pacbio_model == "pacbio-hifi":
-                    canu_nano_or_pacbio = "pacbio-hifi"
-                    corrected_error_rate = 0.005
-                else:
-                    canu_nano_or_pacbio = "pacbio"
-                    corrected_error_rate = 0.045
+        if pacbio_model != "nothing":
+            pacbio_model = validate_pacbio_model(pacbio_model)
+            if pacbio_model == "pacbio-hifi":
+                canu_nano_or_pacbio = "pacbio-hifi"
+                corrected_error_rate = 0.005
             else:
-                canu_nano_or_pacbio = "nanopore"
-                corrected_error_rate = 0.12
-        else:  # if none by default
-            try:
-                float(corrected_error_rate) > 0
-                corrected_error_rate = float(corrected_error_rate)
-                if corrected_error_rate < 0 or corrected_error_rate > 1:
-                    logger.error(
-                        f"{corrected_error_rate} is less than 0 or more than 1. Canu will fail. Please give a value between 0 and 1."
-                    )
-            except ValueError as e:
-                logger.error(f"Error: {corrected_error_rate} is not a float. {e}")
-            if pacbio_model != "nothing":
-                pacbio_model = validate_pacbio_model(pacbio_model)
-                if pacbio_model == "pacbio-hifi":
-                    canu_nano_or_pacbio = "pacbio-hifi"
-                else:
-                    canu_nano_or_pacbio = "pacbio"
-            else:
-                canu_nano_or_pacbio = "nanopore"
+                canu_nano_or_pacbio = "pacbio"
+                corrected_error_rate = 0.045
+        else:
+            canu_nano_or_pacbio = "nanopore"
+            # corrected error rate default will be 0.12
+
 
         if canu_flag is True:
             assembler = "canu"
@@ -1382,10 +1377,10 @@ def long(
             ##################
 
             assembled_fasta = run_dnaapler(threads, trimmed_canu_fasta, logdir, outdir)
-            # for the next step after
+            # defaults to yes for the next step after
             unicycler_success = True
 
-        # default == run unicycler
+        # this is default == run unicycler after canu -correct and removing low entropy repeat reads
         else:
             assembler = "unicycler"
 
@@ -1393,7 +1388,7 @@ def long(
 
             canu_output_dir: Path = Path(outdir) / "canu"
 
-            logger.info("Removing junk low entropy reads.")
+            logger.info("Removing junk low entropy repeat reads.")
 
             # filter entropy of fastq (to remove rubbish repeats) so they don't survive the correction step
             entropy_filtered_fastq = (
@@ -1420,12 +1415,14 @@ def long(
                 )
                 corrected_fastqs: Path = Path(outdir) / "corrected_plasmid_long.fastq"
                 corrected_fasta_to_fastq(canu_reads, corrected_fastqs)
-                remove_directory(canu_output_dir)
             except:
                 logger.warning(
                     "canu correct failed to correct any reads. Advancing with uncorrected reads"
                 )
                 corrected_fastqs = entropy_filtered_fastq
+
+            # remove canu directory
+            remove_directory(canu_output_dir)
 
             unicycler_dir: Path = Path(outdir) / "unicycler_output"
             run_unicycler_long(threads, logdir, corrected_fastqs, unicycler_dir)
@@ -1444,7 +1441,7 @@ def long(
         # get contig count
         contig_count = 0
 
-        # first check if canu output a FASTA (if no reads, it won't)
+        # first check if unicycler or canu output a FASTA (if no reads, it won't)
         if os.path.exists(assembled_fasta) is False or unicycler_success is False:
             contig_count = 0
         else:  # assuming there is a canu fasta

@@ -155,7 +155,7 @@ class test_assembly_class(unittest.TestCase):
         plasmid_fasta = Path(f"{assembly_depth_dir}/plasmids.fasta")
         assembly.get_depth(logdir, pacbio_model, threads)
         assembly.process_mash_tsv(plassembler_db_dir, plasmid_fasta)
-        assembly.combine_depth_mash_tsvs(prefix)
+        assembly.combine_depth_mash_tsvs(prefix, False)
         remove_file(Path(f"{assembly_depth_dir}/combined_long.sam"))
         remove_file(Path(f"{assembly_depth_dir}/combined_short.bam"))
         remove_file(Path(f"{assembly_depth_dir}/combined_sorted_long.bam"))

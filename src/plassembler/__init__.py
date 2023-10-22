@@ -38,6 +38,7 @@ from plassembler.utils.run_canu import (  # make_blastdb,; process_blast_output,
     run_canu,
     run_canu_correct,
     trim_contigs,
+    filter_entropy_fastqs
 )
 from plassembler.utils.run_dnaapler import run_dnaapler
 from plassembler.utils.run_mash import mash_sketch, run_mash
@@ -440,29 +441,37 @@ def run(
         skip_assembly = validate_flye_assembly_info(flye_assembly, flye_info)
 
     if skip_assembly is False:
-        if use_raven is True:
-            logger.info(
-                "You have specified --use_raven. Using Raven for long read assembly."
-            )
-            logger.info("Running Raven.")
-            run_raven(outdir, threads, logdir)
-        else:
-            logger.info("Running Flye.")
-            run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
+        logger.info("Running Flye.")
+        run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
     else:
-        logger.info(
-            f"You have specified a {flye_directory} with an existing flye assembly."
-        )
-        logger.info("Copying files.")
-        # copies the files to the outdir
-        shutil.copy2(
-            os.path.join(flye_directory, "assembly_info.txt"),
-            os.path.join(outdir, "assembly_info.txt"),
-        )
-        shutil.copy2(
-            os.path.join(flye_directory, "assembly.fasta"),
-            os.path.join(outdir, "assembly.fasta"),
-        )
+        if flye_directory != "nothing":
+            logger.info(
+                f"You have specified a {flye_directory} with an existing flye assembly."
+            )
+            logger.info("Copying files.")
+            # copies the files to the outdir
+            shutil.copy2(
+                os.path.join(flye_directory, "assembly_info.txt"),
+                os.path.join(outdir, "assembly_info.txt"),
+            )
+            shutil.copy2(
+                os.path.join(flye_directory, "assembly.fasta"),
+                os.path.join(outdir, "assembly.fasta"),
+            )
+        else:
+            logger.info(
+                f"You have specified a {flye_assembly} and {flye_info} from an existing flye assembly."
+            )
+            shutil.copy2(
+                flye_assembly,
+                os.path.join(outdir, "assembly.fasta"),
+            )
+            shutil.copy2(
+                flye_info,
+                os.path.join(outdir, "assembly_info.txt"),
+            )
+
+
     # instanatiate the class with some of the commands
     plass = Plass()
     plass.outdir = outdir
@@ -1321,10 +1330,7 @@ def long(
                     corrected_error_rate = 0.045
             else:
                 canu_nano_or_pacbio = "nanopore"
-                if raw_flag is True:  # ont raw
-                    corrected_error_rate = 0.12
-                else:
-                    corrected_error_rate = 0.03
+                corrected_error_rate = 0.12
         else:  # if none by default
             try:
                 float(corrected_error_rate) > 0
@@ -1388,11 +1394,23 @@ def long(
 
             canu_output_dir: Path = Path(outdir) / "canu"
 
+            logger.info(
+                    "Removing junk low entropy reads."
+                )
+
+            # filter entropy of fastq (to remove rubbish repeats) so they don't survive the correction step
+            entropy_filtered_fastq = Path(outdir) / "plasmid_long_entropy_filtered.fastq"
+            filter_entropy_fastqs(plasmidfastqs, entropy_filtered_fastq)
+
+            logger.info(
+                    "Correcting reads with canu prior to running Unicycler."
+                )
+
             try:
                 run_canu_correct(
                     threads,
                     logdir,
-                    plasmidfastqs,
+                    entropy_filtered_fastq,
                     canu_output_dir,
                     canu_nano_or_pacbio,
                     total_flye_plasmid_length,
@@ -1410,7 +1428,7 @@ def long(
                 logger.warning(
                     "canu correct failed to correct any reads. Advancing with uncorrected reads"
                 )
-                corrected_fastqs = plasmidfastqs
+                corrected_fastqs = entropy_filtered_fastq
 
             unicycler_dir: Path = Path(outdir) / "unicycler_output"
             run_unicycler_long(threads, logdir, corrected_fastqs, unicycler_dir)

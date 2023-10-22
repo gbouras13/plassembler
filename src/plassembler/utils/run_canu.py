@@ -151,6 +151,28 @@ def filter_entropy(canu_fasta, outdir):
 
     return output_filename
 
+def filter_entropy_fastqs(fastq: Path, output_filename: Path) -> None:
+    """Filter FASTQ records based on entropy and write the filtered records to a new FASTQ file.
+
+    :param canu_fastq: Input FASTQ file containing long read sequences.
+    :param outdir: Output directory for the filtered FASTQ file.
+    :return: Path to the filtered FASTQ file.
+    """
+
+    filtered_records = []
+
+    for record in SeqIO.parse(fastq, "fastq"):
+        entropy = shannon_entropy_5mers(str(record.seq))
+        if entropy > 5:
+            # Reject low entropy sequences - adjust the threshold as needed.
+            filtered_records.append(record)
+
+    # Write the filtered records to a new FASTQ file.
+    with open(output_filename, "w") as output_handle:
+        SeqIO.write(filtered_records, output_handle, "fastq")
+
+
+
 
 """
 trim contigs

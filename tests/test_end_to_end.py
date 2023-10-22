@@ -153,17 +153,16 @@ class test_end_to_end(unittest.TestCase):
 
     # flye_dir
     def test_plassembler_flye_dir(self):
-        with self.assertRaises(RuntimeError):
-            """test plassembler run case 4. With flye directory. Should error out (Saves time)."""
-            longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
-            s1: Path = f"{end_to_end}/abaumanii_reads_R1.fastq.gz"
-            s2: Path = f"{end_to_end}/abaumanii_reads_R2.fastq.gz"
-            flye_dir: Path = f"{end_to_end}/abaumanii_plasmid_flye_output"
-            chromosome = 1000000
-            outdir: Path = f"{end_to_end}/test_out"
-            cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --flye_info {flye_info} -f"
-            exec_command(cmd)
-            remove_directory(outdir)
+        """test plassembler run case 4. With flye directory.."""
+        longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
+        s1: Path = f"{end_to_end}/abaumanii_reads_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/abaumanii_reads_R2.fastq.gz"
+        flye_dir: Path = f"{end_to_end}/abaumanii_plasmid_flye_output"
+        chromosome = 1000000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --flye_dir {flye_dir} -f"
+        exec_command(cmd)
+        remove_directory(outdir)
 
     def test_plassembler_flye_assembly_info_missing(self):
         with self.assertRaises(RuntimeError):

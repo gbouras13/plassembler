@@ -1199,7 +1199,7 @@ def long(
     if pacbio_model != "nothing":
         pacbio_model = validate_pacbio_model(pacbio_model)
 
-    # check error rate 
+    # check error rate
 
     try:
         float(corrected_error_rate) > 0
@@ -1342,7 +1342,6 @@ def long(
         else:
             canu_nano_or_pacbio = "nanopore"
             # corrected error rate default will be 0.12
-
 
         if canu_flag is True:
             assembler = "canu"

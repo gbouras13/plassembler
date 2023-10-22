@@ -31,7 +31,7 @@ George Bouras, Anna E. Sheppard, Vijini Mallawaarachchi, Sarah Vreugde, Plassemb
 
 If you use `plassembler`, please see the full [Citations](#citations) section for a list of all programs `plassembler` uses under the hood, in order to fully recognise the creators of these tools for their work.
 
-## Table of Contents
+## Table of Contents 
 
 - [plassembler](#plassembler)
   - [Automated Bacterial Plasmid Assembly Program](#automated-bacterial-plasmid-assembly-program)

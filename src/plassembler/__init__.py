@@ -510,6 +510,7 @@ def run(
                 False,  # long only
                 use_raven,
                 skip_assembly,
+                False,  # canu_flag
             )
             remove_intermediate_files(
                 outdir,
@@ -621,6 +622,7 @@ def run(
                     False,  # long only
                     use_raven,
                     skip_assembly,
+                    False,  # canu_flag
                 )
                 remove_intermediate_files(
                     outdir,
@@ -643,6 +645,7 @@ def run(
                     False,  # long only
                     use_raven,
                     skip_assembly,
+                    False,  # canu_flag
                 )
                 remove_intermediate_files(
                     outdir,
@@ -682,6 +685,7 @@ def run(
                 False,  # long only
                 use_raven,
                 skip_assembly,
+                False,  # canu_flag
             )
             remove_intermediate_files(
                 outdir,
@@ -801,6 +805,7 @@ def run(
                 False,  # long only
                 use_raven,
                 skip_assembly,
+                False,  # canu_flag
             )
             remove_intermediate_files(
                 outdir,
@@ -979,6 +984,7 @@ def assembled(
         False,  # long only
         False,  # use raven
         False,  # skip_assembly is false
+        False,  # canu_flag
     )
     remove_intermediate_files(
         outdir, False, True, False  # keep chrom  # assembled  # long only
@@ -1286,6 +1292,7 @@ def long(
             True,  # long only
             False,  # raven false
             skip_assembly,  # skip assembly
+            False,  # canu_flag
         )
         remove_intermediate_files(
             outdir,
@@ -1487,6 +1494,7 @@ def long(
         True,  # long only
         False,  # no raven
         skip_assembly,
+        canu_flag,
     )
 
     remove_intermediate_files(

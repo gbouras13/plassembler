@@ -160,40 +160,37 @@ class test_end_to_end(unittest.TestCase):
         flye_dir: Path = f"{end_to_end}/test_flye_dir"
         chromosome = 50000
         outdir: Path = f"{end_to_end}/test_out"
-        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --flye_dir {flye_dir} -f"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --flye_directory {flye_dir} -f"
         exec_command(cmd)
         remove_directory(outdir)
 
     def test_plassembler_flye_info_missing(self):
-        with self.assertRaises(RuntimeError):
-            """test missing --flye_info."""
-            longreads: Path = f"{end_to_end}/input_fastq.gz"
-            s1: Path = f"{end_to_end}/input_R1.fastq.gz"
-            s2: Path = f"{end_to_end}/input_R2.fastq.gz"
-            flye_dir: Path = f"{end_to_end}/test_flye_dir"
-            chromosome = 50000
-            flye_assembly: Path = f"{flye_dir}/assembly.fasta"
-            flye_info: Path = f"{flye_dir}/assembly_info.txt"
-            chromosome = 1000000
-            outdir: Path = f"{end_to_end}/test_out"
-            cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --flye_assembly {flye_assembly} -f"
-            exec_command(cmd)
-            remove_directory(outdir)
+        """test missing --flye_assembly. Assembly conducted anyway."""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        flye_dir: Path = f"{end_to_end}/test_flye_dir"
+        chromosome = 50000
+        flye_assembly: Path = f"{flye_dir}/assembly.fasta"
+        flye_info: Path = f"{flye_dir}/assembly_info.txt"
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --flye_assembly {flye_assembly} -f"
+        exec_command(cmd)
+        remove_directory(outdir)
 
     def test_plassembler_flye_assembly_missing(self):
-        with self.assertRaises(RuntimeError):
-            """test missing --flye_assembly."""
-            longreads: Path = f"{end_to_end}/input_fastq.gz"
-            s1: Path = f"{end_to_end}/input_R1.fastq.gz"
-            s2: Path = f"{end_to_end}/input_R2.fastq.gz"
-            flye_dir: Path = f"{end_to_end}/test_flye_dir"
-            chromosome = 50000
-            flye_assembly: Path = f"{flye_dir}/assembly.fasta"
-            flye_info: Path = f"{flye_dir}/assembly_info.txt"
-            outdir: Path = f"{end_to_end}/test_out"
-            cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --flye_info {flye_info} -f"
-            exec_command(cmd)
-            remove_directory(outdir)
+        """test missing --flye_assembly. Assembly conducted anyway."""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        flye_dir: Path = f"{end_to_end}/test_flye_dir"
+        chromosome = 50000
+        flye_assembly: Path = f"{flye_dir}/assembly.fasta"
+        flye_info: Path = f"{flye_dir}/assembly_info.txt"
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 --flye_info {flye_info} -f"
+        exec_command(cmd)
+        remove_directory(outdir)
 
     """
     long

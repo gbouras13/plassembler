@@ -1,7 +1,7 @@
 [![Paper](https://img.shields.io/badge/paper-Bioinformatics-teal.svg?style=flat-square&maxAge=3600)](https://doi.org/10.1093/bioinformatics/btad409)
 [![CI](https://github.com/gbouras13/plassembler/actions/workflows/ci.yaml/badge.svg)](https://github.com/gbouras13/plassembler/actions/workflows/ci.yaml)
 [![BioConda Install](https://img.shields.io/conda/dn/bioconda/plassembler.svg?style=flag&label=BioConda%20install)](https://anaconda.org/bioconda/plassembler)
-[![codecov](https://codecov.io/gh/gbouras13/plassembler/branch/refactor/graph/badge.svg?token=4B1T2PGM9V)](https://codecov.io/gh/gbouras13/plassembler)
+[![codecov](https://codecov.io/gh/gbouras13/plassembler/branch/main/graph/badge.svg?token=4B1T2PGM9V)](https://codecov.io/gh/gbouras13/plassembler)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/plassembler/badges/version.svg)](https://anaconda.org/bioconda/plassembler)
@@ -14,9 +14,9 @@
 
 ## Automated Bacterial Plasmid Assembly Program
 
-`plassembler` is a program that is designed for automated & fast assembly of plasmids in  bacterial genomes that have been hybrid sequenced with long read & paired-end short read sequencing. It was originally designed for Oxford Nanopore Technologies long reads, but will also work with Pacbio reads. 
+`plassembler` is a program that is designed for automated & fast assembly of plasmids in  bacterial genomes that have been hybrid sequenced with long read & paired-end short read sequencing. It was originally designed for Oxford Nanopore Technologies long reads, but will also work with Pacbio reads. As of v1.3.0, it should also work well for long-read only assembled genomes (although we would still recommend getting short reads too if you can).
 
-If you are assembling a small number of bacterial genomes manually, I would recommend starting by using [Trycycler](https://github.com/rrwick/Trycycler) to recover the chromosome before using Plassembler to recover plasmids, especially the small ones. If you have more genomes or want to assemble your genomes in a more automated way, try [dragonflye](https://github.com/rpetit3/dragonflye), especially if you are used to Shovill, or my own work-in-progress pipeline [hybracter](https://github.com/gbouras13/hybracter) that is more appropriate for large datasets.  
+If you are assembling a small number of bacterial genomes manually, I would recommend starting by using [Trycycler](https://github.com/rrwick/Trycycler) to recover the chromosome before using Plassembler to recover plasmids, especially the small ones. If you have more genomes or want to assemble your genomes in a more automated way, try [dragonflye](https://github.com/rpetit3/dragonflye), especially if you are used to Shovill, or even better my own pipeline [hybracter](https://github.com/gbouras13/hybracter) that is more appropriate for large datasets and implemented Plassembler in it.  
 
 Additionally, I would recommend reading the following guides to bacterial genome assembly regardless of whether you want to use Plassembler:
 *  [Trycycler](https://github.com/rrwick/Trycycler/wiki/Guide-to-bacterial-genome-assembly)
@@ -31,14 +31,14 @@ George Bouras, Anna E. Sheppard, Vijini Mallawaarachchi, Sarah Vreugde, Plassemb
 
 If you use `plassembler`, please see the full [Citations](#citations) section for a list of all programs `plassembler` uses under the hood, in order to fully recognise the creators of these tools for their work.
 
-## Table of Contents
+## Table of Contents 
 
 - [plassembler](#plassembler)
   - [Automated Bacterial Plasmid Assembly Program](#automated-bacterial-plasmid-assembly-program)
   - [Manuscript](#manuscript)
   - [Table of Contents](#table-of-contents)
   - [Quick Start](#quick-start)
-  - [`plassembler` v1.2.0 Updates (12 September 2023)](#plassembler-v120-updates-12-september-2023)
+  - [`plassembler` v1.3.0 Updates (24 October 2023)](#plassembler-v130-updates-24-october-2023)
   - [Why Does Plassembler Exist?](#why-does-plassembler-exist)
   - [Why Not Just Use Unicycler?](#why-not-just-use-unicycler)
   - [Documentation](#documentation)
@@ -57,7 +57,6 @@ If you use `plassembler`, please see the full [Citations](#citations) section fo
   - [Acknowledgements](#acknowledgements)
   - [Version Log](#version-log)
   - [Bugs and Suggestions](#bugs-and-suggestions)
-  - [Other Future Directions](#other-future-directions)
   - [Citations](#citations)
 
 ## Quick Start
@@ -76,14 +75,13 @@ And finally run `plassembler`:
 
 Please read the [Installation](#installation) section for more details, especially if you are an inexperienced command line user.
 
-## `plassembler` v1.2.0 Updates (12 September 2023)
+## `plassembler` v1.3.0 Updates (24 October 2023)
 
-`plassembler` v1.2.0 implements the following new features:
-
-* `plassembler long` officially released and implemented using [Canu](https://github.com/marbl/canu) and [dnaapler](https://github.com/gbouras13/dnaapler) to reassemble unmapped reads in place of Unicycler for `plassembler run`. While we'd still recommend getting short reads if you really want to recover plasmids, as long as your long reads are short enough (i.e. not size selected), `plassembler long` should hopefully recover most small plasmids.
-* For more information on `plassembler long`, see the [documentation](https://plassembler.readthedocs.io/en/latest/long/).
-* Faster mapping thanks to @[fanvanf](https://github.com/fanvanf)'s [issue](https://github.com/gbouras13/plassembler/issues/29).
-* The ability to specify a `--flye directory` if you already have a Flye assembly for your long reads, which will tell `plassembler` to skip the long read assembly step.
+* `plassembler long` should yield improved results. It achieves this by treating long reads as both short reads (in the sense of creating a de Brujin graph based short read assembly to begin) and long reads (for scaffolding) in Unicycler.
+* While I'd still recommend short reads if you can get them, I am now confident that if your isolate has small plasmids in the long read set, `plassembler long` is very likely to find and recover them.
+* For more information, see the [documentation](https://plassembler.readthedocs.io/en/latest/long/).
+* The ability to specify a `--flye_assembly` and `--flye_info` if you already have a Flye assembly for your long reads instead of `--flye_directory` has been added. Thanks to @[incoherentian](https://github.com/incoherentian)'s [issue](https://github.com/gbouras13/plassembler/issues/37)
+* The ability to specify a `--no_copy_numbers` with `plassembler assembled` if you just want to run some plasmids against the PLSDB has been added. Thanks to @[gaworj](https://github.com/gaworj)'s [issue](https://github.com/gbouras13/plassembler/issues/36).
 
 ## Why Does Plassembler Exist?
 
@@ -158,7 +156,6 @@ Please see [here](docs/multiple_chromosomes.md) for more details and an example.
 
 * If you have sufficient hybrid sequencing data, Plassembler will theoretically recover assemblies of all non-chromosomal replicons, including phages and phage-plasmids
 * A good example of this is the _Vibrio campbellii DS40M4_  example, where Plassembler recovered the assembly of phage phiX174, albeit it was from sequencing spike-in contamination in that case.
-
 
 ## Quality Control
 
@@ -346,6 +343,17 @@ Options:
   --keep_chromosome         If you want to keep the chromosome assembly.
   --use_raven               Uses Raven instead of Flye for long read assembly.
                             May be useful if you want to reduce runtime.
+  --flye_directory PATH     Directory containing Flye long read assembly.
+                            Needs to contain assembly_info.txt and
+                            assembly_info.fasta. Allows Plassembler to Skip
+                            Flye assembly step.
+  --flye_assembly PATH      Path to file containing Flye long read assembly
+                            FASTA. Allows Plassembler to Skip Flye assembly
+                            step in conjunction with  --flye_info.
+  --flye_info PATH          Path to file containing Flye long read assembly
+                            info text file. Allows Plassembler to Skip Flye
+                            assembly step in conjunction with
+                            --flye_assembly.
 ```
 
 ## Outputs
@@ -379,14 +387,6 @@ A brief description of what is new in each update of `plassembler` can be found 
 ## Bugs and Suggestions
 
 If you come across bugs with `plassembler`, or would like to make any suggestions to improve the program, please open an issue or email george.bouras@adelaide.edu.au.
-
-## Other Future Directions
-
-At the moment, `plassembler` is designed for users with hybrid long read and matching short read data. With the new Kit 14 chemistry, ONT long reads may soon be (almost) accurate enough that short read sequencing is not required to polish bacterial assemblies - it may already be there for Pacbio! There's still room for [improvement](https://rrwick.github.io/2023/05/05/ont-only-accuracy-with-r10.4.1.html).
-
-However, I am not aware of any studies regarding the recovery of small plasmids with Kit 14 - it is possible or perhaps even likely that Kit 14 chemistries may miss these, much like R9.4.1 chemistries, therefore necessitating short reads for plasmid recovery. If you want to try it out, use `plassembler long` - Plassembler will just take the Flye output contigs below `-c` and treat them as contigs. This is experimental only and untested and probably still will miss some plasmids - this recent [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.001024) suggests so.
-
-Further, other approaches may be more appropriate for Kit 14 long read only assemblies - see this [tweet](https://twitter.com/rrwick/status/1548926644085108738?cxt=HHwWhMClvfCk8v4qAAAA). 
 
 ## Citations
 

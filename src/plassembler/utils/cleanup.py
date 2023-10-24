@@ -30,11 +30,6 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
     remove_directory(os.path.join(out_dir, "30-contigger"))
     remove_directory(os.path.join(out_dir, "40-polishing"))
 
-    if long_only is True:
-        # the fake unicycler directory only in long only mode
-        remove_directory(os.path.join(out_dir, "unicycler_output"))
-        remove_file(os.path.join(out_dir, "plasmids_initial.fasta"))
-
     if assembled_mode is True:
         remove_directory(os.path.join(out_dir, "flye_output"))
         remove_file(os.path.join(out_dir, "plassembler_plasmids.fasta"))
@@ -80,6 +75,7 @@ def move_and_copy_files(
     long_only,
     use_raven,
     skip_assembly,
+    canu_flag,
 ):
     """moves and copies files
     :param out_dir:  Output Directory
@@ -89,6 +85,7 @@ def move_and_copy_files(
     :param long_only: whether or not unicycler worked
     :param use_raven: whether or not unicycler worked
     :param skip_assembly: --flye_directory specified
+    :param canu_flag: --canu_flag is True
     :return:
     """
 
@@ -114,18 +111,16 @@ def move_and_copy_files(
             shutil.move(os.path.join(out_dir, "assembly.fasta"), raven_dir)
             shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), raven_dir)
 
-    if long_only is False:
-        if unicycler_success_flag is True:
+    if unicycler_success_flag is True:
+        if canu_flag is False:
             # move unicycler graph output to main directory
             shutil.copy2(
                 os.path.join(out_dir, "unicycler_output", "assembly.gfa"),
                 os.path.join(out_dir, prefix + "_plasmids.gfa"),
             )
-        else:
-            # to touch empty versions of the output files if no plasmids
-            touch_output_fail_files(out_dir, prefix)
     else:
-        touch_output_fail_files_long(out_dir, prefix)
+        # to touch empty versions of the output files if no plasmids
+        touch_output_fail_files(out_dir, prefix)
 
     # put kept fastqs into separate directory
     # make fastqs dir

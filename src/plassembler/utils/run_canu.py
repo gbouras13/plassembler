@@ -9,22 +9,23 @@ from loguru import logger
 from plassembler.utils.external_tools import ExternalTool
 
 
-def run_canu(
-    threads,
-    logdir,
-    longreads,
-    canu_output_dir,
-    canu_nano_or_pacbio,
-    total_flye_plasmid_length,
-):
-    """runs canu
+def run_canu_correct(
+    threads: Path,
+    logdir: Path,
+    longreads: Path,
+    canu_output_dir: Path,
+    canu_nano_or_pacbio: str,
+    total_flye_plasmid_length: int,
+    corrected_error_rate: float,
+    coverage: int,
+) -> None:
+    """runs canu correct
     :param long: long read fastq
     :param canu_output_dir: canu Output Directory
     :param threads: threads
     :param logdir: logdir
     :return:
     """
-    # canu -p C308_canu -d C308_canu genomeSize=0.01m maxInputCoverage=200 maxThreads=8 -nanopore plasmid_long.fastq
     # for the assembly param need to divide by a million
     total_flye_plasmid_length = round(total_flye_plasmid_length / 1000000, 5)
     try:
@@ -32,7 +33,43 @@ def run_canu(
             tool="canu",
             input="",
             output="",
-            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage=250 stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} {longreads}",
+            params=f" -correct -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
+            logdir=logdir,
+            outfile="",
+        )
+
+        ExternalTool.run_tool(canu, to_stdout=False)
+    except Exception:
+        logger.info(
+            f"canu correct failed. This likely means that you have non-chromosomal reads to assemble anything. It is likely that you have no plasmids in this sample, but check the canu output in {logdir}."
+        )
+
+
+def run_canu(
+    threads: Path,
+    logdir: Path,
+    longreads: Path,
+    canu_output_dir: Path,
+    canu_nano_or_pacbio: str,
+    total_flye_plasmid_length: int,
+    corrected_error_rate: float,
+    coverage: int,
+) -> None:
+    """runs canu
+    :param long: long read fastq
+    :param canu_output_dir: canu Output Directory
+    :param threads: threads
+    :param logdir: logdir
+    :return:
+    """
+    # for the assembly param need to divide by a million
+    total_flye_plasmid_length = round(total_flye_plasmid_length / 1000000, 5)
+    try:
+        canu = ExternalTool(
+            tool="canu",
+            input="",
+            output="",
+            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
             logdir=logdir,
             outfile="",
         )
@@ -113,6 +150,27 @@ def filter_entropy(canu_fasta, outdir):
         SeqIO.write(filtered_records, output_handle, "fasta")
 
     return output_filename
+
+
+def filter_entropy_fastqs(fastq: Path, output_filename: Path) -> None:
+    """Filter FASTQ records based on entropy and write the filtered records to a new FASTQ file.
+
+    :param canu_fastq: Input FASTQ file containing long read sequences.
+    :param outdir: Output directory for the filtered FASTQ file.
+    :return: Path to the filtered FASTQ file.
+    """
+
+    filtered_records = []
+
+    for record in SeqIO.parse(fastq, "fastq"):
+        entropy = shannon_entropy_5mers(str(record.seq))
+        if entropy > 5:
+            # Reject low entropy sequences - adjust the threshold as needed.
+            filtered_records.append(record)
+
+    # Write the filtered records to a new FASTQ file.
+    with open(output_filename, "w") as output_handle:
+        SeqIO.write(filtered_records, output_handle, "fastq")
 
 
 """

@@ -1095,22 +1095,27 @@ class Assembly:
 
         self.mash_df = combined_mash_df
 
-    def combine_depth_mash_tsvs(self, prefix):
+    def combine_depth_mash_tsvs(self, prefix, no_copy_numbers):
         """
-        Combine depth and mash dataframes
+        Combine depth and mash dataframes - if not --no_copy_numbers
         :param outdir: output directory
         :return: mash_empty: boolean whether there was a mash hit
         """
         outdir = self.outdir
-        self.depth_df["contig"] = self.depth_df["contig"].astype("str")
         self.mash_df["contig"] = self.mash_df["contig"].astype("str")
-        combined_depth_mash_df = self.depth_df.merge(
-            self.mash_df, on="contig", how="left"
-        )
-        # no hit for chromosome
-        combined_depth_mash_df.loc[
-            combined_depth_mash_df["contig"].str.contains("chromosome"), "PLSDB_hit"
-        ] = ""
+
+        if no_copy_numbers is False:
+            self.depth_df["contig"] = self.depth_df["contig"].astype("str")
+            combined_depth_mash_df = self.depth_df.merge(
+                self.mash_df, on="contig", how="left"
+            )
+            # no hit for chromosome
+            combined_depth_mash_df.loc[
+                combined_depth_mash_df["contig"].str.contains("chromosome"), "PLSDB_hit"
+            ] = ""
+        else:
+            combined_depth_mash_df = self.mash_df
+
         combined_depth_mash_df.to_csv(
             os.path.join(outdir, prefix + "_summary.tsv"), sep="\t", index=False
         )

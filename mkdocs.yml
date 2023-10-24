@@ -30,5 +30,6 @@ nav:
       - Quality Control: quality_control.md
       - Multiple Chromosomes: multiple_chromosome.md
       - Metagenomes: metagenomics.md
-      - Long: long.md
+      - Long v1.3.0: long.md
+      - Long v1.2.0 (superceded): long_old.md
 

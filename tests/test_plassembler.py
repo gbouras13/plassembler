@@ -125,16 +125,22 @@ class TestInputCommands(unittest.TestCase):
     # assembled multifasta chrom
     def test_validate_fastas_assembled_mode_multiFASTA(self):
         with self.assertRaises(SystemExit):
-            input_plasmids = os.path.join(val_data, "test.fasta")
-            input_chromosome = os.path.join(val_data, "test_multi.fasta")
-            validate_fastas_assembled_mode(input_chromosome, input_plasmids)
+            input_plasmids: Path = Path(val_data) / "test.fasta"
+            input_chromosome: Path = Path(val_data) / "test_multi.fasta"
+            no_copy_numbers = False
+            validate_fastas_assembled_mode(
+                input_chromosome, input_plasmids, no_copy_numbers
+            )
 
     # assembled single chrom works fine
     def test_validate_fastas_assembled_mode_single(self):
-        input_plasmids = os.path.join(val_data, "test.fasta")
-        input_chromosome = os.path.join(val_data, "test.fasta")
+        input_chromosome: Path = Path(val_data) / "test.fasta"
+        input_plasmids: Path = Path(val_data) / "test.fasta"
+        no_copy_numbers = False
         tmp = 1
-        validate_fastas_assembled_mode(input_chromosome, input_plasmids)
+        validate_fastas_assembled_mode(
+            input_chromosome, input_plasmids, no_copy_numbers
+        )
         self.assertEqual(tmp, 1)
 
     # no gzip

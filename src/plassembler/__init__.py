@@ -1117,12 +1117,12 @@ def long_options(func):
         ),
         click.option(
             "--canu_flag",
-            help="Runs canu instead of Unicycler. As of v1.3.0, Unicycler is the chosen assembler for long reads. Cany is only recommended if you have lower quality reads (e.g. ONT R9).",
+            help="Runs canu instead of Unicycler (aka replicates v1.2.0). As of v1.3.0, Unicycler is the assembler for long reads. Canu is only recommended if you have low quality reads (e.g. ONT R9).",
             is_flag=True,
         ),
         click.option(
             "--corrected_error_rate",
-            help="Corrected error rate parameter for canu correction. For advanced users only.",
+            help="Corrected error rate parameter for canu -correct. For advanced users only.",
             type=float,
             default=0.12,
         ),

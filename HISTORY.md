@@ -1,5 +1,15 @@
 # History
 
+1.3.0 (2023-10-24)
+------------------
+
+* `plassembler long` should yield improved results. It achieves this by treating long reads as both short reads (in the sense of creating a de Brujin graph based assembly) and long reads (for scaffolding) in Unicycler.
+* While I'd still recommend short reads if you can get them, I am now confident that if your isolate has small plasmids in the long read set, `plassembler long` should find them.
+* For more information, see the [documentation](https://plassembler.readthedocs.io/en/latest/long/).
+* The ability to specify a `--flye_assembly` and `--flye_info` if you already have a Flye assembly for your long reads instead of `--flye_directory` has been added. Thanks to @[incoherentian](https://github.com/incoherentian)'s [issue](https://github.com/gbouras13/plassembler/issues/37)
+* The ability to specify a `--no_copy_numbers` with `plassembler assembled` if you just want to run some plasmids against the PLSDB has been added. Thanks to @[gaworj](https://github.com/gaworj)'s [issue](https://github.com/gbouras13/plassembler/issues/36).
+
+
 1.2.0 (2023-09-12)
 ------------------
 
@@ -8,7 +18,7 @@
 * `plassembler long` officially released and implemented using [Canu](https://github.com/marbl/canu) and [dnaapler](https://github.com/gbouras13/dnaapler) to reassemble unmapped reads in place of Unicycler for `plassembler run`. While we'd still recommend getting short reads if you really want to recover plasmids, as long as your long reads are short enough (i.e. not size selected), `plassembler long` should hopefully recover most small plasmids.
 * For more information, see the [documentation](https://plassembler.readthedocs.io/en/latest/long/).
 * Faster mapping thanks to @[fanvanf](https://github.com/fanvanf)'s [issue](https://github.com/gbouras13/plassembler/issues/29).
-* The ability to specify a `--flye directory` if you already have a Flye assembly for your long reads, which will tell `plassembler` to skip the long read assembly step.
+* The ability to specify a `--flye_directory` if you already have a Flye assembly for your long reads, which will tell `plassembler` to skip the long read assembly step.
 
 1.1.0 (2023-06-02)
 ------------------

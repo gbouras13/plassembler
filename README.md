@@ -38,7 +38,7 @@ If you use `plassembler`, please see the full [Citations](#citations) section fo
   - [Manuscript](#manuscript)
   - [Table of Contents](#table-of-contents)
   - [Quick Start](#quick-start)
-  - [`plassembler` v1.2.0 Updates (12 September 2023)](#plassembler-v120-updates-12-september-2023)
+  - [`plassembler` v1.3.0 Updates (24 October 2023)](#plassembler-v130-updates-24-october-2023)
   - [Why Does Plassembler Exist?](#why-does-plassembler-exist)
   - [Why Not Just Use Unicycler?](#why-not-just-use-unicycler)
   - [Documentation](#documentation)
@@ -57,7 +57,6 @@ If you use `plassembler`, please see the full [Citations](#citations) section fo
   - [Acknowledgements](#acknowledgements)
   - [Version Log](#version-log)
   - [Bugs and Suggestions](#bugs-and-suggestions)
-  - [Other Future Directions](#other-future-directions)
   - [Citations](#citations)
 
 ## Quick Start
@@ -76,14 +75,14 @@ And finally run `plassembler`:
 
 Please read the [Installation](#installation) section for more details, especially if you are an inexperienced command line user.
 
-## `plassembler` v1.2.0 Updates (12 September 2023)
+## `plassembler` v1.3.0 Updates (24 October 2023)
 
-`plassembler` v1.2.0 implements the following new features:
+* `plassembler long` should yield improved results. It achieves this by treating long reads as both short reads (in the sense of creating a de Brujin graph based assembly) and long reads (for scaffolding) in Unicycler.
+* While I'd still recommend short reads if you can get them, I am now confident that if your isolate has small plasmids in the long read set, `plassembler long` should find them.
+* For more information, see the [documentation](https://plassembler.readthedocs.io/en/latest/long/).
+* The ability to specify a `--flye_assembly` and `--flye_info` if you already have a Flye assembly for your long reads instead of `--flye_directory` has been added. Thanks to @[incoherentian](https://github.com/incoherentian)'s [issue](https://github.com/gbouras13/plassembler/issues/37)
+* The ability to specify a `--no_copy_numbers` with `plassembler assembled` if you just want to run some plasmids against the PLSDB has been added. Thanks to @[gaworj](https://github.com/gaworj)'s [issue](https://github.com/gbouras13/plassembler/issues/36).
 
-* `plassembler long` officially released and implemented using [Canu](https://github.com/marbl/canu) and [dnaapler](https://github.com/gbouras13/dnaapler) to reassemble unmapped reads in place of Unicycler for `plassembler run`. While we'd still recommend getting short reads if you really want to recover plasmids, as long as your long reads are short enough (i.e. not size selected), `plassembler long` should hopefully recover most small plasmids.
-* For more information on `plassembler long`, see the [documentation](https://plassembler.readthedocs.io/en/latest/long/).
-* Faster mapping thanks to @[fanvanf](https://github.com/fanvanf)'s [issue](https://github.com/gbouras13/plassembler/issues/29).
-* The ability to specify a `--flye directory` if you already have a Flye assembly for your long reads, which will tell `plassembler` to skip the long read assembly step.
 
 ## Why Does Plassembler Exist?
 
@@ -346,6 +345,17 @@ Options:
   --keep_chromosome         If you want to keep the chromosome assembly.
   --use_raven               Uses Raven instead of Flye for long read assembly.
                             May be useful if you want to reduce runtime.
+    --flye_directory PATH     Directory containing Flye long read assembly.
+                            Needs to contain assembly_info.txt and
+                            assembly_info.fasta. Allows Plassembler to Skip
+                            Flye assembly step.
+  --flye_assembly PATH      Path to file containing Flye long read assembly
+                            FASTA. Allows Plassembler to Skip Flye assembly
+                            step in conjunction with  --flye_info.
+  --flye_info PATH          Path to file containing Flye long read assembly
+                            info text file. Allows Plassembler to Skip Flye
+                            assembly step in conjunction with
+                            --flye_assembly.
 ```
 
 ## Outputs
@@ -379,14 +389,6 @@ A brief description of what is new in each update of `plassembler` can be found 
 ## Bugs and Suggestions
 
 If you come across bugs with `plassembler`, or would like to make any suggestions to improve the program, please open an issue or email george.bouras@adelaide.edu.au.
-
-## Other Future Directions
-
-At the moment, `plassembler` is designed for users with hybrid long read and matching short read data. With the new Kit 14 chemistry, ONT long reads may soon be (almost) accurate enough that short read sequencing is not required to polish bacterial assemblies - it may already be there for Pacbio! There's still room for [improvement](https://rrwick.github.io/2023/05/05/ont-only-accuracy-with-r10.4.1.html).
-
-However, I am not aware of any studies regarding the recovery of small plasmids with Kit 14 - it is possible or perhaps even likely that Kit 14 chemistries may miss these, much like R9.4.1 chemistries, therefore necessitating short reads for plasmid recovery. If you want to try it out, use `plassembler long` - Plassembler will just take the Flye output contigs below `-c` and treat them as contigs. This is experimental only and untested and probably still will miss some plasmids - this recent [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.001024) suggests so.
-
-Further, other approaches may be more appropriate for Kit 14 long read only assemblies - see this [tweet](https://twitter.com/rrwick/status/1548926644085108738?cxt=HHwWhMClvfCk8v4qAAAA). 
 
 ## Citations
 

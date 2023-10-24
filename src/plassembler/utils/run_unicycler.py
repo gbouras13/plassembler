@@ -32,10 +32,15 @@ def run_unicycler(
 
 
 def run_unicycler_long(
-    threads: int, logdir: Path, longreads: Path, unicycler_output_dir: Path
+    threads: int,
+    logdir: Path,
+    corrected_longreads: Path,
+    entropy_filtered_longreads: Path,
+    unicycler_output_dir: Path,
 ) -> None:
     """runs Unicycler on long reads with -s -l
-    :param long: long read fastq
+    :param corrected_longreads: long read fastq (subsmapled and corrected with canu)
+    :param entropy_filtered_longreads: long read fastq pre correction - for scaffolding so not subsampled
     :param unicycler_output_dir: unicycler Output Directory
     :param threads: threads
     :param logdir: logdir
@@ -46,7 +51,7 @@ def run_unicycler_long(
         tool="unicycler",
         input="",
         output="",
-        params=f" -s {longreads} -l {longreads} -t {threads} -o {unicycler_output_dir}",
+        params=f" -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir}",
         logdir=logdir,
         outfile="",
     )

@@ -1431,7 +1431,9 @@ def long(
             remove_directory(canu_output_dir)
 
             unicycler_dir: Path = Path(outdir) / "unicycler_output"
-            run_unicycler_long(threads, logdir, corrected_fastqs, unicycler_dir)
+            run_unicycler_long(
+                threads, logdir, corrected_fastqs, entropy_filtered_fastq, unicycler_dir
+            )
             remove_file(corrected_fastqs)
             assembled_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
 

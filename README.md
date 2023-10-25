@@ -8,6 +8,7 @@
 [![Bioconda Downloads](https://img.shields.io/conda/dn/bioconda/plassembler)](https://img.shields.io/conda/dn/bioconda/plassembler)
 [![PyPI version](https://badge.fury.io/py/plassembler.svg)](https://badge.fury.io/py/plassembler)
 [![Downloads](https://static.pepy.tech/badge/plassembler)](https://pepy.tech/project/plassembler)
+[![DOI](https://zenodo.org/badge/514596389.svg)](https://zenodo.org/doi/10.5281/zenodo.10035954)
 
 
 # plassembler

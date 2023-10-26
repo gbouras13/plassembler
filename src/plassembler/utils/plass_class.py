@@ -272,11 +272,7 @@ class Plass:
                         else:
                             dna_header = "plasmid_" + str(i)
                             dna_description = ""
-                            # get length for bed file
-                            le = info_df.length.loc[
-                                info_df["seq_name"] == dna_record.id
-                            ]
-                            plas_len = int(le.iloc[0])
+
                             # write the updated record
                             dna_record = SeqRecord(
                                 dna_record.seq,
@@ -287,7 +283,7 @@ class Plass:
                             # get length for bed file
                             # make bed file
                             bed_file.write(
-                                f"{dna_header}\t1\t{plas_len}\n"
+                                f"{dna_header}\t1\t{contig_len}\n"
                             )  # Write read name
                             i += 1
 
@@ -367,11 +363,6 @@ class Plass:
                         else:
                             dna_header = "plasmid_" + str(i)
                             dna_description = ""
-                            # get length for bed file
-                            le = info_df.length.loc[
-                                info_df["seq_name"] == dna_record.id
-                            ]
-                            plas_len = int(le.iloc[0])
                             # write the updated record
                             dna_record = SeqRecord(
                                 dna_record.seq,
@@ -382,7 +373,7 @@ class Plass:
                             # get length for bed file
                             # make bed file
                             bed_file.write(
-                                f"{dna_header}\t1\t{plas_len}\n"
+                                f"{dna_header}\t1\t{contig_len}\n"
                             )  # Write read name
                             i += 1
         # add to object

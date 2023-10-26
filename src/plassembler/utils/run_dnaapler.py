@@ -27,7 +27,7 @@ def run_dnaapler(threads, plasmid_fasta, logdir, outdir):
     ExternalTool.run_tool(dnaapler, to_stdout=False)
 
     plasmids_for_sketching: Path = (
-        Path(outdir) / "dnaapler" / "dnaapler_all_reoriented.fasta"
+        Path(outdir) / "dnaapler" / "dnaapler_reoriented.fasta"
     )
 
     # if dnaapler failed to reorient anything - then return the original plasmid fasta

@@ -29,6 +29,10 @@ from plassembler.utils.input_commands import (
     validate_pacbio_model,
 )
 from plassembler.utils.mapping import minimap_long_reads, minimap_short_reads
+from plassembler.utils.no_assembly import (
+    create_fake_flye_chromosome_assembly,
+    create_fake_flye_chromosome_info,
+)
 
 # import classes
 from plassembler.utils.plass_class import Assembly, Plass
@@ -293,6 +297,11 @@ def flye_options(func):
             type=click.Path(),
             default="nothing",
         ),
+        click.option(
+            "--no_chromosome",
+            is_flag=True,
+            help="Run Plassembler assuming no chromosome can be assembled. Use this if your reads only contain plasmids that you would like to assemble.",
+        ),
     ]
     for option in reversed(options):
         func = option(func)
@@ -364,6 +373,7 @@ def run(
     flye_directory,
     flye_assembly,
     flye_info,
+    no_chromosome,
     **kwargs,
 ):
     """Runs Plassembler"""
@@ -389,6 +399,7 @@ def run(
     logger.info(f"--flye_directory is {flye_directory}")
     logger.info(f"--flye_assembly is {flye_assembly}")
     logger.info(f"--flye_info is {flye_info}")
+    logger.info(f"--no_chromosome is {no_chromosome}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -433,12 +444,15 @@ def run(
         )
 
     # Raven for long only or '--use_raven'
-
     skip_assembly = False
     if flye_directory != "nothing":
         skip_assembly = validate_flye_directory(flye_directory)
     else:  #
         skip_assembly = validate_flye_assembly_info(flye_assembly, flye_info)
+
+    # skips assembly if --no_chromosome is used
+    if no_chromosome is True:
+        skip_assembly = True
 
     if skip_assembly is False:
         logger.info("Running Flye.")
@@ -458,7 +472,7 @@ def run(
                 os.path.join(flye_directory, "assembly.fasta"),
                 os.path.join(outdir, "assembly.fasta"),
             )
-        else:
+        elif flye_assembly != "nothing" and flye_info != "nothing":
             logger.info(
                 f"You have specified a {flye_assembly} and {flye_info} from an existing flye assembly."
             )
@@ -470,6 +484,17 @@ def run(
                 flye_info,
                 os.path.join(outdir, "assembly_info.txt"),
             )
+        elif no_chromosome is True:
+            logger.info(f"You have specified --no_chromosome.")
+            logger.info(
+                f"A fake chromosome of 3MB worth of A's will be created and Flye will not be run."
+            )
+
+            assembly_fasta_file = os.path.join(outdir, "assembly.fasta")
+            assembly_info_file = os.path.join(outdir, "assembly_info.txt")
+
+            create_fake_flye_chromosome_assembly(assembly_fasta_file)
+            create_fake_flye_chromosome_info(assembly_info_file)
 
     # instanatiate the class with some of the commands
     plass = Plass()
@@ -1158,6 +1183,7 @@ def long(
     flye_info,
     canu_flag,
     corrected_error_rate,
+    no_chromosome,
     **kwargs,
 ):
     """
@@ -1183,6 +1209,7 @@ def long(
     logger.info(f"--flye_assembly is {flye_assembly}")
     logger.info(f"--flye_info is {flye_info}")
     logger.info(f"--corrected_error_rate is {corrected_error_rate}")
+    logger.info(f"--no_chromosome is {no_chromosome}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -1231,12 +1258,15 @@ def long(
         )
 
     # flye - skip directory an option here
-
     skip_assembly = False
     if flye_directory != "nothing":
         skip_assembly = validate_flye_directory(flye_directory)
     else:
         skip_assembly = validate_flye_assembly_info(flye_assembly, flye_info)
+
+    # skips assembly if --no_chromosome is used
+    if no_chromosome is True:
+        skip_assembly = True
 
     if skip_assembly is False:
         logger.info("Running Flye.")
@@ -1256,7 +1286,7 @@ def long(
                 os.path.join(flye_directory, "assembly.fasta"),
                 os.path.join(outdir, "assembly.fasta"),
             )
-        else:
+        elif flye_assembly != "nothing" and flye_info != "nothing":
             logger.info(
                 f"You have specified a {flye_assembly} and {flye_info} from an existing flye assembly."
             )
@@ -1268,6 +1298,17 @@ def long(
                 flye_info,
                 os.path.join(outdir, "assembly_info.txt"),
             )
+        elif no_chromosome is True:
+            logger.info(f"You have specified --no_chromosome.")
+            logger.info(
+                f"A fake chromosome of 3MB worth of A's will be created and Flye will not be run."
+            )
+
+            assembly_fasta_file = os.path.join(outdir, "assembly.fasta")
+            assembly_info_file = os.path.join(outdir, "assembly_info.txt")
+
+            create_fake_flye_chromosome_assembly(assembly_fasta_file)
+            create_fake_flye_chromosome_info(assembly_info_file)
 
     # instanatiate the class with some of the commands
     plass = Plass()

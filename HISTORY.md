@@ -1,5 +1,13 @@
 # History
 
+1.4.0 (2023-10-27)
+------------------
+
+* Adds `--no_chromosome` option to `plassembler long` and `plassembler run` after a request to allow for the assembly of read sets that have only plasmids.
+* Using this will skip Flye and create a dummy 3MB chromosome full of A's.
+* Fixes another bug here [issue](https://github.com/gbouras13/plassembler/issues/37).
+
+
 1.3.0 (2023-10-24)
 ------------------
 

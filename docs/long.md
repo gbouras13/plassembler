@@ -33,8 +33,8 @@ Everything was run on my Macbook Pro M1 (2020) with 8 threads. I was too lazy to
 
 | Isolate                     | Ground Truth                                   | `plassembler long` v1.3.0                                            | Time (s) | Flye (Within `plassembler long` )                  |
 | --------------------------- | ---------------------------------------------- | ------------------------------------------------------------------ | -------- | ------------------------------------------ |
-| C222                        | 2473 (c)                                          | 2473                                                               | 889     | Nothing - missed 2473                      |
-| _Acinetobacter baumannii_ J9  | 145059; 6078                                   | 145058 (c); 6078 (c)                                               | 1179      | 145059; 6077 (c)                              |
+| C222                        | 2473                                           | 2473 (c)                                                              | 889     | Nothing - missed 2473                      |
+| _Acinetobacter baumannii_ J9  | 145059; 6078                                   | 145058 (c); 6078 (c)                                               | 1179      | 145059; 6077                              |
 | CAV1217                     | 181436;  70606; 44015; 9294                    | 181435 (c);  70605 (c); 44015 (c); 9293 (c)                        | 1582     | 181433; 70609; 44015; 9294                |
 | _Citrobacter koseri_ MINF 9D  | 64962; 9294                                    | 64961 (c); 9294 (c)                   | 1328     | 64962; 18088                               |
 | _Enterobacter kobei_ MSB1 1B  | 136482;  108411;  4665;  3715;  2370           | 136480 (c);  108410 (c);  4665 (c);  3715 (c);  2368 (c)           | 1579     | 136481; 108410 - missed 3 small plasmids   |
@@ -106,4 +106,7 @@ Options:
                                 assembly info text file. Allows Plassembler to
                                 Skip Flye assembly step in conjunction with
                                 --flye_assembly.
+  --no_chromosome           Run Plassembler assuming no chromosome can be
+                            assembled. Use this if your reads only contain
+                            plasmids that you would like to assemble.
 ```

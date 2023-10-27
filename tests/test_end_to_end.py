@@ -234,6 +234,32 @@ class test_end_to_end(unittest.TestCase):
         remove_directory(outdir)
 
     """
+    
+    --no_chromosome
+
+    """
+
+    def test_plassembler_run_no_chromosome(self):
+        """test plassembler run with --no_chromosome"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        chromosome = 500000  # higher than 70k
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f --no_chromosome"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+    def test_plassembler_long_no_chromosome(self):
+        """test plassembler long with --no_chromosome"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f --no_chromosome"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+    """
     assembled
     """
 

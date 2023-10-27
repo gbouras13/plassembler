@@ -41,8 +41,6 @@ If you use `plassembler`, please see the full [Citations](#citations) section fo
   - [`plassembler` v1.3.0 Updates (24 October 2023)](#plassembler-v130-updates-24-october-2023)
   - [Why Does Plassembler Exist?](#why-does-plassembler-exist)
   - [Why Not Just Use Unicycler?](#why-not-just-use-unicycler)
-  - [Documentation](#documentation)
-  - [Method](#method)
   - [Other Features](#other-features)
   - [Quality Control](#quality-control)
   - [Metagenomes](#metagenomes)
@@ -108,28 +106,6 @@ Unicycler is awesome and still a good way to assemble plasmids from hybrid seque
 5. `plassembler` can be used as a quality control to check if your short and long reads come from the same sample - if `plassembler` results in many non-circular contigs (particularly those that have no hits in PLSDB), it is likely because your read sets do not come from the same isolate! See [Quality Control](#quality-control).
 6. You will get information whether each assembled contig has a similar entry in [PLSDB](https://doi.org/10.1093/nar/gkab1111). Especially for common pathogen species that are well represented in databases, this will likely tell you specifically what plasmid you have in your sample. 
 * Note: Especially for less commonly sequenced species, I would not suggest that that absence of a PLSDB hit is necessary meaningful, especially for circular contigs - those would likely be novel plasmids uncaptured by PLSDB.
-
-## Documentation
-
-Documentation can be found at http://plassembler.readthedocs.io/.
-
-## Method
-
-<p align="center">
-  <img src="img/Figure1.png" alt="Plassembler Workflow" height=600>
-</p>
-
-1. Long reads are filtered using [chopper](https://github.com/wdecoster/chopper) ..
-2. Long-read only assembly is conducted with [Flye](https://github.com/fenderglass/Flye) or optionally [Raven](https://github.com/lbcb-sci/raven) if `--use_raven` is specified.
-3. If the resulting assembly is checked. Contigs bigger than the provided chromosome size `-c`, are identified as chromosomal and extracted. Any other contigs are extracted as putative plasmid contigs, if Flye assembled any. If no contigs were larger than `-c`, `plassembler` will exit - you probably need to get some more long reads to complete your assembly (or check `-c` wasn't too big).
-4. Short reads are filtered using [fastp](https://github.com/OpenGene/fastp).
-5. Long and short reads are mapped to a reference containing the chromosomal contigs plus putative plasmid contigs using [minimap2](https://github.com/lh3/minimap2#uguide).
-6. All reads that map to the putative plasmid contigs and all reads that are unmapped are extracted and combined.
-7. These reads are assembled using the hybrid assembler [Unicycler](https://github.com/rrwick/Unicycler) to generate final plasmid contigs.
-8. Average read coverage depth for each plasmid is calculated using a modified version of code found [here](https://github.com/rrwick/Small-plasmid-Nanopore). See also this [paper](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000631#tab2).
-9.  Plasmid copy number is calculated by dividing the plasmid read depth by the chromosome read depth.
-10.  All plasmid contigs are compared against [PLSDB](https://doi.org/10.1093/nar/gkab1111) using [mash](https://github.com/marbl/Mash) with a cutoff maximum mash distance of 0.1.
-
 
 ## Other Features 
 
@@ -354,6 +330,9 @@ Options:
                             info text file. Allows Plassembler to Skip Flye
                             assembly step in conjunction with
                             --flye_assembly.
+  --no_chromosome           Run Plassembler assuming no chromosome can be
+                            assembled. Use this if your reads only contain
+                            plasmids that you would like to assemble.
 ```
 
 ## Outputs

@@ -106,4 +106,7 @@ Options:
                                 assembly info text file. Allows Plassembler to
                                 Skip Flye assembly step in conjunction with
                                 --flye_assembly.
+  --no_chromosome           Run Plassembler assuming no chromosome can be
+                            assembled. Use this if your reads only contain
+                            plasmids that you would like to assemble.
 ```

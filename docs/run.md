@@ -98,6 +98,20 @@ Options:
   --keep_chromosome         If you want to keep the chromosome assembly.
   --use_raven               Uses Raven instead of Flye for long read assembly.
                             May be useful if you want to reduce runtime.
+  --flye_directory PATH     Directory containing Flye long read assembly.
+                            Needs to contain assembly_info.txt and
+                            assembly_info.fasta. Allows Plassembler to Skip
+                            Flye assembly step.
+  --flye_assembly PATH      Path to file containing Flye long read assembly
+                            FASTA. Allows Plassembler to Skip Flye assembly
+                            step in conjunction with  --flye_info.
+  --flye_info PATH          Path to file containing Flye long read assembly
+                            info text file. Allows Plassembler to Skip Flye
+                            assembly step in conjunction with
+                            --flye_assembly.
+  --no_chromosome           Run Plassembler assuming no chromosome can be
+                            assembled. Use this if your reads only contain
+                            plasmids that you would like to assemble.
 ```
 
 All options 

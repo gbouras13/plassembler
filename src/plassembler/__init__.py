@@ -608,7 +608,6 @@ def run(
 
             # if unicycler successfully finished, calculate the plasmid copy numbers
             if plass.unicycler_success is True:
-
                 # get depth
                 # as class so saves the depth dataframe nicely
                 plass.get_depth(logdir, pacbio_model, threads)
@@ -660,7 +659,9 @@ def run(
             else:  # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
                 logger.info("No plasmids found.")
                 logger.info("Your sample probably has no plasmids.")
-                logger.info(f"Check the {outdir}/plasmid_fastqs/long_plasmid.fastq file.")
+                logger.info(
+                    f"Check the {outdir}/plasmid_fastqs/long_plasmid.fastq file."
+                )
                 logger.info(
                     f"If this is small (indicating few unmapped reads and therefore Unicycler failed due to low depth), then your sample likely has no plasmids."
                 )
@@ -791,7 +792,6 @@ def run(
             plass.check_unicycler_success(unicycler_dir)
 
             if plass.unicycler_success is True:
-
                 ####################################################################
                 # get copy number depths
                 ####################################################################
@@ -843,12 +843,14 @@ def run(
                     False,  # assembled mode
                     False,  # long only
                 )
-                
+
                 # this will occur in cases where there are > 1 chromosomes but no plasmids - e.g. Vibrio ATCC 17802
             else:  # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
                 logger.info("No plasmids found.")
                 logger.info("Your sample probably has no plasmids.")
-                logger.info(f"Check the {outdir}/plasmid_fastqs/long_plasmid.fastq file.")
+                logger.info(
+                    f"Check the {outdir}/plasmid_fastqs/long_plasmid.fastq file."
+                )
                 logger.info(
                     f"If this is small (indicating few unmapped reads and therefore Unicycler failed due to low depth), then your sample likely has no plasmids."
                 )

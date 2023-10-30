@@ -129,7 +129,7 @@ class test_end_to_end(unittest.TestCase):
         longreads: Path = f"{end_to_end}/input_fastq.gz"
         s1: Path = f"{end_to_end}/input_atcc17802_R1.fastq.gz"
         s2: Path = f"{end_to_end}/input_atcc17802_R2.fastq.gz"
-        chromosome = 5000 # fake low chrom length
+        chromosome = 5000  # fake low chrom length
         outdir: Path = f"{end_to_end}/test_out"
         cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
         exec_command(cmd)

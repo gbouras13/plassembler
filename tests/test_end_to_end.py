@@ -124,6 +124,17 @@ class test_end_to_end(unittest.TestCase):
         exec_command(cmd)
         remove_directory(outdir)
 
+    def test_plassembler_multiple_chromosomes_no_plasmids(self):
+        """test plassembler run where multiple chromosomes are assembled but no plasmid (ATCC 17802 errored out in v 1.4.0)"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        s1: Path = f"{end_to_end}/input_atcc17802_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_atcc17802_R2.fastq.gz"
+        chromosome = 5000  # fake low chrom length
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
+
     # skipqc
 
     def test_plassembler_skipqc(self):

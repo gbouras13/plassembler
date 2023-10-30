@@ -1,5 +1,10 @@
 # History
 
+1.4.1 (2023-10-30)
+------------------
+
+* Fixes bug with `plassembler run`, which would exit ungracefully if the isolate had more than 1 chromosome, but no plasmids were recovered by Unicycler (e.g. ATCC [17802](https://www.atcc.org/products/17802)).
+
 1.4.0 (2023-10-27)
 ------------------
 

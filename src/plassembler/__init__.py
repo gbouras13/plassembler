@@ -608,9 +608,6 @@ def run(
 
             # if unicycler successfully finished, calculate the plasmid copy numbers
             if plass.unicycler_success is True:
-                logger.info(
-                    "Unicycler identified plasmids. Calculating Plasmid Copy Numbers."
-                )
                 # get depth
                 # as class so saves the depth dataframe nicely
                 plass.get_depth(logdir, pacbio_model, threads)
@@ -656,11 +653,18 @@ def run(
                     False,  # long only
                 )
 
-                ####################################################################
-                # Case 4: where there are truly no plasmids even after unicycler runs
-                ####################################################################
+            ####################################################################
+            # Case 4: where there are truly no plasmids even after unicycler runs
+            ####################################################################
             else:  # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
                 logger.info("No plasmids found.")
+                logger.info("Your sample probably has no plasmids.")
+                logger.info(
+                    f"Check the {outdir}/plasmid_fastqs/long_plasmid.fastq file."
+                )
+                logger.info(
+                    f"If this is small (indicating few unmapped reads and therefore Unicycler failed due to low depth), then your sample likely has no plasmids."
+                )
                 move_and_copy_files(
                     outdir,
                     prefix,
@@ -787,57 +791,86 @@ def run(
             # check for successful unicycler completion
             plass.check_unicycler_success(unicycler_dir)
 
-            ####################################################################
-            # get copy number depths
-            ####################################################################
+            if plass.unicycler_success is True:
+                ####################################################################
+                # get copy number depths
+                ####################################################################
 
-            logger.info(
-                "Unicycler identified plasmids. Calculating Plasmid Copy Numbers."
-            )
-            # get depth
-            # as class so saves the depth dataframe nicely
-            plass.get_depth(logdir, pacbio_model, threads)
+                logger.info(
+                    "Unicycler identified plasmids. Calculating Plasmid Copy Numbers."
+                )
+                # get depth
+                # as class so saves the depth dataframe nicely
+                plass.get_depth(logdir, pacbio_model, threads)
 
-            # run mash
-            logger.info("Calculating mash distances to PLSDB.")
+                # run mash
+                logger.info("Calculating mash distances to PLSDB.")
 
-            # mash sketches the plasmids
-            mash_sketch(
-                outdir,
-                os.path.join(outdir, "unicycler_output", "assembly.fasta"),
-                logdir,
-            )
-            # runs mash
-            run_mash(outdir, database, logdir)
-            # processes output
-            plass.process_mash_tsv(database)
-            # combine depth and mash tsvs
-            plass.combine_depth_mash_tsvs(prefix)
+                # mash sketches the plasmids
+                mash_sketch(
+                    outdir,
+                    os.path.join(outdir, "unicycler_output", "assembly.fasta"),
+                    logdir,
+                )
+                # runs mash
+                run_mash(outdir, database, logdir)
+                # processes output
+                plass.process_mash_tsv(database)
+                # combine depth and mash tsvs
+                plass.combine_depth_mash_tsvs(prefix)
 
-            # rename contigs and update copy bumber with plsdb
-            plass.finalise_contigs(prefix)
+                # rename contigs and update copy bumber with plsdb
+                plass.finalise_contigs(prefix)
 
-            # heuristic check
-            incompatbility(plass.combined_depth_mash_df)
+                # heuristic check
+                incompatbility(plass.combined_depth_mash_df)
 
-            # cleanup files
-            move_and_copy_files(
-                outdir,
-                prefix,
-                True,  # unicycler success
-                keep_fastqs,
-                False,  # assembled mode
-                False,  # long only
-                use_raven,
-                skip_assembly,
-                False,  # canu_flag
-            )
-            remove_intermediate_files(
-                outdir,
-                keep_chromosome,
-                False,  # assembled mode
-                False,  # long only
-            )
+                # cleanup files
+                move_and_copy_files(
+                    outdir,
+                    prefix,
+                    True,  # unicycler success
+                    keep_fastqs,
+                    False,  # assembled mode
+                    False,  # long only
+                    use_raven,
+                    skip_assembly,
+                    False,  # canu_flag
+                )
+                remove_intermediate_files(
+                    outdir,
+                    keep_chromosome,
+                    False,  # assembled mode
+                    False,  # long only
+                )
+
+                # this will occur in cases where there are > 1 chromosomes but no plasmids - e.g. Vibrio ATCC 17802
+            else:  # unicycler did not successfully finish, just cleanup and touch the files empty for downstream (snakemake)
+                logger.info("No plasmids found.")
+                logger.info("Your sample probably has no plasmids.")
+                logger.info(
+                    f"Check the {outdir}/plasmid_fastqs/long_plasmid.fastq file."
+                )
+                logger.info(
+                    f"If this is small (indicating few unmapped reads and therefore Unicycler failed due to low depth), then your sample likely has no plasmids."
+                )
+                move_and_copy_files(
+                    outdir,
+                    prefix,
+                    False,  # unicycler success
+                    keep_fastqs,
+                    False,  # assembled mode
+                    False,  # long only
+                    use_raven,
+                    skip_assembly,
+                    False,  # canu_flag
+                )
+                remove_intermediate_files(
+                    outdir,
+                    keep_chromosome,
+                    False,  # assembled mode
+                    False,  # long only
+                )
 
     # end plassembler
     end_plassembler(start_time)

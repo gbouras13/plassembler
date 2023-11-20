@@ -126,9 +126,7 @@ class ExternalTool:
                     f"If you think your sample should still have plasmids, please check stdout log file: {tool.out_log} and stderr log file: {tool.err_log}"
                 )
             elif tool.tool_str == "canu -correct":  # for canu errors
-                logger.warning(
-                    "Canu failed to correct any reads."
-                )
+                logger.warning("Canu failed to correct any reads.")
                 logger.warning(
                     "This probably means there is low depth, don't be too concerned."
                 )

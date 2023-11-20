@@ -1497,7 +1497,7 @@ def long(
                 corrected_fasta_to_fastq(canu_reads, corrected_fastqs)
             except:
                 logger.warning(
-                    "canu correct failed to correct any reads. Advancing with uncorrected reads"
+                    "Advancing with uncorrected reads"
                 )
                 corrected_fastqs = entropy_filtered_fastq
 

@@ -31,7 +31,10 @@ class ExternalTool:
         logdir.mkdir(parents=True, exist_ok=True)
         command_hash = hashlib.sha256(self.command_as_str.encode("utf-8")).hexdigest()
         tool_name = Path(tool).name
-        logfile_prefix: Path = logdir / f"{tool_name}_{command_hash}"
+        # to make sure no spaces or -
+        tool_name_with_underscores = tool_name.replace(" ", "_")
+        tool_name_with_underscores = tool_name_with_underscores.replace("-", "_")
+        logfile_prefix: Path = logdir / f"{tool_name_with_underscores}_{command_hash}"
         self.out_log = f"{logfile_prefix}.out"
         self.err_log = f"{logfile_prefix}.err"
         self.outfile = outfile

@@ -116,9 +116,7 @@ def untar(tarball_path: Path, output_path: Path):
             tar_file.extractall(path=str(output_path))
 
         # get untarred directory
-        untarpath = os.path.join(
-            output_path, "201123_plassembler_v1.5.0_databases"
-        )
+        untarpath = os.path.join(output_path, "201123_plassembler_v1.5.0_databases")
 
         # Get a list of all files in the source directory
         files_to_move = [

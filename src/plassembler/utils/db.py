@@ -23,12 +23,14 @@ def check_db_installation(db_dir: Path, install_flag: bool):
     """
     # Mash files
 
-    mash_db_names = ["plsdb.msh", "plsdb.tsv"]
+    mash_db_names = ["plsdb_2023_11_03_v2.msh", "plsdb_2023_11_03_v2.tsv"]
 
     f1: Path = db_dir / f"{mash_db_names[0]}"
     f2: Path = db_dir / f"{mash_db_names[1]}"
 
     if f1.exists() and f2.exists():
+        logger.info(f"PLSDB Database mash sketch at {f1} exists.")
+        logger.info(f"PLSDB Database tsv metadata file at {f2} exists.")
         logger.info(f"PLSDB Database at {db_dir} has already been downloaded")
     else:
         for file_name in mash_db_names:

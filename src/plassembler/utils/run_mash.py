@@ -41,7 +41,7 @@ def run_mash(out_dir, plassembler_db_dir, logdir):
     :return:
     """
 
-    plsdb_sketch: Path = Path(f"{plassembler_db_dir}/plsdb.msh")
+    plsdb_sketch: Path = Path(f"{plassembler_db_dir}/plsdb_2023_11_03_v2.msh")
     plasmid_sketch: Path = Path(f"{out_dir}/plasmids.fasta.msh")
     mash_tsv: Path = Path(f"{out_dir}/mash.tsv")
 

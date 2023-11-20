@@ -520,7 +520,7 @@ class Plass:
         mash_tsv = os.path.join(outdir, "mash.tsv")
         col_list = [
             "contig",
-            "ACC_NUCCORE",
+            "NUCCORE_ACC",
             "mash_distance",
             "mash_pval",
             "mash_matching_hashes",
@@ -560,7 +560,7 @@ class Plass:
                         [
                             tmp_df.contig,
                             "Yes",
-                            tmp_df.ACC_NUCCORE,
+                            tmp_df.NUCCORE_ACC,
                             tmp_df.mash_distance,
                             tmp_df.mash_pval,
                             tmp_df.mash_matching_hashes,
@@ -574,7 +574,7 @@ class Plass:
                 columns=[
                     "contig",
                     "PLSDB_hit",
-                    "ACC_NUCCORE",
+                    "NUCCORE_ACC",
                     "mash_distance",
                     "mash_pval",
                     "mash_matching_hashes",
@@ -588,7 +588,7 @@ class Plass:
                 columns=[
                     "contig",
                     "PLSDB_hit",
-                    "ACC_NUCCORE",
+                    "NUCCORE_ACC",
                     "mash_distance",
                     "mash_pval",
                     "mash_matching_hashes",
@@ -601,7 +601,7 @@ class Plass:
         plsdb_tsv_file = os.path.join(plassembler_db_dir, "plsdb.tsv")
         cols = [
             "UID_NUCCORE",
-            "ACC_NUCCORE",
+            "NUCCORE_ACC",
             "Description_NUCCORE",
             "CreateDate_NUCCORE",
             "Topology_NUCCORE",
@@ -668,7 +668,7 @@ class Plass:
             low_memory=False,
         )
         combined_mash_df = tophits_mash_df.merge(
-            plsdb_tsv, on="ACC_NUCCORE", how="left"
+            plsdb_tsv, on="NUCCORE_ACC", how="left"
         )
 
         self.mash_df = combined_mash_df
@@ -933,7 +933,7 @@ class Assembly:
         mash_tsv = os.path.join(outdir, "mash.tsv")
         col_list = [
             "contig",
-            "ACC_NUCCORE",
+            "NUCCORE_ACC",
             "mash_distance",
             "mash_pval",
             "mash_matching_hashes",
@@ -973,7 +973,7 @@ class Assembly:
                         [
                             tmp_df.contig,
                             "Yes",
-                            tmp_df.ACC_NUCCORE,
+                            tmp_df.NUCCORE_ACC,
                             tmp_df.mash_distance,
                             tmp_df.mash_pval,
                             tmp_df.mash_matching_hashes,
@@ -987,7 +987,7 @@ class Assembly:
                 columns=[
                     "contig",
                     "PLSDB_hit",
-                    "ACC_NUCCORE",
+                    "NUCCORE_ACC",
                     "mash_distance",
                     "mash_pval",
                     "mash_matching_hashes",
@@ -1001,7 +1001,7 @@ class Assembly:
                 columns=[
                     "contig",
                     "PLSDB_hit",
-                    "ACC_NUCCORE",
+                    "NUCCORE_ACC",
                     "mash_distance",
                     "mash_pval",
                     "mash_matching_hashes",
@@ -1011,67 +1011,32 @@ class Assembly:
                 tophits_mash_df.loc[contig - 1] = [contig, "", "", "", "", ""]
 
         # read in the plasdb tsv to get the description
-        plsdb_tsv_file = os.path.join(plassembler_db_dir, "plsdb.tsv")
+        plsdb_tsv_file = os.path.join(plassembler_db_dir, "plsdb_2023_11_03_v2.tsv")
+
         cols = [
-            "UID_NUCCORE",
-            "ACC_NUCCORE",
-            "Description_NUCCORE",
-            "CreateDate_NUCCORE",
-            "Topology_NUCCORE",
-            "Completeness_NUCCORE",
-            "TaxonID_NUCCORE",
-            "Genome_NUCCORE",
-            "Length_NUCCORE",
-            "Source_NUCCORE",
-            "UID_ASSEMBLY",
-            "Status_ASSEMBLY",
-            "SeqReleaseDate_ASSEMBLY",
-            "SubmissionDate_ASSEMBLY",
-            "Latest_ASSEMBLY",
-            "UID_BIOSAMPLE",
-            "ACC_BIOSAMPLE",
-            "Location_BIOSAMPLE",
-            "Coordinates_BIOSAMPLE",
-            "IsolationSource_BIOSAMPLE",
-            "Host_BIOSAMPLE",
-            "CollectionDate_BIOSAMPLE",
-            "Host_DISEASE",
-            "SamplType_BIOSAMPLE",
-            "taxon_name",
-            "taxon_rank",
-            "lineage",
-            "taxon_species_id",
-            "taxon_species_name",
-            "taxon_genus_id",
-            "taxon_genus_name",
-            "taxon_family_id",
-            "taxon_family_name",
-            "taxon_order_id",
-            "taxon_order_name",
-            "taxon_class_id",
-            "taxon_class_name",
-            "taxon_phylum_id",
-            "taxon_phylum_name",
-            "taxon_superkingdom_id",
-            "taxon_superkingdom_name",
-            "loc_lat",
-            "loc_lng",
-            "loc_parsed",
-            "GC_NUCCORE",
-            "Identical",
-            "OldVersion",
-            "hits_rMLST",
-            "hitscount_rMLST",
-            "inclusions",
-            "Host_BIOSAMPLE_processed",
-            "Host_DISEASE_processed",
-            "D1",
-            "D2",
-            "plasmidfinder",
-            "pmlst",
-            "relaxase_type(s)",
-            "mpf_type",
+        ## NUCCORE
+        "NUCCORE_UID", "NUCCORE_ACC", "NUCCORE_Description", "NUCCORE_CreateDate", 
+        "NUCCORE_Topology", "NUCCORE_Completeness", "NUCCORE_TaxonID", 
+        "NUCCORE_Genome", "NUCCORE_Length", "NUCCORE_GC", "NUCCORE_Source",
+        ## BIOSAMPLE
+        "BIOSAMPLE_UID", "BIOSAMPLE_ACC", "BIOSAMPLE_Location", 
+        "BIOSAMPLE_Coordinates", "BIOSAMPLE_IsolationSource", "BIOSAMPLE_Host", 
+        "BIOSAMPLE_CollectionDate", "BIOSAMPLE_HostDisease", "BIOSAMPLE_SampleType",
+        "BIOSAMPLE_Host_label", "BIOSAMPLE_HostDisease_processed",
+        ## ASSEMBLY
+        "ASSEMBLY_UID", "ASSEMBLY_Status", "ASSEMBLY_SeqReleaseDate", 
+        "ASSEMBLY_SubmissionDate", "ASSEMBLY_Lastest",
+        ## TAXONOMY
+        "TAXONOMY_taxon_name", "TAXONOMY_taxon_rank", "TAXONOMY_taxon_lineage", 
+        "TAXONOMY_superkingdom", "TAXONOMY_phylum", "TAXONOMY_class",
+        "TAXONOMY_order", "TAXONOMY_family", "TAXONOMY_genus", 
+        "TAXONOMY_species","TAXONOMY_superkingdom_id", "TAXONOMY_phylum_id", 
+        "TAXONOMY_class_id", "TAXONOMY_order_id", "TAXONOMY_family_id",
+        "TAXONOMY_genus_id", "TAXONOMY_species_id",
+        ## rMLST
+        "rMLST_hits", "rMLST_hitscount"
         ]
+
         plsdb_tsv = pd.read_csv(
             plsdb_tsv_file,
             delimiter="\t",
@@ -1081,7 +1046,7 @@ class Assembly:
             low_memory=False,
         )
         combined_mash_df = tophits_mash_df.merge(
-            plsdb_tsv, on="ACC_NUCCORE", how="left"
+            plsdb_tsv, on="NUCCORE_ACC", how="left"
         )
 
         self.mash_df = combined_mash_df

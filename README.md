@@ -24,6 +24,22 @@ Additionally, I would recommend reading the following guides to bacterial genome
 *  [Perfect Bacterial Assembly Tutorial](https://github.com/rrwick/Perfect-bacterial-genome-tutorial)
 *  [Perfect bacterial assembly Paper](https://doi.org/10.1371/journal.pcbi.1010905)
 
+## Quick Start
+
+The easiest way to install `plassembler` is via conda:
+
+`conda install -c bioconda plassembler`
+
+Followed by database download and installation:
+
+`plassembler download -d <databse directory>`
+
+And finally run `plassembler`:
+
+`plassembler run -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length>`
+
+Please read the [Installation](#installation) section for more details, especially if you are an inexperienced command line user.
+
 ## Manuscript
 
 `plassembler` has been recently published in *Bioinformatics*:
@@ -32,13 +48,19 @@ George Bouras, Anna E. Sheppard, Vijini Mallawaarachchi, Sarah Vreugde, Plassemb
 
 If you use `plassembler`, please see the full [Citations](#citations) section for a list of all programs `plassembler` uses under the hood, in order to fully recognise the creators of these tools for their work.
 
+## Documentation
+
+The full documentation for Plassembler can be found [here](https://plassembler.readthedocs.io/en/latest).
+
 ## Table of Contents 
 
 - [plassembler](#plassembler)
   - [Automated Bacterial Plasmid Assembly Program](#automated-bacterial-plasmid-assembly-program)
-  - [Manuscript](#manuscript)
-  - [Table of Contents](#table-of-contents)
   - [Quick Start](#quick-start)
+  - [Manuscript](#manuscript)
+  - [Documentation](#documentation)
+  - [Table of Contents](#table-of-contents)
+  - [`plassembler` v1.5.0 Update New Database (21 November 2023)](#plassembler-v150-update-new-database-21-november-2023)
   - [`plassembler` v1.3.0 Updates (24 October 2023)](#plassembler-v130-updates-24-october-2023)
   - [Why Does Plassembler Exist?](#why-does-plassembler-exist)
   - [Why Not Just Use Unicycler?](#why-not-just-use-unicycler)
@@ -58,21 +80,11 @@ If you use `plassembler`, please see the full [Citations](#citations) section fo
   - [Bugs and Suggestions](#bugs-and-suggestions)
   - [Citations](#citations)
 
-## Quick Start
+## `plassembler` v1.5.0 Update New Database (21 November 2023)
 
-The easiest way to install `plassembler` is via conda:
+* **If you upgrade to v1.5.0, you will need to update the database using `plassembler download`** 
+* Plassembler v1.5.0 incorporates a new expanded database thanks to the recent PLSDB release [2023_11_03_v2](https://ccb-microbe.cs.uni-saarland.de/plsdb/). Thanks @[biobrad](https://github.com/biobrad) for the heads up.
 
-`conda install -c bioconda plassembler`
-
-Followed by database download and installation:
-
-`plassembler download -d <databse directory>`
-
-And finally run `plassembler`:
-
-`plassembler run -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length>`
-
-Please read the [Installation](#installation) section for more details, especially if you are an inexperienced command line user.
 
 ## `plassembler` v1.3.0 Updates (24 October 2023)
 

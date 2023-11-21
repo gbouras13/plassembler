@@ -1,5 +1,11 @@
 # History
 
+1.5.0 (2023-11-21)
+------------------
+
+* **If you upgrade to v1.5.0, you will need to update the database using `plassembler download`** 
+* Plassembler v1.5.0 incorporates a new database thanks to the recent PLSDB release [2023_11_03_v2](https://ccb-microbe.cs.uni-saarland.de/plsdb/). Thanks @[biobrad](https://github.com/biobrad) for the heads up.
+
 1.4.1 (2023-10-30)
 ------------------
 

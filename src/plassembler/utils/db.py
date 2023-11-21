@@ -23,12 +23,14 @@ def check_db_installation(db_dir: Path, install_flag: bool):
     """
     # Mash files
 
-    mash_db_names = ["plsdb.msh", "plsdb.tsv"]
+    mash_db_names = ["plsdb_2023_11_03_v2.msh", "plsdb_2023_11_03_v2.tsv"]
 
     f1: Path = db_dir / f"{mash_db_names[0]}"
     f2: Path = db_dir / f"{mash_db_names[1]}"
 
     if f1.exists() and f2.exists():
+        logger.info(f"PLSDB Database mash sketch at {f1} exists.")
+        logger.info(f"PLSDB Database tsv metadata file at {f2} exists.")
         logger.info(f"PLSDB Database at {db_dir} has already been downloaded")
     else:
         for file_name in mash_db_names:
@@ -48,10 +50,10 @@ def check_db_installation(db_dir: Path, install_flag: bool):
 
 def get_database_zenodo(db_dir: Path):
     logger.info("Downloading Plassembler Database.")
-    tarball = "plsdb_110222_plassembler_v0.1.4_databases.tar.gz"
+    tarball = "201123_plassembler_v1.5.0_databases.tar.gz"
     tar_path = Path(f"{db_dir}/{tarball}")
-    db_url = "https://zenodo.org/record/7499200/files/plsdb_110222_plassembler_v0.1.4_databases.tar.gz"
-    requiredmd5 = "f5144045e6e5d0d5a6b7f78d0c08840d"
+    db_url = "https://zenodo.org/record/10158040/files/201123_plassembler_v1.5.0_databases.tar.gz"
+    requiredmd5 = "3a24bacc05bb857dc044fc6662b58db7"
 
     # remvoe the directory
     if os.path.exists(db_dir):
@@ -114,9 +116,7 @@ def untar(tarball_path: Path, output_path: Path):
             tar_file.extractall(path=str(output_path))
 
         # get untarred directory
-        untarpath = os.path.join(
-            output_path, "plsdb_110222_plassembler_v0.1.4_databases"
-        )
+        untarpath = os.path.join(output_path, "201123_plassembler_v1.5.0_databases")
 
         # Get a list of all files in the source directory
         files_to_move = [

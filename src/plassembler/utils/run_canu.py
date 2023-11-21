@@ -30,10 +30,10 @@ def run_canu_correct(
     total_flye_plasmid_length = round(total_flye_plasmid_length / 1000000, 5)
     try:
         canu = ExternalTool(
-            tool="canu",
+            tool="canu -correct",
             input="",
             output="",
-            params=f" -correct -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
+            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
             logdir=logdir,
             outfile="",
         )

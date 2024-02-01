@@ -400,6 +400,7 @@ def run(
     logger.info(f"--flye_assembly is {flye_assembly}")
     logger.info(f"--flye_info is {flye_info}")
     logger.info(f"--no_chromosome is {no_chromosome}")
+    logger.info(f"--use_raven is {use_raven}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -455,8 +456,12 @@ def run(
         skip_assembly = True
 
     if skip_assembly is False:
-        logger.info("Running Flye.")
-        run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
+        if use_raven is False:
+            logger.info("Running Flye.")
+            run_flye(outdir, threads, raw_flag, pacbio_model, logdir)
+        else:
+            logger.info("Running Raven.")
+            run_raven(outdir, threads, logdir)
     else:
         if flye_directory != "nothing":
             logger.info(

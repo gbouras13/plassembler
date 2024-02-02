@@ -90,6 +90,17 @@ class test_end_to_end(unittest.TestCase):
         exec_command(cmd)
         remove_directory(outdir)
 
+    def test_plassembler_case_1_use_raven(self):
+        """test plassembler run - chromosome only assembled with Flye, no plasmids - plasmids recovered from the short reads"""
+        longreads: Path = f"{end_to_end}/case1.fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
+
     def test_plassembler_case_2(self):
         with self.assertRaises(RuntimeError):
             """test plassembler run case 2 no chromosome assembled at all"""

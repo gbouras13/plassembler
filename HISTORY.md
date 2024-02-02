@@ -1,5 +1,10 @@
 # History
 
+1.5.1 (2024-02-01)
+------------------
+
+* Fixes #44, where `--use_raven` was not working (Flye would be used instead). Thanks @[wanyuac](https://github.com/wanyuac).
+
 1.5.0 (2023-11-21)
 ------------------
 

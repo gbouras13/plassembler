@@ -276,7 +276,13 @@ def common_options(func):
         ),
         click.option(
             "--unicycler_options",
-            help='Extra Unicycler options - must be encapsulated by quotation marks "--no_rotate --spades_options --tmp-dir /tmp" ',
+            help='Extra Unicycler options - must be encapsulated by quotation marks if multiple "--no_rotate --mode conservative" ',
+            type=str,
+            default=None,
+        ),
+        click.option(
+            "--spades_options",
+            help='Extra spades options for Unicycler - must be encapsulated by quotation marks "--tmp-dir /tmp" ',
             type=str,
             default=None,
         ),
@@ -388,6 +394,7 @@ def run(
     no_chromosome,
     depth_filter,
     unicycler_options,
+    spades_options,
     **kwargs,
 ):
     """Runs Plassembler"""
@@ -417,6 +424,7 @@ def run(
     logger.info(f"--use_raven is {use_raven}")
     logger.info(f"--depth_filter is {depth_filter}")
     logger.info(f"--unicycler_options is {unicycler_options}")
+    logger.info(f"--spades_options is {spades_options}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -628,6 +636,7 @@ def run(
                 long_reads,
                 unicycler_dir,
                 unicycler_options,
+                spades_options
             )
 
             # check for successful unicycler completion
@@ -819,6 +828,7 @@ def run(
                 long_reads,
                 unicycler_dir,
                 unicycler_options,
+                spades_options
             )
 
             # check for successful unicycler completion
@@ -1253,6 +1263,7 @@ def long(
     no_chromosome,
     depth_filter,
     unicycler_options,
+    spades_options,
     **kwargs,
 ):
     """
@@ -1281,6 +1292,7 @@ def long(
     logger.info(f"--no_chromosome is {no_chromosome}")
     logger.info(f"--depth_filter is {depth_filter}")
     logger.info(f"--unicycler_options is {unicycler_options}")
+    logger.info(f"--spades_options is {spades_options}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -1548,6 +1560,7 @@ def long(
                 entropy_filtered_fastq,
                 unicycler_dir,
                 unicycler_options,
+                spades_options
             )
             remove_file(corrected_fastqs)
             assembled_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")

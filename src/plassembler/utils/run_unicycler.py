@@ -14,6 +14,7 @@ def run_unicycler(
     longreads: Path,
     unicycler_output_dir: Path,
     unicycler_options: str,
+    spades_options: str
 ):
     """runs Unicycler
     :param short_one: R1 short read fastq
@@ -23,10 +24,11 @@ def run_unicycler(
     :param threads: threads
     :param logdir: logdir
     :param unicycler_options: extra unicycler options
+    :param spades_options: extra spades options (for unicycler)
     :return:
     """
 
-    if unicycler_options is None:
+    if unicycler_options is None and spades_options is None:
         unicycler = ExternalTool(
             tool="unicycler",
             input="",
@@ -36,14 +38,24 @@ def run_unicycler(
             outfile="",
         )
     else:
-        unicycler = ExternalTool(
-            tool="unicycler",
-            input="",
-            output="",
-            params=f" -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir} --unicycler_options {unicycler_options}",
-            logdir=logdir,
-            outfile="",
-        )
+        if spades_options is None:
+            unicycler = ExternalTool(
+                tool="unicycler",
+                input="",
+                output="",
+                params=f" -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options}",
+                logdir=logdir,
+                outfile="",
+            )
+        else:
+            unicycler = ExternalTool(
+                tool="unicycler",
+                input="",
+                output="",
+                params=f" -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options} --spades_options \"{spades_options}\" ",
+                logdir=logdir,
+                outfile="",
+            )
 
     ExternalTool.run_tool(unicycler, to_stdout=False)
 
@@ -55,6 +67,7 @@ def run_unicycler_long(
     entropy_filtered_longreads: Path,
     unicycler_output_dir: Path,
     unicycler_options: str,
+    spades_options: str
 ) -> None:
     """runs Unicycler on long reads with -s -l
     :param corrected_longreads: long read fastq (subsmapled and corrected with canu)
@@ -63,10 +76,11 @@ def run_unicycler_long(
     :param threads: threads
     :param logdir: logdir
     :param unicycler_options: extra unicycler options
+    :param spades_options: extra spades options (for unicycler)
     :return:
     """
 
-    if unicycler_options is None:
+    if unicycler_options is None and spades_options is None:
         unicycler_long = ExternalTool(
             tool="unicycler",
             input="",
@@ -76,14 +90,24 @@ def run_unicycler_long(
             outfile="",
         )
     else:
-        unicycler_long = ExternalTool(
-            tool="unicycler",
-            input="",
-            output="",
-            params=f" -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir} --unicycler_options {unicycler_options}",
-            logdir=logdir,
-            outfile="",
-        )
+        if spades_options is None:
+            unicycler_long = ExternalTool(
+                tool="unicycler",
+                input="",
+                output="",
+                params=f" -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options}",
+                logdir=logdir,
+                outfile="",
+            )
+        else:
+            unicycler_long = ExternalTool(
+                tool="unicycler",
+                input="",
+                output="",
+                params=f" -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options} --spades_options \"{spades_options}\"",
+                logdir=logdir,
+                outfile="",
+            )
 
     ExternalTool.run_tool(unicycler_long, to_stdout=False)
 

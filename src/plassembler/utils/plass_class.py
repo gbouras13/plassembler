@@ -759,8 +759,17 @@ class Plass:
             p1_idx = None
 
         # needs to be at least 1 filtered out id if the filtering did anything
+        logger.info(f"Filtering contigs below depth filter: {depth_filter}.")
+        if "mean_depth_short" in combined_depth_mash_df.columns:
+            logger.info(f"All plasmids whose short and long read copy numbers are both below {depth_filter} will be removed.")
+        else:
+            logger.info(f"All plasmids whose long read copy numbers are below {depth_filter} will be removed.")
+
         if len(filtered_out_contig_ids) > 0:
-            logger.info(f"Filtering contigs below depth filter: {depth_filter}")
+            if p1_idx is None:
+                logger.warning(f"There are 0 plasmids left after depth filtering.")
+            else:
+                logger.info(f"{len(filtered_indices)} plasmids were filtered as they were below the depth filter.")
 
             # Updating 'contig_id' names starting from 1 from the identified index 
             # if it is None then there are only chromosome contigs left so no need for this
@@ -770,6 +779,8 @@ class Plass:
                 )
                 # Reset index after renaming
                 combined_depth_mash_df.reset_index(drop=True, inplace=True)
+        else:
+            logger.info(f"No plasmids were filtered due to low depth.")
 
         combined_depth_mash_df.to_csv(
             os.path.join(outdir, prefix + "_summary.tsv"), sep="\t", index=False

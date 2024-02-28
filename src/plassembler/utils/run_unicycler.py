@@ -7,7 +7,13 @@ from plassembler.utils.external_tools import ExternalTool
 
 
 def run_unicycler(
-    threads, logdir, short_one, short_two, longreads, unicycler_output_dir
+    threads: int,
+    logdir: Path,
+    short_one: Path,
+    short_two: Path,
+    longreads: Path,
+    unicycler_output_dir: Path,
+    unicycler_options: str,
 ):
     """runs Unicycler
     :param short_one: R1 short read fastq
@@ -16,17 +22,28 @@ def run_unicycler(
     :param unicycler_output_dir: unicycler Output Directory
     :param threads: threads
     :param logdir: logdir
+    :param unicycler_options: extra unicycler options
     :return:
     """
 
-    unicycler = ExternalTool(
-        tool="unicycler",
-        input="",
-        output="",
-        params=f" -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir}",
-        logdir=logdir,
-        outfile="",
-    )
+    if unicycler_options is None:
+        unicycler = ExternalTool(
+            tool="unicycler",
+            input="",
+            output="",
+            params=f" -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir}",
+            logdir=logdir,
+            outfile="",
+        )
+    else:
+        unicycler = ExternalTool(
+            tool="unicycler",
+            input="",
+            output="",
+            params=f" -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir} --unicycler_options {unicycler_options}",
+            logdir=logdir,
+            outfile="",
+        )
 
     ExternalTool.run_tool(unicycler, to_stdout=False)
 
@@ -37,6 +54,7 @@ def run_unicycler_long(
     corrected_longreads: Path,
     entropy_filtered_longreads: Path,
     unicycler_output_dir: Path,
+    unicycler_options: str,
 ) -> None:
     """runs Unicycler on long reads with -s -l
     :param corrected_longreads: long read fastq (subsmapled and corrected with canu)
@@ -44,17 +62,28 @@ def run_unicycler_long(
     :param unicycler_output_dir: unicycler Output Directory
     :param threads: threads
     :param logdir: logdir
+    :param unicycler_options: extra unicycler options
     :return:
     """
 
-    unicycler_long = ExternalTool(
-        tool="unicycler",
-        input="",
-        output="",
-        params=f" -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir}",
-        logdir=logdir,
-        outfile="",
-    )
+    if unicycler_options is None:
+        unicycler_long = ExternalTool(
+            tool="unicycler",
+            input="",
+            output="",
+            params=f" -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir}",
+            logdir=logdir,
+            outfile="",
+        )
+    else:
+        unicycler_long = ExternalTool(
+            tool="unicycler",
+            input="",
+            output="",
+            params=f" -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir} --unicycler_options {unicycler_options}",
+            logdir=logdir,
+            outfile="",
+        )
 
     ExternalTool.run_tool(unicycler_long, to_stdout=False)
 

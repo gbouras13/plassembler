@@ -268,6 +268,18 @@ def common_options(func):
             type=click.Path(),
             default="nothing",
         ),
+        click.option(
+            "--depth_filter",
+            help="Filters all contigs low than this fraction of the chromosome read depth. Will apply on both long- and short-read sets for plassembler run.",
+            type=float,
+            default=0.1,
+        ),
+        click.option(
+            "--unicycler_options",
+            help='Extra Unicycler options - must be encapsulated by quotation marks "--no_rotate --spades_options --tmp-dir /tmp" ',
+            type=str,
+            default=None,
+        ),
     ]
     for option in reversed(options):
         func = option(func)
@@ -374,6 +386,8 @@ def run(
     flye_assembly,
     flye_info,
     no_chromosome,
+    depth_filter,
+    unicycler_options,
     **kwargs,
 ):
     """Runs Plassembler"""
@@ -401,6 +415,8 @@ def run(
     logger.info(f"--flye_info is {flye_info}")
     logger.info(f"--no_chromosome is {no_chromosome}")
     logger.info(f"--use_raven is {use_raven}")
+    logger.info(f"--depth_filter is {depth_filter}")
+    logger.info(f"--unicycler_options is {unicycler_options}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -605,7 +621,13 @@ def run(
             unicycler_dir: Path = Path(outdir) / "unicycler_output"
 
             run_unicycler(
-                threads, logdir, short_r1, short_r2, long_reads, unicycler_dir
+                threads,
+                logdir,
+                short_r1,
+                short_r2,
+                long_reads,
+                unicycler_dir,
+                unicycler_options,
             )
 
             # check for successful unicycler completion
@@ -631,7 +653,7 @@ def run(
                 # processes output
                 plass.process_mash_tsv(database)
                 # combine depth and mash tsvs
-                plass.combine_depth_mash_tsvs(prefix)
+                plass.combine_depth_mash_tsvs(prefix, depth_filter)
 
                 # rename contigs and update copy bumber with plsdb
                 plass.finalise_contigs(prefix)
@@ -790,7 +812,13 @@ def run(
             unicycler_dir: Path = Path(outdir) / "unicycler_output"
 
             run_unicycler(
-                threads, logdir, short_r1, short_r2, long_reads, unicycler_dir
+                threads,
+                logdir,
+                short_r1,
+                short_r2,
+                long_reads,
+                unicycler_dir,
+                unicycler_options,
             )
 
             # check for successful unicycler completion
@@ -822,7 +850,7 @@ def run(
                 # processes output
                 plass.process_mash_tsv(database)
                 # combine depth and mash tsvs
-                plass.combine_depth_mash_tsvs(prefix)
+                plass.combine_depth_mash_tsvs(prefix, depth_filter)
 
                 # rename contigs and update copy bumber with plsdb
                 plass.finalise_contigs(prefix)
@@ -947,6 +975,7 @@ def assembled(
     logger.info(f"Thread count is {threads}")
     logger.info(f"--skip_qc is {skip_qc}")
     logger.info(f"--pacbio_model is {pacbio_model}")
+    logger.info(f"--no_copy_numbers is {no_copy_numbers}")
     logger.info(f"--no_copy_numbers is {no_copy_numbers}")
     logdir = Path(f"{outdir}/logs")
 
@@ -1222,6 +1251,8 @@ def long(
     canu_flag,
     corrected_error_rate,
     no_chromosome,
+    depth_filter,
+    unicycler_options,
     **kwargs,
 ):
     """
@@ -1248,6 +1279,8 @@ def long(
     logger.info(f"--flye_info is {flye_info}")
     logger.info(f"--corrected_error_rate is {corrected_error_rate}")
     logger.info(f"--no_chromosome is {no_chromosome}")
+    logger.info(f"--depth_filter is {depth_filter}")
+    logger.info(f"--unicycler_options is {unicycler_options}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -1509,7 +1542,12 @@ def long(
 
             unicycler_dir: Path = Path(outdir) / "unicycler_output"
             run_unicycler_long(
-                threads, logdir, corrected_fastqs, entropy_filtered_fastq, unicycler_dir
+                threads,
+                logdir,
+                corrected_fastqs,
+                entropy_filtered_fastq,
+                unicycler_dir,
+                unicycler_options,
             )
             remove_file(corrected_fastqs)
             assembled_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
@@ -1557,7 +1595,7 @@ def long(
             plass.process_mash_tsv(database)
 
             # combine depth and mash tsvs
-            plass.combine_depth_mash_tsvs(prefix)
+            plass.combine_depth_mash_tsvs(prefix, depth_filter)
 
             # rename contigs and update copy number with plsdb
             plass.finalise_contigs_long(prefix)

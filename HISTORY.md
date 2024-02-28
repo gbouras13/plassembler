@@ -3,7 +3,8 @@
 1.6.0 (2024-03-01)
 ------------------
 
-* 
+* Addes `--depth_filter`. This will filter out all contigs that have long- (and short-read for `plassembler run`) read copy numbers that are less than the specified depth filter. Defaults to 0.25x.
+* Adds `--unicycler_options`  and `--spades_options` which allows passing extra Unicycler options (#46)
 
 1.5.1 (2024-02-01)
 ------------------

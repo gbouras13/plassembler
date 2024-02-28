@@ -178,7 +178,6 @@ class test_end_to_end(unittest.TestCase):
         chromosome = 50000
         outdir: Path = f"{end_to_end}/test_out"
         temp_dir: Path = f"{end_to_end}/temp"
-        temp_dir.mkdir(parents=True, exist_ok=True)
         cmd = f'plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f   --unicycler_options "--no_rotate --mode conservative" --spades_options "--tmp-dir  {temp_dir}" '
         exec_command(cmd)
         remove_directory(outdir)

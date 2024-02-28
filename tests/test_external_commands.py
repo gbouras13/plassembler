@@ -229,7 +229,14 @@ class test_assemblers(unittest.TestCase):
         unicycler_output_dir = Path(f"{test_data}/unicycler_output")
         threads = 1
         run_unicycler(
-            threads, logdir, short_one, short_two, longreads, unicycler_output_dir
+            threads,
+            logdir,
+            short_one,
+            short_two,
+            longreads,
+            unicycler_output_dir,
+            unicycler_options=None,
+            spades_options=None,
         )
         remove_directory(unicycler_output_dir)
         self.assertEqual(expected_return, True)
@@ -243,7 +250,14 @@ class test_assemblers(unittest.TestCase):
         unicycler_output_dir = Path(f"{test_data}/unicycler_output_bad")
         threads = 1
         run_unicycler(
-            threads, logdir, short_one, short_two, longreads, unicycler_output_dir
+            threads,
+            logdir,
+            short_one,
+            short_two,
+            longreads,
+            unicycler_output_dir,
+            unicycler_options=None,
+            spades_options=None,
         )
         remove_directory(unicycler_output_dir)
         self.assertEqual(expected_return, True)

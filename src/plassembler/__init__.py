@@ -272,7 +272,7 @@ def common_options(func):
             "--depth_filter",
             help="Filters all contigs low than this fraction of the chromosome read depth. Will apply on both long- and short-read sets for plassembler run.",
             type=float,
-            default=0.1,
+            default=0.25,
         ),
         click.option(
             "--unicycler_options",
@@ -1227,6 +1227,24 @@ def long_options(func):
             help="Corrected error rate parameter for canu -correct. For advanced users only.",
             type=float,
             default=0.12,
+        ),
+        click.option(
+            "--depth_filter",
+            help="Filters all contigs low than this fraction of the chromosome read depth. Will apply on both long- and short-read sets for plassembler run.",
+            type=float,
+            default=0.25,
+        ),
+        click.option(
+            "--unicycler_options",
+            help='Extra Unicycler options - must be encapsulated by quotation marks if multiple "--no_rotate --mode conservative" ',
+            type=str,
+            default=None,
+        ),
+        click.option(
+            "--spades_options",
+            help='Extra spades options for Unicycler - must be encapsulated by quotation marks "--tmp-dir /tmp" ',
+            type=str,
+            default=None,
         ),
     ]
     for option in reversed(options):

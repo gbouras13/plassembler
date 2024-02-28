@@ -158,7 +158,7 @@ class test_end_to_end(unittest.TestCase):
         remove_directory(outdir)
 
     # copy number
-        
+
     def test_plassembler_case_depth_filter(self):
         """test plassembler run depth_filter 1.2 - will have no plasmids left"""
         longreads: Path = f"{end_to_end}/input_fastq.gz"
@@ -177,7 +177,7 @@ class test_end_to_end(unittest.TestCase):
         s2: Path = f"{end_to_end}/input_R2.fastq.gz"
         chromosome = 50000
         outdir: Path = f"{end_to_end}/test_out"
-        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f   --unicycler_options \"--no_rotate --mode conservative\" --spades_options \"--tmp-dir  {tmp_dir}\" "
+        cmd = f'plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f   --unicycler_options "--no_rotate --mode conservative" --spades_options "--tmp-dir  {tmp_dir}" '
         exec_command(cmd)
         remove_directory(outdir)
 

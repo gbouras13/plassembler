@@ -636,7 +636,7 @@ def run(
                 long_reads,
                 unicycler_dir,
                 unicycler_options,
-                spades_options
+                spades_options,
             )
 
             # check for successful unicycler completion
@@ -828,7 +828,7 @@ def run(
                 long_reads,
                 unicycler_dir,
                 unicycler_options,
-                spades_options
+                spades_options,
             )
 
             # check for successful unicycler completion
@@ -1560,7 +1560,7 @@ def long(
                 entropy_filtered_fastq,
                 unicycler_dir,
                 unicycler_options,
-                spades_options
+                spades_options,
             )
             remove_file(corrected_fastqs)
             assembled_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")

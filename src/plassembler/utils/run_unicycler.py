@@ -14,7 +14,7 @@ def run_unicycler(
     longreads: Path,
     unicycler_output_dir: Path,
     unicycler_options: str,
-    spades_options: str
+    spades_options: str,
 ):
     """runs Unicycler
     :param short_one: R1 short read fastq
@@ -52,7 +52,7 @@ def run_unicycler(
                 tool="unicycler",
                 input="",
                 output="",
-                params=f" -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options} --spades_options \"{spades_options}\" ",
+                params=f' -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options} --spades_options "{spades_options}" ',
                 logdir=logdir,
                 outfile="",
             )
@@ -67,7 +67,7 @@ def run_unicycler_long(
     entropy_filtered_longreads: Path,
     unicycler_output_dir: Path,
     unicycler_options: str,
-    spades_options: str
+    spades_options: str,
 ) -> None:
     """runs Unicycler on long reads with -s -l
     :param corrected_longreads: long read fastq (subsmapled and corrected with canu)
@@ -104,7 +104,7 @@ def run_unicycler_long(
                 tool="unicycler",
                 input="",
                 output="",
-                params=f" -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options} --spades_options \"{spades_options}\"",
+                params=f' -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options} --spades_options "{spades_options}"',
                 logdir=logdir,
                 outfile="",
             )

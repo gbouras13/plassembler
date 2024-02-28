@@ -124,6 +124,17 @@ class test_end_to_end(unittest.TestCase):
         exec_command(cmd)
         remove_directory(outdir)
 
+    def test_plassembler_case_3(self):
+        """test plassembler run - chromosome and plasmids assembled with Flye"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
+
     def test_plassembler_case_4(self):
         """test plassembler run case 4. Only chromosome assembled with flye, no plasmid in recovery."""
         longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
@@ -143,6 +154,31 @@ class test_end_to_end(unittest.TestCase):
         chromosome = 5000  # fake low chrom length
         outdir: Path = f"{end_to_end}/test_out"
         cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+    # copy number
+
+    def test_plassembler_case_depth_filter(self):
+        """test plassembler run depth_filter 1.2 - will have no plasmids left"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f --depth_filter 1.2"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+    def test_plassembler_case_extra_unicycler_spades_opts(self):
+        """test plassembler with extra unicycler and spades opts"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        temp_dir: Path = f"{end_to_end}/temp"
+        cmd = f'plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f   --unicycler_options "--no_rotate --mode conservative" --spades_options "--tmp-dir  {temp_dir}" '
         exec_command(cmd)
         remove_directory(outdir)
 

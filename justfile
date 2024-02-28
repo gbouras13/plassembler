@@ -12,9 +12,6 @@ check-fmt:
     poetry run black --check .
     poetry run isort --check .
 
-# lint code with flake8
-lint:
-    poetry run flake8 .
 
 # install latest version with poetry
 install:

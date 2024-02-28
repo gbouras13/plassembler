@@ -36,9 +36,13 @@ jobs:
         shell: bash -l {0}
         run: |
           mamba install python=${{ matrix.python-version }}
-          just install
           python -m pip install --upgrade pip
-          pip3 install git+https://github.com/rrwick/Unicycler.git
+          pip install -e .
+          pip install black
+          pip install isort
+          pip install pytest
+          pip install pytest-cov
+          pip install git+https://github.com/rrwick/Unicycler.git
           unicycler --help
       - name: Check formatting
         shell: bash -l {0}

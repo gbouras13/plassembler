@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "plassembler"
-version = "1.5.1" # change VERSION too
+version = "1.6.0" # change VERSION too
 description = "Quickly and accurately assemble plasmids in hybrid sequenced bacterial isolates"
 authors = ["George Bouras <george.bouras@adelaide.edu.au>"]
 license = "MIT"
@@ -32,7 +32,6 @@ black = ">=22.3.0"
 isort = ">=5.10.1"
 pytest = ">=6.2.5"
 pytest-cov = ">=3.0.0"
-flake8 = ">=3.0.1"
 
 [[tool.poetry.source]]
 name = "pypi-test"

@@ -705,62 +705,47 @@ class Plass:
             combined_depth_mash_df["contig"].str.contains("chromosome"), "PLSDB_hit"
         ] = ""
 
-        # filter the dataframe by depth filter
-        all_contig_ids = combined_depth_mash_df["contig"].astype(str).tolist()
+        # get chroms and plasmids
 
-        if "mean_depth_short" in combined_depth_mash_df.columns:
-            combined_depth_mash_df = combined_depth_mash_df[
+        combined_chrom_df = combined_depth_mash_df[combined_depth_mash_df["contig"].str.contains("chromosome")]
+        combined_plasmid_df =  combined_depth_mash_df[~combined_depth_mash_df["contig"].str.contains("chromosome")]
+
+        # get all plasmid contig ids and then filter
+        all_plasmid_contig_ids = combined_plasmid_df["contig"].astype(str).tolist()
+
+        if "mean_depth_short" in combined_plasmid_df.columns:
+            combined_plasmid_df = combined_plasmid_df[
                 (
-                    combined_depth_mash_df["plasmid_copy_number_long"].astype(float)
+                    combined_plasmid_df["plasmid_copy_number_long"].astype(float)
                     > depth_filter
                 )
                 | (
-                    combined_depth_mash_df["plasmid_copy_number_short"].astype(float)
+                    combined_plasmid_df["plasmid_copy_number_short"].astype(float)
                     > depth_filter
-                )
-                | (
-                    combined_depth_mash_df["contig"].str.contains(
-                        "chromosome", case=False
-                    )
                 )
             ]
         else:  # plassembler long (long only)
-            combined_depth_mash_df = combined_depth_mash_df[
+            combined_plasmid_df = combined_plasmid_df[
                 (
-                    combined_depth_mash_df["plasmid_copy_number_long"].astype(float)
+                    combined_plasmid_df["plasmid_copy_number_long"].astype(float)
                     > depth_filter
-                )
-                | (
-                    combined_depth_mash_df["contig"].str.contains(
-                        "chromosome", case=False
-                    )
                 )
             ]
 
-        # get list of all ids that were kept above threshold
-        kept_contig_ids = combined_depth_mash_df["contig"].astype(str).tolist()
+        # get list of all ids that were kept above depth threshold
+        kept_plasmid_contig_ids = combined_plasmid_df["contig"].astype(str).tolist()
 
         # List of 'contig_ids' that were filtered out
         filtered_out_contig_ids = [
             contig_id
-            for contig_id in all_contig_ids
-            if contig_id not in kept_contig_ids
+            for contig_id in all_plasmid_contig_ids
+            if contig_id not in kept_plasmid_contig_ids
         ]
 
-        # Identify the index of the first row that doesn't contain 'chromosome' in 'contig_id' - first plasmid index
-        # None otherwise
-        filtered_indices = combined_depth_mash_df.index[
-            ~combined_depth_mash_df["contig"].str.contains("chromosome")
-        ]
-
-        if not filtered_indices.empty:
-            p1_idx = filtered_indices.min()
-        else:
-            p1_idx = None
 
         # needs to be at least 1 filtered out id if the filtering did anything
         logger.info(f"Filtering contigs below depth filter: {depth_filter}.")
-        if "mean_depth_short" in combined_depth_mash_df.columns:
+        if "mean_depth_short" in combined_plasmid_df.columns:
             logger.info(
                 f"All plasmids whose short and long read copy numbers are both below {depth_filter} will be removed."
             )
@@ -770,23 +755,29 @@ class Plass:
             )
 
         if len(filtered_out_contig_ids) > 0:
-            if p1_idx is None:
+            if len(kept_plasmid_contig_ids) == 0:
                 logger.warning(f"There are 0 plasmids left after depth filtering.")
             else:
                 logger.info(
-                    f"{len(filtered_indices)} plasmids were filtered as they were below the depth filter."
+                    f"{len(filtered_out_contig_ids)} plasmids were filtered as they were below the depth filter."
                 )
 
-            # Updating 'contig_id' names starting from 1 from the identified index
-            # if it is None then there are only chromosome contigs left so no need for this
-            if p1_idx is not None:
-                combined_depth_mash_df.loc[p1_idx:, "contig"] = range(
-                    1, len(combined_depth_mash_df) - p1_idx + 2
-                )
+                # Updating 'contig_id' names starting from 1
+                num_rows = len(combined_plasmid_df)
+                new_column_names = list(range(1, num_rows + 1))
+                combined_plasmid_df['contig'] = new_column_names
                 # Reset index after renaming
-                combined_depth_mash_df.reset_index(drop=True, inplace=True)
+                combined_plasmid_df.reset_index(drop=True, inplace=True)
         else:
             logger.info(f"No plasmids were filtered due to low depth.")
+
+
+        # concat back
+            # there is 1+ plasmid 
+        if len(kept_plasmid_contig_ids) > 0 :
+            combined_depth_mash_df = pd.concat([combined_chrom_df, combined_plasmid_df], axis=0)
+        else: # only chroms
+            combined_depth_mash_df = combined_chrom_df
 
         combined_depth_mash_df.to_csv(
             os.path.join(outdir, prefix + "_summary.tsv"), sep="\t", index=False

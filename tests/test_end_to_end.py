@@ -124,17 +124,6 @@ class test_end_to_end(unittest.TestCase):
         exec_command(cmd)
         remove_directory(outdir)
 
-    def test_plassembler_case_3(self):
-        """test plassembler run - chromosome and plasmids assembled with Flye"""
-        longreads: Path = f"{end_to_end}/input_fastq.gz"
-        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
-        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
-        chromosome = 50000
-        outdir: Path = f"{end_to_end}/test_out"
-        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
-        exec_command(cmd)
-        remove_directory(outdir)
-
     def test_plassembler_case_4(self):
         """test plassembler run case 4. Only chromosome assembled with flye, no plasmid in recovery."""
         longreads: Path = f"{end_to_end}/abaumanii_plasmid.fastq.gz"
@@ -159,7 +148,7 @@ class test_end_to_end(unittest.TestCase):
 
     # copy number
 
-    def test_plassembler_case_depth_filter(self):
+    def test_plassembler_case_depth_filter_all(self):
         """test plassembler run depth_filter 1.2 - will have no plasmids left"""
         longreads: Path = f"{end_to_end}/input_fastq.gz"
         s1: Path = f"{end_to_end}/input_R1.fastq.gz"
@@ -167,6 +156,17 @@ class test_end_to_end(unittest.TestCase):
         chromosome = 50000
         outdir: Path = f"{end_to_end}/test_out"
         cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f --depth_filter 1.2"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+    def test_plassembler_case_depth_filter_some(self):
+        """test plassembler run depth_filter 0.6 with input_half lr - will have only 1 plasmid"""
+        longreads: Path = f"{end_to_end}/input_half.fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f --depth_filter 0.6"
         exec_command(cmd)
         remove_directory(outdir)
 
@@ -260,6 +260,24 @@ class test_end_to_end(unittest.TestCase):
         chromosome = 50000
         outdir: Path = f"{end_to_end}/test_out"
         cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+    def test_plassembler_depth_all(self):
+        """test plassembler long depth filter will all plasmids filtered"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir} --depth_filter 10 -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+    def test_plassembler_depth_some(self):
+        """test plassembler long depth filter will some plasmids filtered"""
+        longreads: Path = f"{end_to_end}/input_depth_filter.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir} --depth_filter 2  -t 8 -f"
         exec_command(cmd)
         remove_directory(outdir)
 

@@ -705,62 +705,51 @@ class Plass:
             combined_depth_mash_df["contig"].str.contains("chromosome"), "PLSDB_hit"
         ] = ""
 
-        # filter the dataframe by depth filter
-        all_contig_ids = combined_depth_mash_df["contig"].astype(str).tolist()
+        # get chroms and plasmids
 
-        if "mean_depth_short" in combined_depth_mash_df.columns:
-            combined_depth_mash_df = combined_depth_mash_df[
+        combined_chrom_df = combined_depth_mash_df[
+            combined_depth_mash_df["contig"].str.contains("chromosome")
+        ]
+        combined_plasmid_df = combined_depth_mash_df[
+            ~combined_depth_mash_df["contig"].str.contains("chromosome")
+        ]
+
+        # get all plasmid contig ids and then filter
+        all_plasmid_contig_ids = combined_plasmid_df["contig"].astype(str).tolist()
+
+        if "mean_depth_short" in combined_plasmid_df.columns:
+            combined_plasmid_df = combined_plasmid_df[
                 (
-                    combined_depth_mash_df["plasmid_copy_number_long"].astype(float)
+                    combined_plasmid_df["plasmid_copy_number_long"].astype(float)
                     > depth_filter
                 )
                 | (
-                    combined_depth_mash_df["plasmid_copy_number_short"].astype(float)
+                    combined_plasmid_df["plasmid_copy_number_short"].astype(float)
                     > depth_filter
-                )
-                | (
-                    combined_depth_mash_df["contig"].str.contains(
-                        "chromosome", case=False
-                    )
                 )
             ]
         else:  # plassembler long (long only)
-            combined_depth_mash_df = combined_depth_mash_df[
+            combined_plasmid_df = combined_plasmid_df[
                 (
-                    combined_depth_mash_df["plasmid_copy_number_long"].astype(float)
+                    combined_plasmid_df["plasmid_copy_number_long"].astype(float)
                     > depth_filter
-                )
-                | (
-                    combined_depth_mash_df["contig"].str.contains(
-                        "chromosome", case=False
-                    )
                 )
             ]
 
-        # get list of all ids that were kept above threshold
-        kept_contig_ids = combined_depth_mash_df["contig"].astype(str).tolist()
+        # get list of all ids that were kept above depth threshold
+        kept_plasmid_contig_ids = combined_plasmid_df["contig"].astype(str).tolist()
 
         # List of 'contig_ids' that were filtered out
         filtered_out_contig_ids = [
             contig_id
-            for contig_id in all_contig_ids
-            if contig_id not in kept_contig_ids
+            for contig_id in all_plasmid_contig_ids
+            if contig_id not in kept_plasmid_contig_ids
         ]
 
-        # Identify the index of the first row that doesn't contain 'chromosome' in 'contig_id' - first plasmid index
-        # None otherwise
-        filtered_indices = combined_depth_mash_df.index[
-            ~combined_depth_mash_df["contig"].str.contains("chromosome")
-        ]
-
-        if not filtered_indices.empty:
-            p1_idx = filtered_indices.min()
-        else:
-            p1_idx = None
-
+        # logging
         # needs to be at least 1 filtered out id if the filtering did anything
         logger.info(f"Filtering contigs below depth filter: {depth_filter}.")
-        if "mean_depth_short" in combined_depth_mash_df.columns:
+        if "mean_depth_short" in combined_plasmid_df.columns:
             logger.info(
                 f"All plasmids whose short and long read copy numbers are both below {depth_filter} will be removed."
             )
@@ -770,23 +759,23 @@ class Plass:
             )
 
         if len(filtered_out_contig_ids) > 0:
-            if p1_idx is None:
+            if len(kept_plasmid_contig_ids) == 0:
                 logger.warning(f"There are 0 plasmids left after depth filtering.")
             else:
                 logger.info(
-                    f"{len(filtered_indices)} plasmids were filtered as they were below the depth filter."
+                    f"{len(filtered_out_contig_ids)} plasmids were filtered as they were below the depth filter."
                 )
-
-            # Updating 'contig_id' names starting from 1 from the identified index
-            # if it is None then there are only chromosome contigs left so no need for this
-            if p1_idx is not None:
-                combined_depth_mash_df.loc[p1_idx:, "contig"] = range(
-                    1, len(combined_depth_mash_df) - p1_idx + 2
-                )
-                # Reset index after renaming
-                combined_depth_mash_df.reset_index(drop=True, inplace=True)
         else:
             logger.info(f"No plasmids were filtered due to low depth.")
+
+        # concat dfs back
+        # there is 1+ plasmid
+        if len(kept_plasmid_contig_ids) > 0:
+            combined_depth_mash_df = pd.concat(
+                [combined_chrom_df, combined_plasmid_df], axis=0
+            )
+        else:  # only chroms
+            combined_depth_mash_df = combined_chrom_df
 
         combined_depth_mash_df.to_csv(
             os.path.join(outdir, prefix + "_summary.tsv"), sep="\t", index=False
@@ -796,7 +785,7 @@ class Plass:
 
     def finalise_contigs(self, prefix):
         """
-        Renames the contigs of unicycler with the new plasmid copy numbers and outputs finalised file
+        Filters contigs plassembler run
         """
         outdir = self.outdir
 
@@ -808,23 +797,42 @@ class Plass:
         ].reset_index(drop=True)
         # get contigs only
         plasmid_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
-        i = 0
         with open(os.path.join(outdir, prefix + "_plasmids.fasta"), "w") as dna_fa:
             for dna_record in SeqIO.parse(plasmid_fasta, "fasta"):
                 split_desc = dna_record.description.split(" ")
+                contig_id = str(split_desc[0])
                 # only keep the contigs that passed the depth threshold
-                if str(split_desc[0]) not in filtered_out_contig_ids:
+                if contig_id not in filtered_out_contig_ids:
+                    sr_copy_number_list = combined_depth_mash_df.loc[
+                        combined_depth_mash_df["contig"] == contig_id,
+                        "plasmid_copy_number_short",
+                    ].values
+                    lr_copy_number_list = combined_depth_mash_df.loc[
+                        combined_depth_mash_df["contig"] == contig_id,
+                        "plasmid_copy_number_long",
+                    ].values
+                    if len(sr_copy_number_list) > 0:
+                        sr_copy_number = sr_copy_number_list[0]
+                    else:
+                        logger.error("Plassembler failed")
+
+                    if len(lr_copy_number_list) > 0:
+                        lr_copy_number = lr_copy_number_list[0]
+                    else:
+                        logger.error("Plassembler failed")
+
+                    # will be ordered so new_contig_count will be the index of the df
+                    # but 1 index for the output
                     if "circular" in dna_record.description:  # circular contigs
-                        id_updated = f"{i} {split_desc[1]} plasmid_copy_number_short={combined_depth_mash_df.plasmid_copy_number_short[i]}x plasmid_copy_number_long={combined_depth_mash_df.plasmid_copy_number_long[i]}x circular=true"
+                        id_updated = f"{contig_id} {split_desc[1]} plasmid_copy_number_short={sr_copy_number}x plasmid_copy_number_long={lr_copy_number}x circular=true"
                     else:  # non circular contigs
-                        id_updated = f"{i} {split_desc[1]} plasmid_copy_number_short={combined_depth_mash_df.plasmid_copy_number_short[i]}x plasmid_copy_number_long={combined_depth_mash_df.plasmid_copy_number_long[i]}x"
-                    i += 1
+                        id_updated = f"{contig_id} {split_desc[1]} plasmid_copy_number_short={sr_copy_number}x plasmid_copy_number_long={lr_copy_number}x"
                     record = SeqRecord(dna_record.seq, id=id_updated, description="")
                     SeqIO.write(record, dna_fa, "fasta")
 
     def finalise_contigs_long(self, prefix):
         """
-        Renames the contigs of assembly with new ones
+        Filters contigs plassembler long
         """
         outdir = self.outdir
 
@@ -836,21 +844,30 @@ class Plass:
         ].reset_index(drop=True)
         # get contigs only
         plasmid_fasta = os.path.join(outdir, "plasmids.fasta")
-        i = 0
         with open(os.path.join(outdir, prefix + "_plasmids.fasta"), "w") as dna_fa:
             for dna_record in SeqIO.parse(plasmid_fasta, "fasta"):
                 # only keep the contigs that passed the depth threshold
-                if str(dna_record.id) not in filtered_out_contig_ids:
+                contig_id = str(dna_record.id)
+                if contig_id not in filtered_out_contig_ids:
                     length = len(dna_record.seq)
-                    copy_number = combined_depth_mash_df.plasmid_copy_number_long[i]
+                    lr_copy_number_list = combined_depth_mash_df.loc[
+                        combined_depth_mash_df["contig"] == contig_id,
+                        "plasmid_copy_number_long",
+                    ].values
+                    if len(lr_copy_number_list) > 0:
+                        lr_copy_number = lr_copy_number_list[0]
+                    else:
+                        logger.error("Plassembler failed")
+
                     if (
                         "circular" in dna_record.description
                     ):  # circular contigs from canu
-                        desc = f"len={length} plasmid_copy_number_long={copy_number}x circular=True"
+                        desc = f"len={length} plasmid_copy_number_long={lr_copy_number}x circular=True"
                     else:
-                        desc = f"len={length} plasmid_copy_number_long={copy_number}x"
-                    i += 1
-                    record = SeqRecord(dna_record.seq, id=str(i), description=desc)
+                        desc = (
+                            f"len={length} plasmid_copy_number_long={lr_copy_number}x"
+                        )
+                    record = SeqRecord(dna_record.seq, id=contig_id, description=desc)
                     SeqIO.write(record, dna_fa, "fasta")
 
 

@@ -1121,7 +1121,7 @@ def download(ctx, database, force, **kwargs):
     logger.add(lambda _: sys.exit(1), level="ERROR")
     database = Path(database)
     logger.info(f"Checking database installation at {database}")
-    check_db_installation(database, install_flag=True)  # t
+    check_db_installation(database, force, install_flag=True)  # t
 
 
 """

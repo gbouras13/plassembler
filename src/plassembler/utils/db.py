@@ -16,9 +16,10 @@ from loguru import logger
 from plassembler.utils.cleanup import remove_directory
 
 
-def check_db_installation(db_dir: Path, install_flag: bool):
+def check_db_installation(db_dir: Path, force: bool, install_flag: bool):
     """checks database is installed correctly
     :param db_dir: database directory
+    :param force: boolean if force is true
     :param install_flag: whether to check or install database
     """
     # Mash files
@@ -27,6 +28,24 @@ def check_db_installation(db_dir: Path, install_flag: bool):
 
     f1: Path = db_dir / f"{mash_db_names[0]}"
     f2: Path = db_dir / f"{mash_db_names[1]}"
+
+    if force is True:
+        if os.path.isdir(db_dir) is True:
+            logger.info(f"Removing the directory {db_dir} as --force was specified")
+            shutil.rmtree(db_dir)
+        else:
+            logger.info(
+                f"--force was specified even though the directory {db_dir} does not already exist. Continuing"
+            )
+    else:
+        if os.path.isdir(db_dir) is True:
+            logger.error(
+                f"Directory {db_dir} already exists and force was not specified. Please specify -f or --force to overwrite {db_dir}"
+            )
+
+    # instantiate outdir
+    if os.path.isdir(db_dir) is False:
+        os.mkdir(db_dir)
 
     if f1.exists() and f2.exists():
         logger.info(f"PLSDB Database mash sketch at {f1} exists.")
@@ -49,19 +68,11 @@ def check_db_installation(db_dir: Path, install_flag: bool):
 
 
 def get_database_zenodo(db_dir: Path):
-    logger.info("Downloading Plassembler Database.")
+    logger.info(f"Downloading Plassembler Database to the directory {db_dir}")
     tarball = "201123_plassembler_v1.5.0_databases.tar.gz"
     tar_path = Path(f"{db_dir}/{tarball}")
     db_url = "https://zenodo.org/record/10158040/files/201123_plassembler_v1.5.0_databases.tar.gz"
     requiredmd5 = "3a24bacc05bb857dc044fc6662b58db7"
-
-    # remvoe the directory
-    if os.path.exists(db_dir):
-        shutil.rmtree(db_dir)
-
-    # make db dir
-    if not os.path.exists(db_dir):
-        os.mkdir(db_dir)
 
     try:
         with tar_path.open("wb") as fh_out, requests.get(db_url, stream=True) as resp:

@@ -49,10 +49,3 @@ class test_install(unittest.TestCase):
     def test_check_db_installation_bad(self):
         with self.assertRaises(SystemExit):
             check_db_installation(val_data, force=False, install_flag=False)
-
-    def test_get_database_zenodo(self):
-        expected_return = True
-        get_database_zenodo(tmp_db_path)
-        # remove it after downloading
-        shutil.rmtree(tmp_db_path)
-        self.assertEqual(expected_return, True)

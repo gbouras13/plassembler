@@ -1,5 +1,11 @@
 # History
 
+1.6.2 (2024-03-08)
+------------------
+
+* Bug fix with `--force` for `plassembler download`, which will only remove the output directory if `--force` is specified (#49).
+
+
 1.6.1 (2024-03-02)
 ------------------
 

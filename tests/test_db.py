@@ -40,15 +40,15 @@ class test_install(unittest.TestCase):
 
     # for plassembler run
     def test_check_db_installation_good(self):
-        check_db_installation(db_path, False)
+        check_db_installation(db_path, force=False, install_flag=False)
 
     # for plassembler download
     def test_check_db_installation_good_d(self):
-        check_db_installation(db_path, True)
+        check_db_installation(db_path, force=True, install_flag=True)
 
     def test_check_db_installation_bad(self):
         with self.assertRaises(SystemExit):
-            check_db_installation(val_data, False)
+            check_db_installation(val_data, force=False, install_flag=False)
 
     def test_get_database_zenodo(self):
         expected_return = True

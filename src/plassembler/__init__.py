@@ -434,7 +434,7 @@ def run(
     # check the mash database is installed
 
     logger.info("Checking database installation.")
-    check_db_installation(Path(database), install_flag=False)
+    check_db_installation(Path(database), force=False, install_flag=False)
     # will only continue if successful
     logger.info("Database successfully checked.")
 
@@ -996,7 +996,7 @@ def assembled(
     # check the mash database is installed
 
     logger.info("Checking database installation.")
-    check_db_installation(Path(database), install_flag=False)
+    check_db_installation(Path(database), force=False, install_flag=False)
     # will only continue if successful
     logger.info("Database successfully checked.")
 
@@ -1319,7 +1319,7 @@ def long(
 
     # check the mash database is installed
     logger.info("Checking database installation.")
-    check_db_installation(Path(database), install_flag=False)
+    check_db_installation(Path(database), force=False, install_flag=False)
     # will only continue if successful
     logger.info("Database successfully checked.")
 

@@ -29,19 +29,20 @@ def check_db_installation(db_dir: Path, force: bool, install_flag: bool):
     f1: Path = db_dir / f"{mash_db_names[0]}"
     f2: Path = db_dir / f"{mash_db_names[1]}"
 
-    if force is True:
-        if os.path.isdir(db_dir) is True:
-            logger.info(f"Removing the directory {db_dir} as --force was specified")
-            shutil.rmtree(db_dir)
+    if install_flag is True:
+        if force is True:
+            if os.path.isdir(db_dir) is True:
+                logger.info(f"Removing the directory {db_dir} as --force was specified")
+                shutil.rmtree(db_dir)
+            else:
+                logger.info(
+                    f"--force was specified even though the directory {db_dir} does not already exist. Continuing"
+                )
         else:
-            logger.info(
-                f"--force was specified even though the directory {db_dir} does not already exist. Continuing"
-            )
-    else:
-        if os.path.isdir(db_dir) is True:
-            logger.error(
-                f"Directory {db_dir} already exists and force was not specified. Please specify -f or --force to overwrite {db_dir}"
-            )
+            if os.path.isdir(db_dir) is True:
+                logger.error(
+                    f"Directory {db_dir} already exists and force was not specified. Please specify -f or --force to overwrite {db_dir}"
+                )
 
     # instantiate outdir
     if os.path.isdir(db_dir) is False:

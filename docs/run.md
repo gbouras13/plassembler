@@ -53,6 +53,10 @@ To use assembled mode to calculate plasmid copy numbers, you need to use `plasse
 
 `plassembler assembled -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length> -t <threads>  -a --input_chromosome <path to chromosome FASTA> --input_plasmids <path to plasmids FASTA> `
 
+You can also use Plassembler for plasmid-only assembly by passing `--no_chromosome`. Use this if your reads only contain plasmids that you would like to assemble.
+
+`plassembler run -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -t <threads> --no_chromosome`
+
 
 ```
 Usage: plassembler run [OPTIONS]

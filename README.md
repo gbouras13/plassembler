@@ -1,3 +1,5 @@
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gbouras13/plassembler/blob/main/run_plassembler.ipynb)
+
 [![Paper](https://img.shields.io/badge/paper-Bioinformatics-teal.svg?style=flat-square&maxAge=3600)](https://doi.org/10.1093/bioinformatics/btad409)
 [![CI](https://github.com/gbouras13/plassembler/actions/workflows/ci.yaml/badge.svg)](https://github.com/gbouras13/plassembler/actions/workflows/ci.yaml)
 [![BioConda Install](https://img.shields.io/conda/dn/bioconda/plassembler.svg?style=flag&label=BioConda%20install)](https://anaconda.org/bioconda/plassembler)
@@ -10,19 +12,15 @@
 [![Downloads](https://static.pepy.tech/badge/plassembler)](https://pepy.tech/project/plassembler)
 [![DOI](https://zenodo.org/badge/514596389.svg)](https://zenodo.org/doi/10.5281/zenodo.10035954)
 
-
 # plassembler
 
 ## Automated Bacterial Plasmid Assembly Program
 
-`plassembler` is a program that is designed for automated & fast assembly of plasmids in  bacterial genomes that have been hybrid sequenced with long read & paired-end short read sequencing. It was originally designed for Oxford Nanopore Technologies long reads, but will also work with Pacbio reads. As of v1.3.0, it should also work well for long-read only assembled genomes (although we would still recommend getting short reads too if you can).
+`plassembler` is a program that is designed for automated & fast assembly of plasmids in  bacterial genomes that have been hybrid sequenced with long read & paired-end short read sequencing. It was originally designed for Oxford Nanopore Technologies long reads, but it will also work with Pacbio reads. As of v1.3.0, it also works well for long-read only assembled genomes.
 
-If you are assembling a small number of bacterial genomes manually, I would recommend starting by using [Trycycler](https://github.com/rrwick/Trycycler) to recover the chromosome before using Plassembler to recover plasmids, especially the small ones. If you have more genomes or want to assemble your genomes in a more automated way, try [dragonflye](https://github.com/rpetit3/dragonflye), especially if you are used to Shovill, or even better my own pipeline [hybracter](https://github.com/gbouras13/hybracter) that is more appropriate for large datasets and implemented Plassembler in it.  
+If you are assembling a small number of bacterial genomes manually, I would recommend starting by using [Trycycler](https://github.com/rrwick/Trycycler) to recover the chromosome before using Plassembler to recover plasmids, especially the small ones. 
 
-Additionally, I would recommend reading the following guides to bacterial genome assembly regardless of whether you want to use Plassembler:
-*  [Trycycler](https://github.com/rrwick/Trycycler/wiki/Guide-to-bacterial-genome-assembly)
-*  [Perfect Bacterial Assembly Tutorial](https://github.com/rrwick/Perfect-bacterial-genome-tutorial)
-*  [Perfect bacterial assembly Paper](https://doi.org/10.1371/journal.pcbi.1010905)
+Otherwise, I recommend you _don't_ actually use Plassembler by itself. If you have more genomes or want to assemble your genomes in a more automated way, **I would recommend [Hybracter](https://github.com/gbouras13/hybracter)**. If you use Hybracter, you will not need to use Plassembler separately, as it is built in. But please still [cite](#citations) Plassembler.
 
 ## Quick Start
 
@@ -39,6 +37,33 @@ And finally run `plassembler`:
 `plassembler run -d <database directory> -l <long read fastq> -o <output dir> -1 < short read R1 fastq> -2 < short read R2 fastq>  -c <estimated chromosome length>`
 
 Please read the [Installation](#installation) section for more details, especially if you are an inexperienced command line user.
+
+### Container
+
+Alternatively, a Docker/Singularity Linux container image is available for Plassembler (starting from v1.6.2) [here](https://quay.io/repository/gbouras13/plassembler). This will likely be useful for running Plassembler in HPC environments.
+
+To install and run v1.6.2 with singularity
+
+```bash
+
+IMAGE_DIR="<the directory you want the .sif file to be in >"
+singularity pull --dir $IMAGE_DIR docker://quay.io/gbouras13/plassembler:1.6.2
+
+containerImage="$IMAGE_DIR/plassembler_1.6.2.sif"
+
+# example command with test fastqs
+singularity exec $containerImage    plassembler download -d plassembler_db
+singularity exec $containerImage    plassembler run -l test_data/Fastqs/test_long_reads.fastq.gz \
+ -1 test_data/Fastqs/test_short_reads_R1.fastq.gz  -2 test_data/Fastqs/test_short_reads_R2.fastq.gz d plassembler_db \
+ -o output_test_singularity -t 4 -c 50000
+```
+
+### Google Colab Notebook
+
+If you don't want to install `plassembler` locally, you can run it without any code using the colab notebook [https://colab.research.google.com/github/gbouras13/plassembler/blob/main/run_plassembler.ipynb](https://colab.research.google.com/github/gbouras13/plassembler/blob/main/run_plassembler.ipynb)
+
+This is only recommend if you have one or a few samples to assemble (it takes a while per sample due to the limited nature of Google Colab resources - probably an hour or two a sample). If you have more than this, a local install is recommended.
+
 
 ## Manuscript
 
@@ -57,6 +82,8 @@ The full documentation for Plassembler can be found [here](https://plassembler.r
 - [plassembler](#plassembler)
   - [Automated Bacterial Plasmid Assembly Program](#automated-bacterial-plasmid-assembly-program)
   - [Quick Start](#quick-start)
+    - [Container](#container)
+    - [Google Colab Notebook](#google-colab-notebook)
   - [Manuscript](#manuscript)
   - [Documentation](#documentation)
   - [Table of Contents](#table-of-contents)
@@ -145,6 +172,10 @@ Please see [here](docs/multiple_chromosomes.md) for more details and an example.
 
 * If you have sufficient hybrid sequencing data, Plassembler will theoretically recover assemblies of all non-chromosomal replicons, including phages and phage-plasmids
 * A good example of this is the _Vibrio campbellii DS40M4_  example, where Plassembler recovered the assembly of phage phiX174, albeit it was from sequencing spike-in contamination in that case.
+
+5. Plasmid Only Assembly
+
+* You can also use Plassembler for plasmid-only assembly by passing `--no_chromosome`. Use this if your reads only contain plasmids that you would like to assemble.
 
 ## Quality Control
 

@@ -191,7 +191,18 @@ class test_end_to_end(unittest.TestCase):
         s2: Path = f"{end_to_end}/input_R2.fastq.gz"
         chromosome = 50000
         outdir: Path = f"{end_to_end}/test_out"
-        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f --skip_qc"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+    def test_plassembler_skipqc_no_gzip(self):
+        """test plassembler run case 1. With --skip_qc but with raw FASTQ input (issue 60 - rrwick). Only chromosome assembled with flye, no plasmid in recovery."""
+        longreads: Path = f"{end_to_end}/case1.fastq"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f --skip_qc"
         exec_command(cmd)
         remove_directory(outdir)
 

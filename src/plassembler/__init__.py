@@ -36,7 +36,7 @@ from plassembler.utils.no_assembly import (
 
 # import classes
 from plassembler.utils.plass_class import Assembly, Plass
-from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp
+from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp, gzip_file
 from plassembler.utils.run_canu import (  # make_blastdb,; process_blast_output,; run_blast,
     filter_entropy,
     filter_entropy_fastqs,
@@ -463,10 +463,20 @@ def run(
         )
 
     else:  # copy the input to the outdir
-        shutil.copy2(
-            longreads,
-            Path(f"{outdir}/chopper_long_reads.fastq.gz"),
-        )
+
+        if long_zipped:
+            shutil.copy2(
+                longreads,
+                Path(f"{outdir}/chopper_long_reads.fastq.gz"),
+            )
+        else:
+
+            shutil.copy2(
+                longreads,
+                Path(f"{outdir}/chopper_long_reads.fastq"),
+            )
+            gzip_file(Path(f"{outdir}/chopper_long_reads.fastq"))
+            remove_file(Path(f"{outdir}/chopper_long_reads.fastq"))
 
     # Raven for long only or '--use_raven'
     skip_assembly = False
@@ -1040,10 +1050,18 @@ def assembled(
                 )
 
             else:  # copy the input to the outdir
-                shutil.copy2(
-                    longreads,
-                    Path(f"{outdir}/chopper_long_reads.fastq.gz"),
-                )
+                if long_zipped:
+                    shutil.copy2(
+                        longreads,
+                        Path(f"{outdir}/chopper_long_reads.fastq.gz"),
+                    )
+                else:
+                    shutil.copy2(
+                        longreads,
+                        Path(f"{outdir}/chopper_long_reads.fastq"),
+                    )
+                    gzip_file(Path(f"{outdir}/chopper_long_reads.fastq"))
+                    remove_file(Path(f"{outdir}/chopper_long_reads.fastq"))
 
         if short_flag is True:
             if skip_qc is True:  # copy the input to the outdir
@@ -1353,10 +1371,18 @@ def long(
         )
 
     else:  # copy the input to the outdir
-        shutil.copy2(
-            longreads,
-            Path(f"{outdir}/chopper_long_reads.fastq.gz"),
-        )
+        if long_zipped:
+            shutil.copy2(
+                longreads,
+                Path(f"{outdir}/chopper_long_reads.fastq.gz"),
+            )
+        else:
+            shutil.copy2(
+                longreads,
+                Path(f"{outdir}/chopper_long_reads.fastq"),
+            )
+            gzip_file(Path(f"{outdir}/chopper_long_reads.fastq"))
+            remove_file(Path(f"{outdir}/chopper_long_reads.fastq"))
 
     # flye - skip directory an option here
     skip_assembly = False

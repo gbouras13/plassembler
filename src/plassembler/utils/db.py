@@ -24,6 +24,7 @@ def check_db_installation(db_dir: Path, force: bool, install_flag: bool):
     """
     # Mash files
 
+
     mash_db_names = ["plsdb_2023_11_03_v2.msh", "plsdb_2023_11_03_v2.tsv"]
 
     f1: Path = db_dir / f"{mash_db_names[0]}"

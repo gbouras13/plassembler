@@ -128,7 +128,7 @@ def run_options(func):
             "--database",
             help="Directory of PLSDB database.",
             type=click.Path(),
-            required=True,
+            # required=True, - not required if using --skip_mash
         ),
         click.option(
             "-l",
@@ -445,6 +445,11 @@ def run(
         )
     else:
         logger.info("Checking database installation.")
+
+        if database is None:
+            logger.error(
+                        f"Database directory was not specified. Please specify your database directory with --database or -d"
+                    )
         check_db_installation(Path(database), force=False, install_flag=False)
     # will only continue if successful
     logger.info("Database successfully checked.")
@@ -1041,6 +1046,10 @@ def assembled(
     # check the mash database is installed
 
     logger.info("Checking database installation.")
+    if database is None:
+        logger.error(
+                f"Database directory was not specified. Please specify your database directory with --database or -d"
+            )
     check_db_installation(Path(database), force=False, install_flag=False)
     # will only continue if successful
     logger.info("Database successfully checked.")
@@ -1174,6 +1183,10 @@ def download(ctx, database, force, **kwargs):
     logger.add(lambda _: sys.exit(1), level="ERROR")
     database = Path(database)
     logger.info(f"Checking database installation at {database}")
+    if database is None:
+        logger.error(
+                        f"Database directory was not specified. Please specify your database directory with --database or -d"
+                    )
     check_db_installation(database, force, install_flag=True)  # t
 
 
@@ -1299,6 +1312,11 @@ def long_options(func):
             type=str,
             default=None,
         ),
+        click.option(
+            "--skip_mash",
+            help="Skips mash search vs Plassembler PLSDB database",
+            is_flag=True,
+        ),
     ]
     for option in reversed(options):
         func = option(func)
@@ -1379,6 +1397,10 @@ def long(
     else:
         # check the mash database is installed
         logger.info("Checking database installation.")
+        if database is None:
+            logger.error(
+                        f"Database directory was not specified. Please specify your database directory with --database or -d"
+                    )
         check_db_installation(Path(database), force=False, install_flag=False)
 
     # will only continue if successful

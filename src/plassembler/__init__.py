@@ -288,7 +288,7 @@ def common_options(func):
         ),
         click.option(
             "--skip_mash",
-            help='Skips mash search vs Plassembler PLSDB database',
+            help="Skips mash search vs Plassembler PLSDB database",
             is_flag=True,
         ),
     ]
@@ -440,7 +440,9 @@ def run(
 
     # check the mash database is installed
     if skip_mash:
-        logger.info("Skipping checking database installation as --skip_mash was specified.")
+        logger.info(
+            "Skipping checking database installation as --skip_mash was specified."
+        )
     else:
         logger.info("Checking database installation.")
         check_db_installation(Path(database), force=False, install_flag=False)
@@ -667,7 +669,9 @@ def run(
                 # as class so saves the depth dataframe nicely
                 plass.get_depth(logdir, pacbio_model, threads)
                 if skip_mash:
-                    logger.info("Skipping running mash against the PLSDB as --skip_mash was specified.")
+                    logger.info(
+                        "Skipping running mash against the PLSDB as --skip_mash was specified."
+                    )
                 else:
                     # run mash
                     logger.info("Calculating mash distances to PLSDB.")
@@ -691,7 +695,9 @@ def run(
 
                 # heuristic check
                 if skip_mash:
-                    logger.info("Skipping short and long read incompatibility check as --skip_mash was specified.")
+                    logger.info(
+                        "Skipping short and long read incompatibility check as --skip_mash was specified."
+                    )
                 else:
                     incompatbility(plass.combined_depth_mash_df)
 
@@ -875,7 +881,9 @@ def run(
                 logger.info("Calculating mash distances to PLSDB.")
 
                 if skip_mash:
-                    logger.info("Skipping running mash against the PLSDB as --skip_mash was specified.")
+                    logger.info(
+                        "Skipping running mash against the PLSDB as --skip_mash was specified."
+                    )
                 else:
                     # run mash
                     logger.info("Calculating mash distances to PLSDB.")
@@ -899,7 +907,9 @@ def run(
 
                 # heuristic check
                 if skip_mash:
-                    logger.info("Skipping short and long read incompatibility check as --skip_mash was specified.")
+                    logger.info(
+                        "Skipping short and long read incompatibility check as --skip_mash was specified."
+                    )
                 else:
                     incompatbility(plass.combined_depth_mash_df)
 
@@ -1362,15 +1372,14 @@ def long(
     logger.info("Checking dependencies")
     check_dependencies()
 
-
-
     if skip_mash:
-        logger.info("Skipping checking database installation as --skip_mash was specified.")
+        logger.info(
+            "Skipping checking database installation as --skip_mash was specified."
+        )
     else:
         # check the mash database is installed
         logger.info("Checking database installation.")
         check_db_installation(Path(database), force=False, install_flag=False)
-
 
     # will only continue if successful
     logger.info("Database successfully checked.")
@@ -1675,9 +1684,10 @@ def long(
             # calculate depth
             plass.get_depth_long(logdir, pacbio_model, threads, assembled_fasta)
 
-
             if skip_mash:
-                logger.info("Skipping running mash against the PLSDB as --skip_mash was specified.")
+                logger.info(
+                    "Skipping running mash against the PLSDB as --skip_mash was specified."
+                )
             else:
                 # run mash
                 logger.info("Calculating mash distances to PLSDB.")
@@ -1691,8 +1701,6 @@ def long(
 
             # combine depth and mash tsvs
             plass.combine_depth_mash_tsvs(prefix, depth_filter, skip_mash)
-
-    
 
             # rename contigs and update copy number with plsdb
             plass.finalise_contigs_long(prefix)

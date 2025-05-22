@@ -206,10 +206,10 @@ class test_end_to_end(unittest.TestCase):
         exec_command(cmd)
         remove_directory(outdir)
 
-# skip_mash
+    # skip_mash
 
     def test_plassembler_skipmash(self):
-        """test plassembler run case 1. With --skip_mash. No need for -d """
+        """test plassembler run case 1. With --skip_mash. No need for -d"""
         longreads: Path = f"{end_to_end}/case1.fastq.gz"
         s1: Path = f"{end_to_end}/input_R1.fastq.gz"
         s2: Path = f"{end_to_end}/input_R2.fastq.gz"

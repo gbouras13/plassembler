@@ -2,6 +2,7 @@ import gzip
 import shutil
 import subprocess as sp
 from pathlib import Path
+
 from loguru import logger
 
 from plassembler.utils.external_tools import ExternalTool
@@ -120,14 +121,12 @@ def copy_sr_fastq_file(infile: Path, outfile: Path):
         logger.error("Error with copy_sr_fastq_file")
 
 
-
-
 def gzip_file(input_path):
     input_path = Path(input_path)
     output_path = input_path.with_suffix(input_path.suffix + ".gz")
 
-    with open(input_path, 'rb') as f_in:
-        with gzip.open(output_path, 'wb') as f_out:
+    with open(input_path, "rb") as f_in:
+        with gzip.open(output_path, "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
 
     return output_path

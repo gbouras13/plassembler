@@ -688,7 +688,7 @@ class Plass:
 
         self.mash_df = combined_mash_df
 
-    def combine_depth_mash_tsvs(self, prefix, depth_filter):
+    def combine_depth_mash_tsvs(self, prefix, depth_filter, skip_mash):
         """
         Combine depth and mash dataframes
         :param outdir: output directory
@@ -696,14 +696,17 @@ class Plass:
         """
         outdir = self.outdir
         self.depth_df["contig"] = self.depth_df["contig"].astype("str")
-        self.mash_df["contig"] = self.mash_df["contig"].astype("str")
-        combined_depth_mash_df = self.depth_df.merge(
-            self.mash_df, on="contig", how="left"
-        )
-        # no hit for chromosome
-        combined_depth_mash_df.loc[
-            combined_depth_mash_df["contig"].str.contains("chromosome"), "PLSDB_hit"
-        ] = ""
+        if skip_mash:
+            combined_depth_mash_df = self.depth_df
+        else:
+            self.mash_df["contig"] = self.mash_df["contig"].astype("str")
+            combined_depth_mash_df = self.depth_df.merge(
+                self.mash_df, on="contig", how="left"
+            )
+            # no hit for chromosome
+            combined_depth_mash_df.loc[
+                combined_depth_mash_df["contig"].str.contains("chromosome"), "PLSDB_hit"
+            ] = ""
 
         # get chroms and plasmids
 

@@ -25,7 +25,7 @@ jobs:
       - uses: "conda-incubator/setup-miniconda@v3"
         with:
           activate-environment: plassembler
-          environment-file: build/environment.yml
+          environment-file: build/environment.yaml
           python-version: ${{ matrix.python-version }}
           auto-activate-base: false
           channels: conda-forge,bioconda,defaults

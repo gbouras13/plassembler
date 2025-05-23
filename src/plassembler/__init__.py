@@ -1204,7 +1204,6 @@ def long_options(func):
             "--database",
             help="Directory of PLSDB database.",
             type=click.Path(),
-            required=True,
         ),
         click.option(
             "-l",

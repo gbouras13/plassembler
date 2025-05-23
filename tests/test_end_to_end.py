@@ -292,7 +292,7 @@ class test_end_to_end(unittest.TestCase):
         longreads: Path = f"{end_to_end}/input_fastq.gz"
         chromosome = 50000
         outdir: Path = f"{end_to_end}/test_out"
-        cmd = f"plassembler long -l {longreads} -c {chromosome}-o {outdir}  -t 8 -f --skip_mash"
+        cmd = f"plassembler long -l {longreads} -c {chromosome} -o {outdir}  -t 8 -f --skip_mash"
         exec_command(cmd)
         remove_directory(outdir)
 

@@ -846,7 +846,7 @@ class Plass:
             combined_depth_mash_df["contig"] != "chromosome"
         ].reset_index(drop=True)
         # get contigs only
-        plasmid_fasta = os.path.join(outdir, "plasmids.fasta")
+        plasmid_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
         with open(os.path.join(outdir, prefix + "_plasmids.fasta"), "w") as dna_fa:
             for dna_record in SeqIO.parse(plasmid_fasta, "fasta"):
                 # only keep the contigs that passed the depth threshold

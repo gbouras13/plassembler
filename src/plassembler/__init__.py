@@ -1725,6 +1725,8 @@ def long(
             # rename contigs and update copy number with plsdb
             plass.finalise_contigs_long(prefix)
 
+
+
     # wrap up
     # cleanup files
     move_and_copy_files(

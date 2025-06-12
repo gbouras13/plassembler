@@ -293,7 +293,7 @@ def check_dependencies():
     # fastp
     try:
         process = sp.Popen(["fastp", "--version"], stdout=sp.PIPE, stderr=sp.PIPE)
-        _, fastp_out = process.communicate()
+        fastp_out, _ = process.communicate()
         fastp_version = fastp_out.decode()
         fastp_version = fastp_version.split("\n")[0].split(" ")[1]
         message = f"fastp v{fastp_version} found."

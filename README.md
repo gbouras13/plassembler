@@ -222,7 +222,7 @@ You will then need to install the external dependencies separately, which can be
 * [Flye](https://github.com/fenderglass/Flye) >=2.9
 * [Unicycler](https://github.com/rrwick/Unicycler) >=0.4.8
 * [Minimap2](https://github.com/lh3/minimap2) >=2.11
-* [fastp](https://github.com/OpenGene/fastp) >=0.18.0
+* [fastp](https://github.com/OpenGene/fastp) >=0.24.2
 * [chopper](https://github.com/wdecoster/chopper) >=0.5.0
 * [mash](https://github.com/marbl/Mash) >=2.2
 * [Raven](https://github.com/lbcb-sci/raven) >=1.8

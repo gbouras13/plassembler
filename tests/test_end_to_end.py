@@ -191,7 +191,31 @@ class test_end_to_end(unittest.TestCase):
         s2: Path = f"{end_to_end}/input_R2.fastq.gz"
         chromosome = 50000
         outdir: Path = f"{end_to_end}/test_out"
-        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f --skip_qc"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+    def test_plassembler_skipqc_no_gzip(self):
+        """test plassembler run case 1. With --skip_qc but with raw FASTQ input (issue 60 - rrwick). Only chromosome assembled with flye, no plasmid in recovery."""
+        longreads: Path = f"{end_to_end}/case1.fastq"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2} -d {plassembler_db_dir} -o {outdir}  -t 8 -f --skip_qc"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+    # skip_mash
+
+    def test_plassembler_skipmash(self):
+        """test plassembler run case 1. With --skip_mash. No need for -d"""
+        longreads: Path = f"{end_to_end}/case1.fastq.gz"
+        s1: Path = f"{end_to_end}/input_R1.fastq.gz"
+        s2: Path = f"{end_to_end}/input_R2.fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler run -l {longreads} -c {chromosome} -1 {s1} -2 {s2}  -o {outdir}  -t 8 -f --skip_mash"
         exec_command(cmd)
         remove_directory(outdir)
 
@@ -260,6 +284,15 @@ class test_end_to_end(unittest.TestCase):
         chromosome = 50000
         outdir: Path = f"{end_to_end}/test_out"
         cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f"
+        exec_command(cmd)
+        remove_directory(outdir)
+
+    def test_plassembler_long_skipmash(self):
+        """test plassembler long --skip_mash - no need for -d"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler long -l {longreads} -c {chromosome} -o {outdir}  -t 8 -f --skip_mash"
         exec_command(cmd)
         remove_directory(outdir)
 

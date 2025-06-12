@@ -21,7 +21,8 @@ jobs:
           channels: conda-forge,bioconda,defaults
           channel-priority: strict
           auto-update-conda: true
-      - name: Install project
+
+      - name: Install plassembler
         shell: bash -l {0}
         run: |
           python -m pip install -U pip

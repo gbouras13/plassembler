@@ -688,7 +688,7 @@ class Plass:
 
         self.mash_df = combined_mash_df
 
-    def combine_depth_mash_tsvs(self, prefix, depth_filter):
+    def combine_depth_mash_tsvs(self, prefix, depth_filter, skip_mash):
         """
         Combine depth and mash dataframes
         :param outdir: output directory
@@ -696,14 +696,17 @@ class Plass:
         """
         outdir = self.outdir
         self.depth_df["contig"] = self.depth_df["contig"].astype("str")
-        self.mash_df["contig"] = self.mash_df["contig"].astype("str")
-        combined_depth_mash_df = self.depth_df.merge(
-            self.mash_df, on="contig", how="left"
-        )
-        # no hit for chromosome
-        combined_depth_mash_df.loc[
-            combined_depth_mash_df["contig"].str.contains("chromosome"), "PLSDB_hit"
-        ] = ""
+        if skip_mash:
+            combined_depth_mash_df = self.depth_df
+        else:
+            self.mash_df["contig"] = self.mash_df["contig"].astype("str")
+            combined_depth_mash_df = self.depth_df.merge(
+                self.mash_df, on="contig", how="left"
+            )
+            # no hit for chromosome
+            combined_depth_mash_df.loc[
+                combined_depth_mash_df["contig"].str.contains("chromosome"), "PLSDB_hit"
+            ] = ""
 
         # get chroms and plasmids
 
@@ -843,7 +846,7 @@ class Plass:
             combined_depth_mash_df["contig"] != "chromosome"
         ].reset_index(drop=True)
         # get contigs only
-        plasmid_fasta = os.path.join(outdir, "plasmids.fasta")
+        plasmid_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
         with open(os.path.join(outdir, prefix + "_plasmids.fasta"), "w") as dna_fa:
             for dna_record in SeqIO.parse(plasmid_fasta, "fasta"):
                 # only keep the contigs that passed the depth threshold

@@ -101,7 +101,7 @@ class test_plass_class(unittest.TestCase):
         threads = 1
         plass.get_depth(logdir, pacbio_model, threads)
         plass.process_mash_tsv(plassembler_db_dir)
-        plass.combine_depth_mash_tsvs(prefix, depth_filter=0.1)
+        plass.combine_depth_mash_tsvs(prefix, depth_filter=0.1, skip_mash=False)
         remove_file(Path(f"{plass_class_depth_dir}/combined_long.sam"))
         remove_file(Path(f"{plass_class_depth_dir}/combined_short.sam"))
         remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_long.bam"))

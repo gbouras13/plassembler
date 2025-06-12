@@ -36,7 +36,7 @@ from plassembler.utils.no_assembly import (
 
 # import classes
 from plassembler.utils.plass_class import Assembly, Plass
-from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp
+from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp, gzip_file
 from plassembler.utils.run_canu import (  # make_blastdb,; process_blast_output,; run_blast,
     filter_entropy,
     filter_entropy_fastqs,
@@ -128,7 +128,7 @@ def run_options(func):
             "--database",
             help="Directory of PLSDB database.",
             type=click.Path(),
-            required=True,
+            # required=True, - not required if using --skip_mash
         ),
         click.option(
             "-l",
@@ -286,6 +286,11 @@ def common_options(func):
             type=str,
             default=None,
         ),
+        click.option(
+            "--skip_mash",
+            help="Skips mash search vs Plassembler PLSDB database",
+            is_flag=True,
+        ),
     ]
     for option in reversed(options):
         func = option(func)
@@ -395,6 +400,7 @@ def run(
     depth_filter,
     unicycler_options,
     spades_options,
+    skip_mash,
     **kwargs,
 ):
     """Runs Plassembler"""
@@ -425,6 +431,7 @@ def run(
     logger.info(f"--depth_filter is {depth_filter}")
     logger.info(f"--unicycler_options is {unicycler_options}")
     logger.info(f"--spades_options is {spades_options}")
+    logger.info(f"--skip_mash is {skip_mash}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -432,9 +439,18 @@ def run(
     check_dependencies()
 
     # check the mash database is installed
+    if skip_mash:
+        logger.info(
+            "Skipping checking database installation as --skip_mash was specified."
+        )
+    else:
+        logger.info("Checking database installation.")
 
-    logger.info("Checking database installation.")
-    check_db_installation(Path(database), force=False, install_flag=False)
+        if database is None:
+            logger.error(
+                f"Database directory was not specified. Please specify your database directory with --database or -d"
+            )
+        check_db_installation(Path(database), force=False, install_flag=False)
     # will only continue if successful
     logger.info("Database successfully checked.")
 
@@ -463,10 +479,20 @@ def run(
         )
 
     else:  # copy the input to the outdir
-        shutil.copy2(
-            longreads,
-            Path(f"{outdir}/chopper_long_reads.fastq.gz"),
-        )
+
+        if long_zipped:
+            shutil.copy2(
+                longreads,
+                Path(f"{outdir}/chopper_long_reads.fastq.gz"),
+            )
+        else:
+
+            shutil.copy2(
+                longreads,
+                Path(f"{outdir}/chopper_long_reads.fastq"),
+            )
+            gzip_file(Path(f"{outdir}/chopper_long_reads.fastq"))
+            remove_file(Path(f"{outdir}/chopper_long_reads.fastq"))
 
     # Raven for long only or '--use_raven'
     skip_assembly = False
@@ -647,28 +673,38 @@ def run(
                 # get depth
                 # as class so saves the depth dataframe nicely
                 plass.get_depth(logdir, pacbio_model, threads)
+                if skip_mash:
+                    logger.info(
+                        "Skipping running mash against the PLSDB as --skip_mash was specified."
+                    )
+                else:
+                    # run mash
+                    logger.info("Calculating mash distances to PLSDB.")
 
-                # run mash
-                logger.info("Calculating mash distances to PLSDB.")
+                    # mash sketches the plasmids
+                    mash_sketch(
+                        outdir,
+                        os.path.join(outdir, "unicycler_output", "assembly.fasta"),
+                        logdir,
+                    )
 
-                # mash sketches the plasmids
-                mash_sketch(
-                    outdir,
-                    os.path.join(outdir, "unicycler_output", "assembly.fasta"),
-                    logdir,
-                )
-                # runs mash
-                run_mash(outdir, database, logdir)
-                # processes output
-                plass.process_mash_tsv(database)
+                    # runs mash
+                    run_mash(outdir, database, logdir)
+                    # processes output
+                    plass.process_mash_tsv(database)
                 # combine depth and mash tsvs
-                plass.combine_depth_mash_tsvs(prefix, depth_filter)
+                plass.combine_depth_mash_tsvs(prefix, depth_filter, skip_mash)
 
                 # rename contigs and update copy bumber with plsdb
                 plass.finalise_contigs(prefix)
 
                 # heuristic check
-                incompatbility(plass.combined_depth_mash_df)
+                if skip_mash:
+                    logger.info(
+                        "Skipping short and long read incompatibility check as --skip_mash was specified."
+                    )
+                else:
+                    incompatbility(plass.combined_depth_mash_df)
 
                 # cleanup files
                 move_and_copy_files(
@@ -849,24 +885,38 @@ def run(
                 # run mash
                 logger.info("Calculating mash distances to PLSDB.")
 
-                # mash sketches the plasmids
-                mash_sketch(
-                    outdir,
-                    os.path.join(outdir, "unicycler_output", "assembly.fasta"),
-                    logdir,
-                )
-                # runs mash
-                run_mash(outdir, database, logdir)
-                # processes output
-                plass.process_mash_tsv(database)
+                if skip_mash:
+                    logger.info(
+                        "Skipping running mash against the PLSDB as --skip_mash was specified."
+                    )
+                else:
+                    # run mash
+                    logger.info("Calculating mash distances to PLSDB.")
+
+                    # mash sketches the plasmids
+                    mash_sketch(
+                        outdir,
+                        os.path.join(outdir, "unicycler_output", "assembly.fasta"),
+                        logdir,
+                    )
+
+                    # runs mash
+                    run_mash(outdir, database, logdir)
+                    # processes output
+                    plass.process_mash_tsv(database)
                 # combine depth and mash tsvs
-                plass.combine_depth_mash_tsvs(prefix, depth_filter)
+                plass.combine_depth_mash_tsvs(prefix, depth_filter, skip_mash)
 
                 # rename contigs and update copy bumber with plsdb
                 plass.finalise_contigs(prefix)
 
                 # heuristic check
-                incompatbility(plass.combined_depth_mash_df)
+                if skip_mash:
+                    logger.info(
+                        "Skipping short and long read incompatibility check as --skip_mash was specified."
+                    )
+                else:
+                    incompatbility(plass.combined_depth_mash_df)
 
                 # cleanup files
                 move_and_copy_files(
@@ -986,7 +1036,6 @@ def assembled(
     logger.info(f"--skip_qc is {skip_qc}")
     logger.info(f"--pacbio_model is {pacbio_model}")
     logger.info(f"--no_copy_numbers is {no_copy_numbers}")
-    logger.info(f"--no_copy_numbers is {no_copy_numbers}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
@@ -996,6 +1045,10 @@ def assembled(
     # check the mash database is installed
 
     logger.info("Checking database installation.")
+    if database is None:
+        logger.error(
+            f"Database directory was not specified. Please specify your database directory with --database or -d"
+        )
     check_db_installation(Path(database), force=False, install_flag=False)
     # will only continue if successful
     logger.info("Database successfully checked.")
@@ -1040,10 +1093,18 @@ def assembled(
                 )
 
             else:  # copy the input to the outdir
-                shutil.copy2(
-                    longreads,
-                    Path(f"{outdir}/chopper_long_reads.fastq.gz"),
-                )
+                if long_zipped:
+                    shutil.copy2(
+                        longreads,
+                        Path(f"{outdir}/chopper_long_reads.fastq.gz"),
+                    )
+                else:
+                    shutil.copy2(
+                        longreads,
+                        Path(f"{outdir}/chopper_long_reads.fastq"),
+                    )
+                    gzip_file(Path(f"{outdir}/chopper_long_reads.fastq"))
+                    remove_file(Path(f"{outdir}/chopper_long_reads.fastq"))
 
         if short_flag is True:
             if skip_qc is True:  # copy the input to the outdir
@@ -1121,6 +1182,10 @@ def download(ctx, database, force, **kwargs):
     logger.add(lambda _: sys.exit(1), level="ERROR")
     database = Path(database)
     logger.info(f"Checking database installation at {database}")
+    if database is None:
+        logger.error(
+            f"Database directory was not specified. Please specify your database directory with --database or -d"
+        )
     check_db_installation(database, force, install_flag=True)  # t
 
 
@@ -1139,7 +1204,6 @@ def long_options(func):
             "--database",
             help="Directory of PLSDB database.",
             type=click.Path(),
-            required=True,
         ),
         click.option(
             "-l",
@@ -1246,6 +1310,11 @@ def long_options(func):
             type=str,
             default=None,
         ),
+        click.option(
+            "--skip_mash",
+            help="Skips mash search vs Plassembler PLSDB database",
+            is_flag=True,
+        ),
     ]
     for option in reversed(options):
         func = option(func)
@@ -1282,6 +1351,7 @@ def long(
     depth_filter,
     unicycler_options,
     spades_options,
+    skip_mash,
     **kwargs,
 ):
     """
@@ -1311,15 +1381,26 @@ def long(
     logger.info(f"--depth_filter is {depth_filter}")
     logger.info(f"--unicycler_options is {unicycler_options}")
     logger.info(f"--spades_options is {spades_options}")
+    logger.info(f"--skip_mash is {skip_mash}")
     logdir = Path(f"{outdir}/logs")
 
     # check deps
     logger.info("Checking dependencies")
     check_dependencies()
 
-    # check the mash database is installed
-    logger.info("Checking database installation.")
-    check_db_installation(Path(database), force=False, install_flag=False)
+    if skip_mash:
+        logger.info(
+            "Skipping checking database installation as --skip_mash was specified."
+        )
+    else:
+        # check the mash database is installed
+        logger.info("Checking database installation.")
+        if database is None:
+            logger.error(
+                f"Database directory was not specified. Please specify your database directory with --database or -d"
+            )
+        check_db_installation(Path(database), force=False, install_flag=False)
+
     # will only continue if successful
     logger.info("Database successfully checked.")
 
@@ -1353,10 +1434,18 @@ def long(
         )
 
     else:  # copy the input to the outdir
-        shutil.copy2(
-            longreads,
-            Path(f"{outdir}/chopper_long_reads.fastq.gz"),
-        )
+        if long_zipped:
+            shutil.copy2(
+                longreads,
+                Path(f"{outdir}/chopper_long_reads.fastq.gz"),
+            )
+        else:
+            shutil.copy2(
+                longreads,
+                Path(f"{outdir}/chopper_long_reads.fastq"),
+            )
+            gzip_file(Path(f"{outdir}/chopper_long_reads.fastq"))
+            remove_file(Path(f"{outdir}/chopper_long_reads.fastq"))
 
     # flye - skip directory an option here
     skip_assembly = False
@@ -1615,18 +1704,23 @@ def long(
             # calculate depth
             plass.get_depth_long(logdir, pacbio_model, threads, assembled_fasta)
 
-            # run mash
-            logger.info("Calculating mash distances to PLSDB.")
-            # mash sketches the plasmids
-            mash_sketch(outdir, assembled_fasta, logdir)
-            # runs mash
-            run_mash(outdir, database, logdir)
+            if skip_mash:
+                logger.info(
+                    "Skipping running mash against the PLSDB as --skip_mash was specified."
+                )
+            else:
+                # run mash
+                logger.info("Calculating mash distances to PLSDB.")
 
-            # processes output
-            plass.process_mash_tsv(database)
+                # mash sketches the plasmids
+                mash_sketch(outdir, assembled_fasta, logdir)
+                # runs mash
+                run_mash(outdir, database, logdir)
+                # processes output
+                plass.process_mash_tsv(database)
 
             # combine depth and mash tsvs
-            plass.combine_depth_mash_tsvs(prefix, depth_filter)
+            plass.combine_depth_mash_tsvs(prefix, depth_filter, skip_mash)
 
             # rename contigs and update copy number with plsdb
             plass.finalise_contigs_long(prefix)

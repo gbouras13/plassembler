@@ -380,15 +380,15 @@ def validate_pacbio_model(pacbio_model):
     message = "You have specified using a pacbio model for Flye with --pacbio_model. Checking the input."
     logger.info(message)
 
-    if pacbio_model == "pacbio-raw":
+    if pacbio_model == "pacbio-raw" or pacbio_model == "--pacbio-raw":
         message = "You have selected pacbio-raw designed for PacBio regular CLR reads (<20% error)."
         logger.info(message)
         pacbio_model = "--pacbio-raw"
-    elif pacbio_model == "pacbio-corr":
+    elif pacbio_model == "pacbio-corr" or pacbio_model == "--pacbio-corr":
         message = "You have selected pacbio-corr designed for PacBio reads that were corrected with other methods (<3% error)."
         logger.info(message)
         pacbio_model = "--pacbio-corr"
-    elif pacbio_model == "pacbio-hifi":
+    elif pacbio_model == "pacbio-hifi" or pacbio_model == "--pacbio-hifi":
         message = (
             "You have selected pacbio-hifi designed for PacBio HiFi reads (<1% error)."
         )

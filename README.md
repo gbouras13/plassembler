@@ -257,6 +257,15 @@ conda install -c bioconda plassembler
 pip3 install git+https://github.com/rrwick/Unicycler.git
 ```
 
+* You may also run into issues where Plassembler will fail despite the fact Unicycler is installed (thanks Erin Young https://github.com/gbouras13/plassembler/issues/59). Please try running
+
+```bash
+export TERM=xterm-256color
+```
+
+then running `plassembler`
+
+
 **MacOS**
 
 For MacOS environments, the current conda installation method will only install the latest available bioconda Unicycler version of v0.4.8. 

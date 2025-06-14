@@ -1570,7 +1570,6 @@ def long(
         canu_nano_or_pacbio = "nanopore"
 
         if pacbio_model != "nothing":
-            pacbio_model = validate_pacbio_model(pacbio_model)
             if pacbio_model == "pacbio-hifi":
                 canu_nano_or_pacbio = "pacbio-hifi"
                 corrected_error_rate = 0.005

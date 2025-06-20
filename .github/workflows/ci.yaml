@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-13, ubuntu-latest] #macos-latest/macos-14 is M1 - some deps fail it due to not having M1 build (MMSeqs2)
-        python-version: ["3.8", "3.9"]
+        python-version: ["3.9", "3.12"]
 
     steps:
       - uses: "actions/checkout@v3"
@@ -55,8 +55,4 @@ jobs:
           export TERM=linux
           unicycler --version
           just test-ci
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-            use_node: true      
 

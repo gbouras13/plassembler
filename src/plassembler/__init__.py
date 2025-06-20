@@ -71,8 +71,6 @@ def begin_plassembler(outdir, force):
     """
     # get start time
     start_time = time.time()
-    # error out on sys.exit
-    logger.add(lambda _: sys.exit(1), level="ERROR")
 
     # instantiate the outdir
     # remove outdir on force
@@ -97,6 +95,8 @@ def begin_plassembler(outdir, force):
     # adds log file
     logger.add(log_file)
     # ensure sys exit if error
+    logger.add(lambda _: sys.exit(1), level="ERROR")
+
     logger.info(f"You are using Plassembler version {get_version()}")
     logger.info("Repository homepage is https://github.com/gbouras13/plassembler")
     logger.info("Written by George Bouras: george.bouras@adelaide.edu.au")

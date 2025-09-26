@@ -81,6 +81,7 @@ def move_and_copy_files(
     :param out_dir:  Output Directory
     :param prefix: prefix
     :param unicycler_success_flag: whether or not unicycler worked
+    :param keep_fastqs: whether to keep FASTQs
     :param assembled_mode: whether or not unicycler worked
     :param long_only: whether or not unicycler worked
     :param use_raven: whether or not unicycler worked

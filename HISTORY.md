@@ -1,5 +1,26 @@
 # History
 
+1.8.1 (2025-09-27)
+------------------
+
+* Fixes minor issues with `--skip_qc` (#73) and `--no_chromosome` (#74)
+
+1.8.0 (2025-06-12)
+------------------
+
+* Fixes issues with `--skip_qc` when using non gzipped FASTQ reads (#60)
+* Fixes issue with fastp versions #64
+* Add skip_mash to run Plassembler without the database mash search #61
+
+1.8.0 (2025-06-23)
+------------------
+
+* Relaxes Python version dependency to >=3.8,<3.14 from >=3.8,<3.10
+* Minor change to log file error behaviour #69
+* Thanks @rrwick for both changes
+
+* Bug fix with `--force` for `plassembler download`, which will only remove the output directory if `--force` is specified (#49).
+
 1.6.2 (2024-03-08)
 ------------------
 

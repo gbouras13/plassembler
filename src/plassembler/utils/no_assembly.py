@@ -39,4 +39,4 @@ def create_fake_flye_chromosome_info(assembly_info_file: Path) -> None:
     }
 
     flye_info_df = pd.DataFrame(data)
-    flye_info_df.to_csv(assembly_info_file, index=False)
+    flye_info_df.to_csv(assembly_info_file, sep="\t", index=False)

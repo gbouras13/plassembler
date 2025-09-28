@@ -72,6 +72,9 @@ def begin_plassembler(outdir, force):
     # get start time
     start_time = time.time()
 
+    # ensure sys exit if error
+    logger.add(lambda _: sys.exit(1), level="ERROR")
+
     # instantiate the outdir
     # remove outdir on force
     if force is True:
@@ -94,8 +97,6 @@ def begin_plassembler(outdir, force):
     log_file = os.path.join(outdir, f"plassembler_{start_time}.log")
     # adds log file
     logger.add(log_file)
-    # ensure sys exit if error
-    logger.add(lambda _: sys.exit(1), level="ERROR")
 
     logger.info(f"You are using Plassembler version {get_version()}")
     logger.info("Repository homepage is https://github.com/gbouras13/plassembler")
@@ -1277,6 +1278,11 @@ def long_options(func):
             is_flag=True,
         ),
         click.option(
+            "--keep_fastqs",
+            help="Whether you want to keep FASTQ files containing putative plasmid reads \nand long reads that map to multiple contigs (plasmid and chromosome).",
+            is_flag=True,
+        ),
+        click.option(
             "--keep_chromosome",
             help="If you want to keep the chromosome assembly.",
             is_flag=True,
@@ -1341,6 +1347,7 @@ def long(
     pacbio_model,
     skip_qc,
     raw_flag,
+    keep_fastqs,
     keep_chromosome,
     flye_directory,
     flye_assembly,
@@ -1371,6 +1378,7 @@ def long(
     logger.info(f"--force is {force}")
     logger.info(f"--skip_qc is {skip_qc}")
     logger.info(f"--raw_flag is {raw_flag}")
+    logger.info(f"--keep_fastqs is {keep_fastqs}")
     logger.info(f"--pacbio_model is {pacbio_model}")
     logger.info(f"--keep_chromosome is {keep_chromosome}")
     logger.info(f"--flye_directory is {flye_directory}")
@@ -1518,7 +1526,7 @@ def long(
             outdir,
             prefix,
             False,  # unicycler success
-            False,  # keep fastqs
+            False,  # keep fastqs will be false here as no chromosome
             False,  # assembled mode
             True,  # long only
             False,  # raven false
@@ -1730,7 +1738,7 @@ def long(
         outdir,
         prefix,
         unicycler_success,  # unicycler success
-        False,  # keep fastqs
+        keep_fastqs,  # keep fastqs
         False,  # assembled mode
         True,  # long only
         False,  # no raven

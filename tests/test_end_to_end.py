@@ -287,6 +287,15 @@ class test_end_to_end(unittest.TestCase):
         exec_command(cmd)
         remove_directory(outdir)
 
+    def test_plassembler_long_keep_fastqs(self):
+        """test plassembler long"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out_keep_fastqs"
+        cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f --keep_fastqs"
+        exec_command(cmd)
+        remove_directory(outdir)
+
     def test_plassembler_long_skipmash(self):
         """test plassembler long --skip_mash - no need for -d"""
         longreads: Path = f"{end_to_end}/input_fastq.gz"

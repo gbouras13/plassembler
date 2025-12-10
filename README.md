@@ -38,24 +38,33 @@ And finally run `plassembler`:
 
 Please read the [Installation](#installation) section for more details, especially if you are an inexperienced command line user.
 
-### Container
+### 🐳 Container Images
 
-Alternatively, a Docker/Singularity Linux container image is available for Plassembler (starting from v1.6.2) [here](https://quay.io/repository/gbouras13/plassembler). This will likely be useful for running Plassembler in HPC environments.
+There are two sources of Docker images available for Plassembler:
 
-To install and run v1.6.2 with singularity
+| Source | Repository | Tags | Notes |
+| :--- | :--- | :--- | :--- |
+| **Biocontainers** | `quay.io/biocontainers/plassembler` | [Link](https://quay.io/repository/biocontainers/plassembler?tab=tags) | Requires an initial `plassembler download`. |
+| **StaPH-B** | `docker.io/staphb/plassembler` | [Link](https://hub.docker.com/r/staphb/plassembler/tags) | Database is pre-installed at `/plassembler_db`. |
+
+### Example usage with Apptainer (Singularity)
+
+To use the recommended image, define the current image and pull it.
 
 ```bash
+IMAGE="quay.io/biocontainers/plassembler:1.8.1--pyhdfd78af_0"
 
-IMAGE_DIR="<the directory you want the .sif file to be in >"
-singularity pull --dir $IMAGE_DIR docker://quay.io/gbouras13/plassembler:1.6.2
+# Pull the container image
+apptainer pull --name plassembler.sif docker://$IMAGE
 
-containerImage="$IMAGE_DIR/plassembler_1.6.2.sif"
+# Download the database (required for Biocontainers image)
+apptainer exec plassembler.sif plassembler download -d plassembler_db
 
-# example command with test fastqs
-singularity exec $containerImage    plassembler download -d plassembler_db
-singularity exec $containerImage    plassembler run -l test_data/Fastqs/test_long_reads.fastq.gz \
- -1 test_data/Fastqs/test_short_reads_R1.fastq.gz  -2 test_data/Fastqs/test_short_reads_R2.fastq.gz d plassembler_db \
- -o output_test_singularity -t 4 -c 50000
+# Run Plassembler
+apptainer exec plassembler.sif \
+ plassembler run --help
+apptainer exec plassembler.sif \
+ plassembler run -d plassembler_db -l long_reads.fastq.gz -1 R1.fastq.gz -2 R2.fastq.gz -o outdir -t 4 -c 50000
 ```
 
 ### Google Colab Notebook

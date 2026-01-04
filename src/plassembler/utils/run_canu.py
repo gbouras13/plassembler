@@ -33,7 +33,7 @@ def run_canu_correct(
             tool="canu -correct",
             input="",
             output="",
-            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
+            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} useGrid=false -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
             logdir=logdir,
             outfile="",
         )
@@ -69,7 +69,7 @@ def run_canu(
             tool="canu",
             input="",
             output="",
-            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
+            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} useGrid=false -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
             logdir=logdir,
             outfile="",
         )

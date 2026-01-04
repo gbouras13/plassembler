@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "plassembler"
-version = "1.8.1" # change VERSION too
+version = "1.8.2" # change VERSION too
 description = "Quickly and accurately assemble plasmids in hybrid sequenced bacterial isolates"
 authors = ["George Bouras <george.bouras@adelaide.edu.au>"]
 license = "MIT"

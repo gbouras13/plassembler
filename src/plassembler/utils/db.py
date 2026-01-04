@@ -14,6 +14,7 @@ from alive_progress import alive_bar
 from loguru import logger
 
 from plassembler.utils.cleanup import remove_directory
+from plassembler.utils.util import get_version
 
 
 def check_db_installation(db_dir: Path, force: bool, install_flag: bool):
@@ -75,8 +76,16 @@ def get_database_zenodo(db_dir: Path):
     db_url = "https://zenodo.org/record/10158040/files/201123_plassembler_v1.5.0_databases.tar.gz"
     requiredmd5 = "3a24bacc05bb857dc044fc6662b58db7"
 
+    version = get_version().strip()
+
+    headers = {
+        "User-Agent": f"plassembler/{version} (contact: george.bouras@adelaide.edu.au)"
+    }
+
     try:
-        with tar_path.open("wb") as fh_out, requests.get(db_url, stream=True) as resp:
+        with tar_path.open("wb") as fh_out, requests.get(
+            db_url, stream=True, headers=headers
+        ) as resp:
             total_length = resp.headers.get("content-length")
             if total_length is not None:  # content length header is set
                 total_length = int(total_length)

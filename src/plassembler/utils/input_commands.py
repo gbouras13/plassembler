@@ -227,6 +227,11 @@ def check_dependencies():
         process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT)
         unicycler_out, _ = process.communicate()
         unicycler_out = unicycler_out.decode()
+        if "$TERM" in unicycler_out:
+            for line in unicycler_out.split('\n'):
+                if "unicycler" in line.lower():
+                    unicycler_out = line
+                    break
         unicycler_version = unicycler_out.split(" ")[1]
         # get rid of the "v"
         unicycler_version = unicycler_version[1:]

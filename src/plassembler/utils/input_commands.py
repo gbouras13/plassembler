@@ -1,5 +1,6 @@
 import gzip
 import os
+import re
 import subprocess as sp
 
 from Bio import SeqIO
@@ -179,6 +180,28 @@ def validate_flye_assembly_info(flye_assembly, flye_info):
     return skip_assembly
 
 
+def parse_unicycler_version(version_output: str):
+    """Extract (major, minor, patch) from `unicycler --version` output.
+
+    Uses a regex search rather than positional token splitting so it is robust to
+    stray lines that can get merged into the captured output - notably
+    ``tput: No value for $TERM and no -T specified``, which Unicycler emits on
+    stderr when ``TERM`` is unset (e.g. inside Snakemake jobs or CI). Naive
+    splitting (``out.split(" ")[1]``) would otherwise parse that noise and make a
+    perfectly good Unicycler look "not found".
+
+    :param version_output: combined stdout/stderr of ``unicycler --version``.
+    :return: tuple of ints (major, minor, patch).
+    :raises ValueError: if no ``Unicycler vX.Y.Z`` string is present.
+    """
+    match = re.search(r"Unicycler v(\d+)\.(\d+)\.(\d+)", version_output)
+    if match is None:
+        raise ValueError(
+            f"Could not parse Unicycler version from output: {version_output!r}"
+        )
+    return int(match.group(1)), int(match.group(2)), int(match.group(3))
+
+
 def check_dependencies():
     """Checks the version of Unicycler, spades and Raven
     :return:
@@ -226,14 +249,11 @@ def check_dependencies():
     try:
         process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT)
         unicycler_out, _ = process.communicate()
-        unicycler_out = unicycler_out.decode()
-        unicycler_version = unicycler_out.split(" ")[1]
-        # get rid of the "v"
-        unicycler_version = unicycler_version[1:]
-
-        unicycler_major_version = int(unicycler_version.split(".")[0])
-        unicycler_minor_version = int(unicycler_version.split(".")[1])
-        unicycler_minorest_version = int(unicycler_version.split(".")[2])
+        (
+            unicycler_major_version,
+            unicycler_minor_version,
+            unicycler_minorest_version,
+        ) = parse_unicycler_version(unicycler_out.decode())
     except Exception:
         message = "Unicycler not found. Please re-install Unicycler, see instructions at https://github.com/gbouras13/plassembler."
         logger.error(message)

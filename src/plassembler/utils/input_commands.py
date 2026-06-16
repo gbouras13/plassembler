@@ -41,12 +41,20 @@ def validate_fasta(filename):
         :param file: fasta file
     :return:
     """
-    with open(filename, "r") as handle:
-        fasta = SeqIO.parse(handle, "fasta")
-        if any(fasta):
-            logger.info(f"FASTA {filename} checked")
-        else:
-            logger.error(f"Input file {filename} is not in the FASTA format.")
+    try:
+        with open(filename, "r") as handle:
+            valid_fasta = any(SeqIO.parse(handle, "fasta"))
+    except ValueError:
+        # Biopython >=1.85 raises ValueError when the first line is not a FASTA
+        # header (e.g. a leading blank line/comment, or non-FASTA content)
+        # instead of simply yielding no records. Treat that as an invalid FASTA.
+        valid_fasta = False
+
+    if valid_fasta:
+        logger.info(f"FASTA {filename} checked")
+    else:
+        # logger.error triggers sys.exit(1) via the ERROR sink added in __init__
+        logger.error(f"Input file {filename} is not in the FASTA format.")
 
 
 def validate_fastas_assembled_mode(input_chromosome, input_plasmids, no_copy_numbers):

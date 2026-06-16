@@ -16,5 +16,6 @@ dependencies:
   - dnaapler >=0.4.0
   - just
   - poetry
+  - pip
   - python >=3.8,<3.14
   - ripgrep

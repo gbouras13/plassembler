@@ -82,6 +82,13 @@ def test_flye_directory_missing_no_skip():
     assert validate_flye_directory(str(TEST_DATA / "does_not_exist_dir")) is False
 
 
+def test_flye_directory_missing_info_no_skip(tmp_path):
+    # regression: a directory containing assembly.fasta but *not*
+    # assembly_info.txt must not be treated as a complete Flye directory.
+    (tmp_path / "assembly.fasta").write_text(">chromosome\nACGT\n")
+    assert validate_flye_directory(str(tmp_path)) is False
+
+
 # ---------------------------------------------------------------------------
 # validate_fastqs_assembled_mode
 # ---------------------------------------------------------------------------

@@ -144,7 +144,7 @@ def validate_flye_directory(flye_directory):
         logger.warning("Long read assembly will not be skipped.")
         skip_assembly = False
 
-    if os.path.isfile(os.path.join(flye_directory, "assembly.fasta")) is False:
+    if os.path.isfile(os.path.join(flye_directory, "assembly_info.txt")) is False:
         info = os.path.join(flye_directory, "assembly_info.txt")
         logger.warning(f"Flye assembly info file {info} does not exist.")
         logger.warning("Long read assembly will not be skipped.")

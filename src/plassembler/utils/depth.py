@@ -102,9 +102,6 @@ def collate_depths(depths, shortFlag, contig_lengths):
     # iterate over the conitgs
     for replicon_name, base_depths in depths.items():
         replicon_length = contig_lengths[replicon_name]
-        unmaskedDepths = []
-        for depth in enumerate(base_depths):
-            unmaskedDepths.append(depth)
         try:
             mean_depth = round(statistics.mean(base_depths), 2)
             depth_stdev = round(statistics.stdev(base_depths), 2)

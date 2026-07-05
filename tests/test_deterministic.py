@@ -7,7 +7,11 @@ fully reproducible, so they act as true regression guards.
 
 from pathlib import Path
 
-from src.plassembler.utils.depth import get_contig_circularity, get_contig_lengths
+from src.plassembler.utils.depth import (
+    collate_depths,
+    get_contig_circularity,
+    get_contig_lengths,
+)
 
 GOLDEN_FASTA = Path("tests/test_data/golden/contigs.fasta")
 
@@ -29,3 +33,22 @@ def test_get_contig_circularity_exact():
         "plasmid00001": "circular",  # description contains "circular"
         "plasmid00002": "not_circular",
     }
+
+
+def test_collate_depths_copy_number_math():
+    """Copy number is mean plasmid depth divided by mean chromosome depth."""
+    depths = {
+        "chromosome": [10] * 100,
+        "plasmid00001": [20] * 60,  # 2x the chromosome depth
+    }
+    contig_lengths = {"chromosome": 100, "plasmid00001": 60}
+
+    df = collate_depths(depths, "short", contig_lengths).set_index("contig")
+
+    assert df.loc["chromosome", "mean_depth_short"] == 10
+    assert df.loc["plasmid00001", "mean_depth_short"] == 20
+    # constant depth -> zero stdev
+    assert df.loc["chromosome", "sd_depth_short"] == 0
+    # copy numbers relative to the chromosome
+    assert df.loc["chromosome", "plasmid_copy_number_short"] == 1.0
+    assert df.loc["plasmid00001", "plasmid_copy_number_short"] == 2.0

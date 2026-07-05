@@ -1,5 +1,6 @@
 import os
 import sys
+from importlib.metadata import PackageNotFoundError, version
 
 import click
 from loguru import logger
@@ -17,9 +18,10 @@ def plassembler_base(rel_path):
 
 
 def get_version():
-    with open(plassembler_base("VERSION"), "r") as f:
-        version = f.readline()
-    return version
+    try:
+        return version("plassembler")
+    except PackageNotFoundError:
+        return "unknown"
 
 
 def print_citation():

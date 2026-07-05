@@ -175,14 +175,14 @@ def validate_flye_assembly_info(flye_assembly, flye_info):
         logger.warning(
             f"You have specified a Flye assembly FASTA file {flye_assembly} without a flye info file with --flye_info."
         )
-        logger.warning(f"Assembly will not be skipped.")
+        logger.warning("Assembly will not be skipped.")
         skip_assembly = False
 
     if flye_assembly == "nothing" and flye_info != "nothing":
         logger.warning(
             f"You have specified a Flye assembly info file {flye_info} without a flye assembly FASTA file with --flye_assembly."
         )
-        logger.warning(f"Assembly will not be skipped.")
+        logger.warning("Assembly will not be skipped.")
         skip_assembly = False
 
     return skip_assembly

@@ -449,7 +449,7 @@ def run(
 
         if database is None:
             logger.error(
-                f"Database directory was not specified. Please specify your database directory with --database or -d"
+                "Database directory was not specified. Please specify your database directory with --database or -d"
             )
         check_db_installation(Path(database), force=False, install_flag=False)
     # will only continue if successful
@@ -480,14 +480,12 @@ def run(
         )
 
     else:  # copy the input to the outdir
-
         if long_zipped:
             shutil.copy2(
                 longreads,
                 Path(f"{outdir}/chopper_long_reads.fastq.gz"),
             )
         else:
-
             shutil.copy2(
                 longreads,
                 Path(f"{outdir}/chopper_long_reads.fastq"),
@@ -541,9 +539,9 @@ def run(
                 os.path.join(outdir, "assembly_info.txt"),
             )
         elif no_chromosome is True:
-            logger.info(f"You have specified --no_chromosome.")
+            logger.info("You have specified --no_chromosome.")
             logger.info(
-                f"A fake chromosome of 3MB worth of A's will be created and Flye will not be run."
+                "A fake chromosome of 3MB worth of A's will be created and Flye will not be run."
             )
 
             assembly_fasta_file = os.path.join(outdir, "assembly.fasta")
@@ -736,7 +734,7 @@ def run(
                     f"Check the {outdir}/plasmid_fastqs/long_plasmid.fastq file."
                 )
                 logger.info(
-                    f"If this is small (indicating few unmapped reads and therefore Unicycler failed due to low depth), then your sample likely has no plasmids."
+                    "If this is small (indicating few unmapped reads and therefore Unicycler failed due to low depth), then your sample likely has no plasmids."
                 )
                 move_and_copy_files(
                     outdir,
@@ -946,7 +944,7 @@ def run(
                     f"Check the {outdir}/plasmid_fastqs/long_plasmid.fastq file."
                 )
                 logger.info(
-                    f"If this is small (indicating few unmapped reads and therefore Unicycler failed due to low depth), then your sample likely has no plasmids."
+                    "If this is small (indicating few unmapped reads and therefore Unicycler failed due to low depth), then your sample likely has no plasmids."
                 )
                 move_and_copy_files(
                     outdir,
@@ -1048,7 +1046,7 @@ def assembled(
     logger.info("Checking database installation.")
     if database is None:
         logger.error(
-            f"Database directory was not specified. Please specify your database directory with --database or -d"
+            "Database directory was not specified. Please specify your database directory with --database or -d"
         )
     check_db_installation(Path(database), force=False, install_flag=False)
     # will only continue if successful
@@ -1151,7 +1149,10 @@ def assembled(
         False,  # canu_flag
     )
     remove_intermediate_files(
-        outdir, False, True, False  # keep chrom  # assembled  # long only
+        outdir,
+        False,
+        True,
+        False,  # keep chrom  # assembled  # long only
     )
 
     # end plassembler
@@ -1185,7 +1186,7 @@ def download(ctx, database, force, **kwargs):
     logger.info(f"Checking database installation at {database}")
     if database is None:
         logger.error(
-            f"Database directory was not specified. Please specify your database directory with --database or -d"
+            "Database directory was not specified. Please specify your database directory with --database or -d"
         )
     check_db_installation(database, force, install_flag=True)  # t
 
@@ -1405,7 +1406,7 @@ def long(
         logger.info("Checking database installation.")
         if database is None:
             logger.error(
-                f"Database directory was not specified. Please specify your database directory with --database or -d"
+                "Database directory was not specified. Please specify your database directory with --database or -d"
             )
         check_db_installation(Path(database), force=False, install_flag=False)
 
@@ -1497,9 +1498,9 @@ def long(
                 os.path.join(outdir, "assembly_info.txt"),
             )
         elif no_chromosome is True:
-            logger.info(f"You have specified --no_chromosome.")
+            logger.info("You have specified --no_chromosome.")
             logger.info(
-                f"A fake chromosome of 3MB worth of A's will be created and Flye will not be run."
+                "A fake chromosome of 3MB worth of A's will be created and Flye will not be run."
             )
 
             assembly_fasta_file = os.path.join(outdir, "assembly.fasta")
@@ -1659,7 +1660,7 @@ def long(
                 )
                 corrected_fastqs: Path = Path(outdir) / "corrected_plasmid_long.fastq"
                 corrected_fasta_to_fastq(canu_reads, corrected_fastqs)
-            except:
+            except Exception:
                 logger.warning("Advancing with uncorrected reads")
                 corrected_fastqs = entropy_filtered_fastq
 
@@ -1747,7 +1748,10 @@ def long(
     )
 
     remove_intermediate_files(
-        outdir, keep_chromosome, False, True  # assembled mode  # long only
+        outdir,
+        keep_chromosome,
+        False,
+        True,  # assembled mode  # long only
     )
 
     # end plassembler

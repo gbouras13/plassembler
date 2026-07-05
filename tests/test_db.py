@@ -5,7 +5,6 @@ Usage: pytest
 
 """
 
-import shutil
 import sys
 
 # import
@@ -16,7 +15,7 @@ import pytest
 from loguru import logger
 
 # import functions
-from src.plassembler.utils.db import check_db_installation, get_database_zenodo
+from src.plassembler.utils.db import check_db_installation
 
 # data
 test_data = Path("tests/test_data")

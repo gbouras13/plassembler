@@ -763,13 +763,13 @@ class Plass:
 
         if len(filtered_out_contig_ids) > 0:
             if len(kept_plasmid_contig_ids) == 0:
-                logger.warning(f"There are 0 plasmids left after depth filtering.")
+                logger.warning("There are 0 plasmids left after depth filtering.")
             else:
                 logger.info(
                     f"{len(filtered_out_contig_ids)} plasmids were filtered as they were below the depth filter."
                 )
         else:
-            logger.info(f"No plasmids were filtered due to low depth.")
+            logger.info("No plasmids were filtered due to low depth.")
 
         # concat dfs back
         # there is 1+ plasmid

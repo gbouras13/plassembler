@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "plassembler"
-version = "1.8.2"
+version = "1.8.3"
 description = "Quickly and accurately assemble plasmids in hybrid sequenced bacterial isolates"
 authors = [
     { name = "George Bouras", email = "george.bouras@adelaide.edu.au" }

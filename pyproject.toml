@@ -50,6 +50,13 @@ exclude = ["*.ipynb"]
 select = ["E", "F", "W", "I"]
 ignore = ["E501"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: tests that require the external bioinformatics toolchain (flye, unicycler, spades, samtools, minimap2, mash, etc.)",
+    "requires_tool: tests that shell out to a specific external binary",
+]
+
 [tool.pixi.workspace]
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64", "osx-64", "osx-arm64"]
@@ -98,6 +105,7 @@ dev = { features = ["test", "lint", "dev-tools"], solve-group = "default" }
 fmt = { cmd = "ruff format . && ruff check --fix .", default-environment = "dev" }
 check-fmt = { cmd = "ruff format --check . && ruff check .", default-environment = "dev" }
 test = { cmd = "pytest -vv tests/", default-environment = "dev" }
+test-fast = { cmd = "pytest -vv -m 'not slow' tests/", default-environment = "dev" }
 test-ci = { cmd = "pytest --cov=plassembler --cov-report=xml --cov-branch tests/", default-environment = "dev" }
 coverage = { cmd = "pytest --cov-report term --cov-report html --cov=plassembler --cov-branch tests/", default-environment = "dev" }
 build = { cmd = "hatch build", default-environment = "dev" }

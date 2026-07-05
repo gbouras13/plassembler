@@ -199,7 +199,8 @@ class TestInputCommands(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_unicycler_version("bash: unicycler: command not found\n")
 
-    # bad pacbio model
+    # checks all external dependencies are installed
+    @pytest.mark.slow
     def test_deps(self):
         expected_return = True
         check_dependencies()
@@ -283,6 +284,7 @@ class test_depth(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             get_contig_circularity(fasta)
 
+    @pytest.mark.slow
     def test_get_get_depths_from_bam_unsorted_error(self):
         bam_file: Path = Path(f"{map_dir}/short_read.bam")
         fasta: Path = Path(f"{map_dir}/combined.fasta")

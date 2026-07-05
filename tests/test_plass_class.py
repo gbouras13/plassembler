@@ -9,6 +9,8 @@ Usage: pytest
 import unittest
 from pathlib import Path
 
+import pytest
+
 from src.plassembler.utils.cleanup import remove_file
 from src.plassembler.utils.plass_class import Assembly, Plass
 
@@ -57,6 +59,7 @@ class test_plass_class(unittest.TestCase):
         # should be True, as assembly.fasta exists
         self.assertEqual(plass.unicycler_success, True)
 
+    @pytest.mark.slow
     def test_check_get_depth(self):
         expected = True
         plass = Plass()
@@ -69,6 +72,7 @@ class test_plass_class(unittest.TestCase):
         remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_short.bam"))
         self.assertEqual(expected, True)
 
+    @pytest.mark.slow
     def test_check_get_depth_long(self):
         expected = True
         plass = Plass()
@@ -92,6 +96,7 @@ class test_plass_class(unittest.TestCase):
         plass.process_mash_tsv(plassembler_db_dir)
         self.assertEqual(expected, True)
 
+    @pytest.mark.slow
     def test_combine_tsv(self):
         expected = True
         plass = Plass()
@@ -122,6 +127,7 @@ class test_assembly_class(unittest.TestCase):
         assembly.combine_input_fastas(chrom_fasta, plasmid_fasta)
         self.assertEqual(expected_return, True)
 
+    @pytest.mark.slow
     def test_check_get_depth(self):
         expected = True
         assembly = Assembly()
@@ -145,6 +151,7 @@ class test_assembly_class(unittest.TestCase):
         assembly.process_mash_tsv(plassembler_db_dir, plasmid_fasta)
         self.assertEqual(expected, True)
 
+    @pytest.mark.slow
     def test_combine_tsv(self):
         expected = True
         assembly = Assembly()

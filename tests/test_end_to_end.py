@@ -23,6 +23,9 @@ test_data = Path("tests/test_data")
 end_to_end = Path(f"{test_data}/end_to_end")
 plassembler_db_dir = Path(f"{test_data}/Plassembler_Test_DB")
 
+# every test in this module runs the full pipeline via the external toolchain
+pytestmark = pytest.mark.slow
+
 
 # make fake tempdir for testing
 @pytest.fixture(scope="session")

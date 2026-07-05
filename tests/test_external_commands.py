@@ -45,6 +45,7 @@ def tmp_dir(tmpdir_factory):
     return tmpdir_factory.mktemp("tmp")
 
 
+@pytest.mark.slow
 class test_mash(unittest.TestCase):
     """Tests for run_mash.py"""
 
@@ -66,6 +67,7 @@ class test_mash(unittest.TestCase):
         self.assertEqual(count, 1)
 
 
+@pytest.mark.slow
 class test_bam(unittest.TestCase):
     """Tests for bam.py"""
 
@@ -90,6 +92,7 @@ class test_bam(unittest.TestCase):
         self.assertEqual(expected_return, True)
 
 
+@pytest.mark.slow
 class test_sam_to_fastq(unittest.TestCase):
     """Tests for sam_to_fastq.py"""
 
@@ -115,6 +118,7 @@ class test_sam_to_fastq(unittest.TestCase):
         self.assertEqual(expected_return, True)
 
 
+@pytest.mark.slow
 class test_mapping(unittest.TestCase):
     """Test for mapping"""
 
@@ -146,6 +150,7 @@ class test_mapping(unittest.TestCase):
         self.assertEqual(expected_return, True)
 
 
+@pytest.mark.slow
 class test_qc_gzip(unittest.TestCase):
     """Test for qc"""
 
@@ -191,6 +196,7 @@ class test_qc_gzip(unittest.TestCase):
         self.assertEqual(expected_return, True)
 
 
+@pytest.mark.slow
 class test_assemblers(unittest.TestCase):
     """Test for assembles"""
 

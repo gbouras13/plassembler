@@ -42,6 +42,10 @@ class test_install(unittest.TestCase):
         check_db_installation(db_path, force=False, install_flag=False)
 
     # for plassembler download
+    # NOTE: force=True + install_flag=True downloads the real (~75MB) database
+    # over the network and overwrites the committed test fixtures in place, so
+    # this is neither offline-safe nor idempotent. Kept out of the fast subset.
+    @pytest.mark.slow
     def test_check_db_installation_good_d(self):
         check_db_installation(db_path, force=True, install_flag=True)
 

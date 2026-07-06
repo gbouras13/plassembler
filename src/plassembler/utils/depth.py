@@ -148,15 +148,20 @@ def collate_depths(depths, shortFlag, contig_lengths):
         )
         mean_col, copy_col = "mean_depth_long", "plasmid_copy_number_long"
 
-    # plasmid copy number = mean depth / chromosome mean depth. Guard against a
-    # missing (no "chromosome" contig), non-numeric or zero chromosome depth,
-    # which previously raised NameError/TypeError or produced inf copy numbers.
-    if not isinstance(chromosome_depth, (int, float)) or chromosome_depth == 0:
-        summary_df[copy_col] = "NA"
+    # plasmid copy number = mean depth / chromosome mean depth.
+    if not isinstance(chromosome_depth, (int, float)):
+        # no usable chromosome depth: either no "chromosome" contig at all
+        # (chromosome_depth is None) or its stats could not be computed
+        # ("NA"). Copy number is undefined; keep the column float-typed.
+        summary_df[copy_col] = float("nan")
     else:
-        summary_df[copy_col] = (
-            pd.to_numeric(summary_df[mean_col], errors="coerce") / chromosome_depth
-        ).round(2)
+        # chromosome_depth may be 0 (e.g. the fake --no_chromosome chromosome of
+        # A's, which no reads map to); dividing then yields inf, which the
+        # downstream depth filter treats as "keep" - preserving prior behaviour.
+        # A non-numeric ("NA") mean is coerced to NaN so the column stays float
+        # (a string here broke .astype(float) in combine_depth_mash_tsvs).
+        mean_numeric = pd.to_numeric(summary_df[mean_col], errors="coerce")
+        summary_df[copy_col] = (mean_numeric / chromosome_depth).round(2)
     # return df
     return summary_df
 

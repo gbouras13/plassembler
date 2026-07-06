@@ -7,6 +7,8 @@ fully reproducible, so they act as true regression guards.
 
 from pathlib import Path
 
+import numpy as np
+
 from src.plassembler.utils.depth import (
     collate_depths,
     get_contig_circularity,
@@ -54,17 +56,23 @@ def test_collate_depths_copy_number_math():
     assert df.loc["plasmid00001", "plasmid_copy_number_short"] == 2.0
 
 
-def test_collate_depths_no_chromosome_returns_na():
-    """No contig named 'chromosome' -> copy number is 'NA' (previously NameError)."""
+def test_collate_depths_no_chromosome_is_nan_not_crash():
+    """No contig named 'chromosome' -> copy number NaN, not a NameError/crash."""
     depths = {"plasmid00001": [20] * 60}
     contig_lengths = {"plasmid00001": 60}
     df = collate_depths(depths, "short", contig_lengths)
-    assert df["plasmid_copy_number_short"].tolist() == ["NA"]
+    assert df["plasmid_copy_number_short"].isna().all()
+    # must stay float-convertible (downstream does .astype(float))
+    df["plasmid_copy_number_short"].astype(float)
 
 
-def test_collate_depths_zero_chromosome_depth_returns_na():
-    """Zero chromosome depth -> copy number is 'NA' (previously inf)."""
+def test_collate_depths_zero_chromosome_depth_stays_float():
+    """Zero chromosome depth (e.g. the fake --no_chromosome chromosome) -> inf,
+    which the depth filter treats as 'keep'. Regression: a string 'NA' here broke
+    the downstream .astype(float) in combine_depth_mash_tsvs (CI --no_chromosome)."""
     depths = {"chromosome": [0] * 100, "plasmid00001": [5] * 60}
     contig_lengths = {"chromosome": 100, "plasmid00001": 60}
-    df = collate_depths(depths, "short", contig_lengths)
-    assert (df["plasmid_copy_number_short"] == "NA").all()
+    df = collate_depths(depths, "short", contig_lengths).set_index("contig")
+    assert np.isinf(df.loc["plasmid00001", "plasmid_copy_number_short"])
+    # the actual CI failure: this must not raise
+    df["plasmid_copy_number_short"].astype(float)

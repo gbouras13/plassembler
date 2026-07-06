@@ -11,7 +11,7 @@ def create_fake_flye_chromosome_assembly(assembly_fasta_file: Path) -> None:
     creates 3MB chromosome of A's as the fake chromosome
     """
 
-    # Create a sequence of 5 million 'A's
+    # Create a sequence of 3 million 'A's (3 Mb)
     sequence = Seq("A" * 3000000)
 
     # Create a SeqRecord for the sequence

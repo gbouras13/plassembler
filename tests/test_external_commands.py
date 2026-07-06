@@ -19,7 +19,7 @@ import pytest
 # import functions
 from src.plassembler.utils.assembly import run_flye, run_raven
 from src.plassembler.utils.bam import bam_to_fastq_short, sam_to_bam, split_bams
-from src.plassembler.utils.cleanup import remove_directory, remove_file
+from src.plassembler.utils.cleanup import remove_file
 from src.plassembler.utils.external_tools import ExternalTool
 from src.plassembler.utils.mapping import minimap_long_reads, minimap_short_reads
 from src.plassembler.utils.qc import chopper, fastp
@@ -179,28 +179,24 @@ class test_qc_gzip(unittest.TestCase):
     def test_chopper_gzip(self):
         expected_return = True
         input_long_reads = os.path.join(test_data, "test_long.fastq.gz")
-        chopper(
-            input_long_reads, fake_out_dir, "500", "9", True, "1", logdir
-        )  # True for gunzip
-        remove_file(os.path.join(fake_out_dir, "chopper_long_reads.fastq.gz"))
+        with tempfile.TemporaryDirectory() as tmp:
+            chopper(input_long_reads, tmp, "500", "9", True, "1", logdir)  # gunzip
         self.assertEqual(expected_return, True)
 
     def test_chopper_not_gzip(self):
         expected_return = True
         input_long_reads = os.path.join(test_data, "test_long.fastq")
-        chopper(
-            input_long_reads, fake_out_dir, "500", "9", False, "1", logdir
-        )  # fasle for gunzip
-        remove_file(os.path.join(fake_out_dir, "chopper_long_reads.fastq.gz"))
+        with tempfile.TemporaryDirectory() as tmp:
+            chopper(input_long_reads, tmp, "500", "9", False, "1", logdir)  # no gunzip
         self.assertEqual(expected_return, True)
 
     def test_fastp_gzip(self):
         expected_return = True
         short_one = Path(f"{test_data}/C11_subsetsim_R1.fastq.gz")
         short_two = Path(f"{test_data}/C11_subsetsim_R2.fastq.gz")
-        fastp(short_one, short_two, fake_out_dir, logdir)
-        remove_file(os.path.join(fake_out_dir, "trimmed_R1.fastq"))
-        remove_file(os.path.join(fake_out_dir, "trimmed_R2.fastq"))
+        with tempfile.TemporaryDirectory() as tmp:
+            fastp(short_one, short_two, tmp, logdir)
+        # fastp writes its report to the CWD regardless of output dir
         remove_file("fastp.html")
         remove_file("fastp.json")
         self.assertEqual(expected_return, True)
@@ -209,9 +205,8 @@ class test_qc_gzip(unittest.TestCase):
         expected_return = True
         short_one = Path(f"{test_data}/C11_subsetsim_R1.fastq")
         short_two = Path(f"{test_data}/C11_subsetsim_R2.fastq")
-        fastp(short_one, short_two, fake_out_dir, logdir)
-        remove_file(os.path.join(fake_out_dir, "trimmed_R1.fastq"))
-        remove_file(os.path.join(fake_out_dir, "trimmed_R2.fastq"))
+        with tempfile.TemporaryDirectory() as tmp:
+            fastp(short_one, short_two, tmp, logdir)
         remove_file("fastp.html")
         remove_file("fastp.json")
         self.assertEqual(expected_return, True)
@@ -223,28 +218,24 @@ class test_assemblers(unittest.TestCase):
 
     def test_flye(self):
         expected_return = True
-        # C11 sim reads
-        run_flye(test_data, 8, raw_flag=False, pacbio_model="nothing", logdir=logdir)
-        shutil.rmtree(os.path.join(test_data, "00-assembly"))
-        shutil.rmtree(os.path.join(test_data, "10-consensus"))
-        shutil.rmtree(os.path.join(test_data, "20-repeat"))
-        shutil.rmtree(os.path.join(test_data, "30-contigger"))
-        shutil.rmtree(os.path.join(test_data, "40-polishing"))
-        remove_file(os.path.join(test_data, "assembly.fasta"))
-        remove_file(os.path.join(test_data, "assembly_info.txt"))
-        remove_file(os.path.join(test_data, "assembly_graph.gfa"))
-        remove_file(os.path.join(test_data, "assembly_graph.gv"))
-        remove_file(os.path.join(test_data, "flye.log"))
+        # run_flye reads chopper_long_reads.fastq.gz from its outdir
+        with tempfile.TemporaryDirectory() as tmp:
+            shutil.copy(
+                os.path.join(test_data, "chopper_long_reads.fastq.gz"),
+                os.path.join(tmp, "chopper_long_reads.fastq.gz"),
+            )
+            run_flye(tmp, 8, raw_flag=False, pacbio_model="nothing", logdir=logdir)
         self.assertEqual(expected_return, True)
 
     def test_raven(self):
         expected_return = True
-        # C11 sim reads
-        run_raven(test_data, 1, logdir=logdir)
-        remove_file(os.path.join(test_data, "assembly.fasta"))
-        remove_file(os.path.join(test_data, "assembly_graph.gfa"))
-        remove_file(os.path.join(test_data, "params.json"))
-        remove_file("raven.cereal")
+        with tempfile.TemporaryDirectory() as tmp:
+            shutil.copy(
+                os.path.join(test_data, "chopper_long_reads.fastq.gz"),
+                os.path.join(tmp, "chopper_long_reads.fastq.gz"),
+            )
+            run_raven(tmp, 1, logdir=logdir)
+        remove_file("raven.cereal")  # raven writes this to the CWD
         self.assertEqual(expected_return, True)
 
     def test_unicycler_good(self):
@@ -253,19 +244,19 @@ class test_assemblers(unittest.TestCase):
         short_one = Path(f"{test_data}/short_read_concat_good_R1.fastq")
         short_two = Path(f"{test_data}/short_read_concat_good_R2.fastq")
         longreads = Path(f"{test_data}/plasmid_long_good.fastq")
-        unicycler_output_dir = Path(f"{test_data}/unicycler_output")
         threads = 1
-        run_unicycler(
-            threads,
-            logdir,
-            short_one,
-            short_two,
-            longreads,
-            unicycler_output_dir,
-            unicycler_options=None,
-            spades_options=None,
-        )
-        remove_directory(unicycler_output_dir)
+        with tempfile.TemporaryDirectory() as tmp:
+            unicycler_output_dir = Path(tmp) / "unicycler_output"
+            run_unicycler(
+                threads,
+                logdir,
+                short_one,
+                short_two,
+                longreads,
+                unicycler_output_dir,
+                unicycler_options=None,
+                spades_options=None,
+            )
         self.assertEqual(expected_return, True)
 
     def test_unicycler_bad(self):
@@ -274,19 +265,19 @@ class test_assemblers(unittest.TestCase):
         short_one = Path(f"{test_data}/C11_subsetsim_R1.fastq")
         short_two = Path(f"{test_data}/C11_subsetsim_R2.fastq")
         longreads = Path(f"{test_data}/plasmid_long_good.fastq")
-        unicycler_output_dir = Path(f"{test_data}/unicycler_output_bad")
         threads = 1
-        run_unicycler(
-            threads,
-            logdir,
-            short_one,
-            short_two,
-            longreads,
-            unicycler_output_dir,
-            unicycler_options=None,
-            spades_options=None,
-        )
-        remove_directory(unicycler_output_dir)
+        with tempfile.TemporaryDirectory() as tmp:
+            unicycler_output_dir = Path(tmp) / "unicycler_output_bad"
+            run_unicycler(
+                threads,
+                logdir,
+                short_one,
+                short_two,
+                longreads,
+                unicycler_output_dir,
+                unicycler_options=None,
+                spades_options=None,
+            )
         self.assertEqual(expected_return, True)
 
 

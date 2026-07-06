@@ -6,6 +6,7 @@ Usage: pytest
 """
 
 import sys
+import tempfile
 
 # import
 import unittest
@@ -42,12 +43,13 @@ class test_install(unittest.TestCase):
         check_db_installation(db_path, force=False, install_flag=False)
 
     # for plassembler download
-    # NOTE: force=True + install_flag=True downloads the real (~75MB) database
-    # over the network and overwrites the committed test fixtures in place, so
-    # this is neither offline-safe nor idempotent. Kept out of the fast subset.
+    # NOTE: downloads the real (~75MB) database over the network, so this is slow
+    # and offline-unsafe. It installs into a throwaway tmp dir so the committed
+    # fixture DB is never removed or overwritten.
     @pytest.mark.slow
     def test_check_db_installation_good_d(self):
-        check_db_installation(db_path, force=True, install_flag=True)
+        with tempfile.TemporaryDirectory() as tmp:
+            check_db_installation(Path(tmp) / "db", force=True, install_flag=True)
 
     def test_check_db_installation_bad(self):
         with self.assertRaises(SystemExit):

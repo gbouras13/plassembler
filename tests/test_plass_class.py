@@ -6,12 +6,13 @@ Usage: pytest
 """
 
 # import
+import shutil
+import tempfile
 import unittest
 from pathlib import Path
 
 import pytest
 
-from src.plassembler.utils.cleanup import remove_file
 from src.plassembler.utils.plass_class import Assembly, Plass
 
 # import functions
@@ -65,11 +66,12 @@ class test_plass_class(unittest.TestCase):
         plass = Plass()
         pacbio_model = "nothing"
         threads = 1
-        # set to the depth dir for  intermediate files
-        plass.outdir = plass_class_depth_dir
-        plass.get_depth(logdir, pacbio_model, threads)
-        remove_file(Path(f"{plass_class_depth_dir}/combined_short.sam"))
-        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_short.bam"))
+        with tempfile.TemporaryDirectory() as tmp:
+            # work in a copy so the committed fixtures are not mutated
+            workdir = Path(tmp) / "depth"
+            shutil.copytree(plass_class_depth_dir, workdir)
+            plass.outdir = workdir
+            plass.get_depth(logdir, pacbio_model, threads)
         self.assertEqual(expected, True)
 
     @pytest.mark.slow
@@ -78,14 +80,12 @@ class test_plass_class(unittest.TestCase):
         plass = Plass()
         pacbio_model = "nothing"
         threads = 1
-        plasmids_for_sketching = Path(
-            f"{plass_class_depth_dir}/plasmids_for_sketching.fasta"
-        )
-        # set to the depth dir for  intermediate files
-        plass.outdir = plass_class_depth_dir
-        plass.get_depth_long(logdir, pacbio_model, threads, plasmids_for_sketching)
-        remove_file(Path(f"{plass_class_depth_dir}/combined_long.sam"))
-        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_long.bam"))
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "depth"
+            shutil.copytree(plass_class_depth_dir, workdir)
+            plasmids_for_sketching = workdir / "plasmids_for_sketching.fasta"
+            plass.outdir = workdir
+            plass.get_depth_long(logdir, pacbio_model, threads, plasmids_for_sketching)
         self.assertEqual(expected, True)
 
     def test_process_mash_tsv(self):
@@ -100,18 +100,16 @@ class test_plass_class(unittest.TestCase):
     def test_combine_tsv(self):
         expected = True
         plass = Plass()
-        plass.outdir = plass_class_depth_dir
         prefix = "plassembler"
         pacbio_model = "nothing"
         threads = 1
-        plass.get_depth(logdir, pacbio_model, threads)
-        plass.process_mash_tsv(plassembler_db_dir)
-        plass.combine_depth_mash_tsvs(prefix, depth_filter=0.1, skip_mash=False)
-        remove_file(Path(f"{plass_class_depth_dir}/combined_long.sam"))
-        remove_file(Path(f"{plass_class_depth_dir}/combined_short.sam"))
-        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_long.bam"))
-        remove_file(Path(f"{plass_class_depth_dir}/combined_sorted_short.bam"))
-        remove_file(Path(f"{plass_class_depth_dir}/{prefix}_summary.tsv"))
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "depth"
+            shutil.copytree(plass_class_depth_dir, workdir)
+            plass.outdir = workdir
+            plass.get_depth(logdir, pacbio_model, threads)
+            plass.process_mash_tsv(plassembler_db_dir)
+            plass.combine_depth_mash_tsvs(prefix, depth_filter=0.1, skip_mash=False)
         self.assertEqual(expected, True)
 
 
@@ -133,13 +131,11 @@ class test_assembly_class(unittest.TestCase):
         assembly = Assembly()
         pacbio_model = "nothing"
         threads = 1
-        # set to the depth dir for  intermediate files
-        assembly.outdir = assembly_depth_dir
-        assembly.get_depth(logdir, pacbio_model, threads)
-        remove_file(Path(f"{assembly_depth_dir}/combined_long.sam"))
-        remove_file(Path(f"{assembly_depth_dir}/combined_short.sam"))
-        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_long.bam"))
-        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_short.bam"))
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "depth"
+            shutil.copytree(assembly_depth_dir, workdir)
+            assembly.outdir = workdir
+            assembly.get_depth(logdir, pacbio_model, threads)
         self.assertEqual(expected, True)
 
     def test_process_mash_tsv(self):
@@ -155,17 +151,15 @@ class test_assembly_class(unittest.TestCase):
     def test_combine_tsv(self):
         expected = True
         assembly = Assembly()
-        assembly.outdir = assembly_depth_dir
         prefix = "plassembler"
         pacbio_model = "nothing"
         threads = 1
-        plasmid_fasta = Path(f"{assembly_depth_dir}/plasmids.fasta")
-        assembly.get_depth(logdir, pacbio_model, threads)
-        assembly.process_mash_tsv(plassembler_db_dir, plasmid_fasta)
-        assembly.combine_depth_mash_tsvs(prefix, False)
-        remove_file(Path(f"{assembly_depth_dir}/combined_long.sam"))
-        remove_file(Path(f"{assembly_depth_dir}/combined_short.bam"))
-        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_long.bam"))
-        remove_file(Path(f"{assembly_depth_dir}/combined_sorted_short.bam"))
-        remove_file(Path(f"{assembly_depth_dir}/{prefix}_summary.tsv"))
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "depth"
+            shutil.copytree(assembly_depth_dir, workdir)
+            assembly.outdir = workdir
+            plasmid_fasta = workdir / "plasmids.fasta"
+            assembly.get_depth(logdir, pacbio_model, threads)
+            assembly.process_mash_tsv(plassembler_db_dir, plasmid_fasta)
+            assembly.combine_depth_mash_tsvs(prefix, False)
         self.assertEqual(expected, True)

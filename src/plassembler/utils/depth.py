@@ -99,7 +99,10 @@ def collate_depths(depths, shortFlag, contig_lengths):
     sd_depth_col = []
     q25_depth = []
     q75_depth = []
-    # iterate over the conitgs
+    # chromosome mean depth, used to normalise plasmid copy numbers; stays None
+    # if no contig is named "chromosome"
+    chromosome_depth = None
+    # iterate over the contigs
     for replicon_name, base_depths in depths.items():
         replicon_length = contig_lengths[replicon_name]
         try:
@@ -131,9 +134,7 @@ def collate_depths(depths, shortFlag, contig_lengths):
                 "q75_depth_short": q75_depth,
             }
         )
-        summary_df["plasmid_copy_number_short"] = round(
-            summary_df["mean_depth_short"] / chromosome_depth, 2
-        )
+        mean_col, copy_col = "mean_depth_short", "plasmid_copy_number_short"
     else:  # long
         summary_df = pd.DataFrame(
             {
@@ -145,9 +146,17 @@ def collate_depths(depths, shortFlag, contig_lengths):
                 "q75_depth_long": q75_depth,
             }
         )
-        summary_df["plasmid_copy_number_long"] = round(
-            summary_df["mean_depth_long"] / chromosome_depth, 2
-        )
+        mean_col, copy_col = "mean_depth_long", "plasmid_copy_number_long"
+
+    # plasmid copy number = mean depth / chromosome mean depth. Guard against a
+    # missing (no "chromosome" contig), non-numeric or zero chromosome depth,
+    # which previously raised NameError/TypeError or produced inf copy numbers.
+    if not isinstance(chromosome_depth, (int, float)) or chromosome_depth == 0:
+        summary_df[copy_col] = "NA"
+    else:
+        summary_df[copy_col] = (
+            pd.to_numeric(summary_df[mean_col], errors="coerce") / chromosome_depth
+        ).round(2)
     # return df
     return summary_df
 

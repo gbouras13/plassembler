@@ -52,3 +52,19 @@ def test_collate_depths_copy_number_math():
     # copy numbers relative to the chromosome
     assert df.loc["chromosome", "plasmid_copy_number_short"] == 1.0
     assert df.loc["plasmid00001", "plasmid_copy_number_short"] == 2.0
+
+
+def test_collate_depths_no_chromosome_returns_na():
+    """No contig named 'chromosome' -> copy number is 'NA' (previously NameError)."""
+    depths = {"plasmid00001": [20] * 60}
+    contig_lengths = {"plasmid00001": 60}
+    df = collate_depths(depths, "short", contig_lengths)
+    assert df["plasmid_copy_number_short"].tolist() == ["NA"]
+
+
+def test_collate_depths_zero_chromosome_depth_returns_na():
+    """Zero chromosome depth -> copy number is 'NA' (previously inf)."""
+    depths = {"chromosome": [0] * 100, "plasmid00001": [5] * 60}
+    contig_lengths = {"chromosome": 100, "plasmid00001": 60}
+    df = collate_depths(depths, "short", contig_lengths)
+    assert (df["plasmid_copy_number_short"] == "NA").all()

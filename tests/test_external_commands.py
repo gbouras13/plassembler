@@ -7,6 +7,7 @@ Usage: pytest
 
 import os
 import shutil
+import tempfile
 
 # import
 import unittest
@@ -52,13 +53,19 @@ class test_mash(unittest.TestCase):
     # sam to bam
     def test_mash_sketch(self):
         expected_return = True
-        fasta: Path = Path(f"{mash_dir}/unicycler_plasmids.fasta")
-        mash_sketch(mash_dir, fasta, logdir)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "mash_dir"
+            shutil.copytree(mash_dir, workdir)
+            fasta = workdir / "unicycler_plasmids.fasta"
+            mash_sketch(workdir, fasta, logdir)
         self.assertEqual(expected_return, True)
 
     def test_run_mash(self):
         expected_return = True
-        run_mash(mash_dir, plassembler_db_dir, logdir)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "mash_dir"
+            shutil.copytree(mash_dir, workdir)
+            run_mash(workdir, plassembler_db_dir, logdir)
         self.assertEqual(expected_return, True)
 
     def test_get_contig_count(self):
@@ -75,20 +82,28 @@ class test_bam(unittest.TestCase):
     def test_sam_to_bam(self):
         expected_return = True
         threads = 1
-        samfile: Path = Path(f"{map_dir}/sam_to_bam/test.sam")
-        bamfile: Path = Path(f"{map_dir}/sam_to_bam/test.bam")
-        sam_to_bam(samfile, bamfile, threads, logdir)
-        remove_file(bamfile)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            samfile = workdir / "sam_to_bam/test.sam"
+            bamfile = workdir / "sam_to_bam/test.bam"
+            sam_to_bam(samfile, bamfile, threads, logdir)
         self.assertEqual(expected_return, True)
 
     def test_split(self):
         expected_return = True
-        split_bams(map_dir, threads=1, logdir=logdir)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            split_bams(workdir, threads=1, logdir=logdir)
         self.assertEqual(expected_return, True)
 
     def test_bam_to_fastq_short(self):
         expected_return = True
-        bam_to_fastq_short(map_dir, threads=1, logdir=logdir)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            bam_to_fastq_short(workdir, threads=1, logdir=logdir)
         self.assertEqual(expected_return, True)
 
 
@@ -99,22 +114,24 @@ class test_sam_to_fastq(unittest.TestCase):
     # sam to bam
     def test_extract_long_fastqs_slow_keep_fastqs(self):
         expected_return = True
-        samfile: Path = Path(f"{map_dir}/long_read.sam")
-        # not in the dir to prevent overwriting
-        plasmidfastq: Path = Path(f"{map_dir}/sam_to_bam/plasmid_long.fastq")
-        outdir: Path = Path(f"{map_dir}/sam_to_bam/")
-        extract_long_fastqs_slow_keep_fastqs(outdir, samfile, plasmidfastq)
-        remove_file(plasmidfastq)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            samfile = workdir / "long_read.sam"
+            plasmidfastq = workdir / "sam_to_bam/plasmid_long.fastq"
+            outdir = workdir / "sam_to_bam"
+            extract_long_fastqs_slow_keep_fastqs(outdir, samfile, plasmidfastq)
         self.assertEqual(expected_return, True)
 
     def test_extract_long_fastqs_fast(self):
         expected_return = True
         threads = 4
-        samfile: Path = Path(f"{map_dir}/long_read.sam")
-        # not in the dir to prevent overwriting
-        plasmidfastq: Path = Path(f"{map_dir}/sam_to_bam/plasmid_long.fastq")
-        extract_long_fastqs_fast(samfile, plasmidfastq, threads)
-        remove_file(plasmidfastq)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            samfile = workdir / "long_read.sam"
+            plasmidfastq = workdir / "sam_to_bam/plasmid_long.fastq"
+            extract_long_fastqs_fast(samfile, plasmidfastq, threads)
         self.assertEqual(expected_return, True)
 
 
@@ -126,27 +143,31 @@ class test_mapping(unittest.TestCase):
     def test_minimap_long_reads(self):
         expected_return = True
         pacbio_model = ""
-        input_long_reads: Path = Path(f"{map_dir}/chopper_long_reads.fastq.gz")
-        fasta: Path = Path(f"{map_dir}/flye_renamed.fasta")
-        samfile: Path = Path(f"{map_dir}/test.sam")
-        threads = 1
-        minimap_long_reads(
-            input_long_reads, fasta, samfile, threads, pacbio_model, logdir
-        )
-        remove_file(samfile)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            input_long_reads = workdir / "chopper_long_reads.fastq.gz"
+            fasta = workdir / "flye_renamed.fasta"
+            samfile = workdir / "test.sam"
+            threads = 1
+            minimap_long_reads(
+                input_long_reads, fasta, samfile, threads, pacbio_model, logdir
+            )
         self.assertEqual(expected_return, True)
 
         # short read map
 
     def test_minimap_short_reads(self):
         expected_return = True
-        r1: Path = Path(f"{map_dir}/trimmed_R1.fastq")
-        r2: Path = Path(f"{map_dir}/trimmed_R2.fastq")
-        fasta: Path = Path(f"{map_dir}/flye_renamed.fasta")
-        samfile: Path = Path(f"{map_dir}/test.sam")
-        threads = 1
-        minimap_short_reads(r1, r2, fasta, samfile, threads, logdir)
-        remove_file(samfile)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            r1 = workdir / "trimmed_R1.fastq"
+            r2 = workdir / "trimmed_R2.fastq"
+            fasta = workdir / "flye_renamed.fasta"
+            samfile = workdir / "test.sam"
+            threads = 1
+            minimap_short_reads(r1, r2, fasta, samfile, threads, logdir)
         self.assertEqual(expected_return, True)
 
 

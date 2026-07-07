@@ -1,21 +1,67 @@
-[tool.poetry]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
 name = "plassembler"
-version = "1.8.2" # change VERSION too
+version = "1.8.3"
 description = "Quickly and accurately assemble plasmids in hybrid sequenced bacterial isolates"
-authors = ["George Bouras <george.bouras@adelaide.edu.au>"]
-license = "MIT"
+authors = [
+    { name = "George Bouras", email = "george.bouras@adelaide.edu.au" }
+]
+license = { text = "MIT" }
 readme = "README.md"
-homepage = "https://github.com/gbouras13/plassembler"
-repository = "https://github.com/gbouras13/plassembler"
 keywords = ["microbial", "bioinformatics", "plasmids", "bacteria"]
-include = [
-    "HISTORY.md"
+requires-python = ">=3.8,<3.14"
+dependencies = [
+    "click>=8.0.0",
+    "loguru>=0.5.3",
+    "pyyaml>=6.0",
+    "pandas>=1.4.2",
+    "biopython>=1.76",
+    "pysam>=0.16.0",
+    "alive-progress>=3.0.1",
+    "requests>=2.25.1",
 ]
 
-[tool.poetry.scripts]
-plassembler = 'plassembler:main'
+[project.urls]
+homepage = "https://github.com/gbouras13/plassembler"
+repository = "https://github.com/gbouras13/plassembler"
 
-[tool.poetry.dependencies]
+[project.scripts]
+plassembler = "plassembler:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/plassembler"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/plassembler",
+    "HISTORY.md",
+    "README.md",
+    "LICENSE",
+]
+
+[tool.ruff]
+line-length = 88
+exclude = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: tests that require the external bioinformatics toolchain (flye, unicycler, spades, samtools, minimap2, mash, etc.)",
+    "requires_tool: tests that shell out to a specific external binary",
+]
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64", "osx-64", "osx-arm64"]
+
+[tool.pixi.dependencies]
 python = ">=3.8,<3.14"
 click = ">=8.0.0"
 loguru = ">=0.5.3"
@@ -25,22 +71,41 @@ biopython = ">=1.76"
 pysam = ">=0.16.0"
 alive-progress = ">=3.0.1"
 requests = ">=2.25.1"
+flye = ">=2.9"
+unicycler = ">=0.4.8"
+minimap2 = ">=2.11"
+fastp = ">=0.24.2"
+chopper = ">=0.5.0"
+mash = ">=2.2"
+raven-assembler = ">=1.8"
+samtools = ">=0.15.0"
+canu = ">=2.2"
+dnaapler = ">=0.4.0"
 
+[tool.pixi.pypi-dependencies]
+plassembler = { path = ".", editable = true }
 
-[tool.poetry.dev-dependencies]
-black = ">=22.3.0"
-isort = ">=5.10.1"
+[tool.pixi.feature.test.dependencies]
 pytest = ">=6.2.5"
 pytest-cov = ">=3.0.0"
 
-[[tool.poetry.source]]
-name = "pypi-test"
-url = "https://test.pypi.org/simple/"
-priority = "primary"
+[tool.pixi.feature.lint.dependencies]
+ruff = ">=0.4.0"
+hatch = "*"
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.pixi.feature.dev-tools.dependencies]
+just = "*"
+ripgrep = "*"
 
-[tool.isort]
-profile = "black"
+[tool.pixi.environments]
+default = { solve-group = "default" }
+dev = { features = ["test", "lint", "dev-tools"], solve-group = "default" }
+
+[tool.pixi.tasks]
+fmt = { cmd = "ruff format . && ruff check --fix .", default-environment = "dev" }
+check-fmt = { cmd = "ruff format --check . && ruff check .", default-environment = "dev" }
+test = { cmd = "pytest -vv tests/", default-environment = "dev" }
+test-fast = { cmd = "pytest -vv -m 'not slow' tests/", default-environment = "dev" }
+test-ci = { cmd = "pytest --cov=plassembler --cov-report=xml --cov-branch tests/", default-environment = "dev" }
+coverage = { cmd = "pytest --cov-report term --cov-report html --cov=plassembler --cov-branch tests/", default-environment = "dev" }
+build = { cmd = "hatch build", default-environment = "dev" }

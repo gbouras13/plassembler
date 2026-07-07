@@ -1,5 +1,12 @@
 # History
 
+1.8.3 (2026-07-05)
+------------------
+
+* Migrates the build and development tooling from Poetry to Pixi
+* Switches the build backend to hatchling and linting/formatting to ruff
+* Single-sources the package version via `importlib.metadata`
+
 1.8.1 (2025-09-27)
 ------------------
 

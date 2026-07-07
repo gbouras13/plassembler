@@ -5,8 +5,8 @@ Usage: pytest
 
 """
 
-import shutil
 import sys
+import tempfile
 
 # import
 import unittest
@@ -16,7 +16,7 @@ import pytest
 from loguru import logger
 
 # import functions
-from src.plassembler.utils.db import check_db_installation, get_database_zenodo
+from src.plassembler.utils.db import check_db_installation
 
 # data
 test_data = Path("tests/test_data")
@@ -43,8 +43,13 @@ class test_install(unittest.TestCase):
         check_db_installation(db_path, force=False, install_flag=False)
 
     # for plassembler download
+    # NOTE: downloads the real (~75MB) database over the network, so this is slow
+    # and offline-unsafe. It installs into a throwaway tmp dir so the committed
+    # fixture DB is never removed or overwritten.
+    @pytest.mark.slow
     def test_check_db_installation_good_d(self):
-        check_db_installation(db_path, force=True, install_flag=True)
+        with tempfile.TemporaryDirectory() as tmp:
+            check_db_installation(Path(tmp) / "db", force=True, install_flag=True)
 
     def test_check_db_installation_bad(self):
         with self.assertRaises(SystemExit):

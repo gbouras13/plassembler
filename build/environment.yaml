@@ -14,7 +14,5 @@ dependencies:
   - samtools >=0.15.0
   - canu >=2.2
   - dnaapler >=0.4.0
-  - just
-  - poetry
+  - pip
   - python >=3.8,<3.14
-  - ripgrep

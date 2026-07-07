@@ -1,5 +1,6 @@
 import gzip
 import os
+import re
 import subprocess as sp
 
 from Bio import SeqIO
@@ -40,12 +41,20 @@ def validate_fasta(filename):
         :param file: fasta file
     :return:
     """
-    with open(filename, "r") as handle:
-        fasta = SeqIO.parse(handle, "fasta")
-        if any(fasta):
-            logger.info(f"FASTA {filename} checked")
-        else:
-            logger.error(f"Input file {filename} is not in the FASTA format.")
+    try:
+        with open(filename, "r") as handle:
+            valid_fasta = any(SeqIO.parse(handle, "fasta"))
+    except ValueError:
+        # Biopython >=1.85 raises ValueError when the first line is not a FASTA
+        # header (e.g. a leading blank line/comment, or non-FASTA content)
+        # instead of simply yielding no records. Treat that as an invalid FASTA.
+        valid_fasta = False
+
+    if valid_fasta:
+        logger.info(f"FASTA {filename} checked")
+    else:
+        # logger.error triggers sys.exit(1) via the ERROR sink added in __init__
+        logger.error(f"Input file {filename} is not in the FASTA format.")
 
 
 def validate_fastas_assembled_mode(input_chromosome, input_plasmids, no_copy_numbers):
@@ -135,7 +144,7 @@ def validate_flye_directory(flye_directory):
         logger.warning("Long read assembly will not be skipped.")
         skip_assembly = False
 
-    if os.path.isfile(os.path.join(flye_directory, "assembly.fasta")) is False:
+    if os.path.isfile(os.path.join(flye_directory, "assembly_info.txt")) is False:
         info = os.path.join(flye_directory, "assembly_info.txt")
         logger.warning(f"Flye assembly info file {info} does not exist.")
         logger.warning("Long read assembly will not be skipped.")
@@ -166,17 +175,39 @@ def validate_flye_assembly_info(flye_assembly, flye_info):
         logger.warning(
             f"You have specified a Flye assembly FASTA file {flye_assembly} without a flye info file with --flye_info."
         )
-        logger.warning(f"Assembly will not be skipped.")
+        logger.warning("Assembly will not be skipped.")
         skip_assembly = False
 
     if flye_assembly == "nothing" and flye_info != "nothing":
         logger.warning(
             f"You have specified a Flye assembly info file {flye_info} without a flye assembly FASTA file with --flye_assembly."
         )
-        logger.warning(f"Assembly will not be skipped.")
+        logger.warning("Assembly will not be skipped.")
         skip_assembly = False
 
     return skip_assembly
+
+
+def parse_unicycler_version(version_output: str):
+    """Extract (major, minor, patch) from `unicycler --version` output.
+
+    Uses a regex search rather than positional token splitting so it is robust to
+    stray lines that can get merged into the captured output - notably
+    ``tput: No value for $TERM and no -T specified``, which Unicycler emits on
+    stderr when ``TERM`` is unset (e.g. inside Snakemake jobs or CI). Naive
+    splitting (``out.split(" ")[1]``) would otherwise parse that noise and make a
+    perfectly good Unicycler look "not found".
+
+    :param version_output: combined stdout/stderr of ``unicycler --version``.
+    :return: tuple of ints (major, minor, patch).
+    :raises ValueError: if no ``Unicycler vX.Y.Z`` string is present.
+    """
+    match = re.search(r"Unicycler v(\d+)\.(\d+)\.(\d+)", version_output)
+    if match is None:
+        raise ValueError(
+            f"Could not parse Unicycler version from output: {version_output!r}"
+        )
+    return int(match.group(1)), int(match.group(2)), int(match.group(3))
 
 
 def check_dependencies():
@@ -226,14 +257,11 @@ def check_dependencies():
     try:
         process = sp.Popen(["unicycler", "--version"], stdout=sp.PIPE, stderr=sp.STDOUT)
         unicycler_out, _ = process.communicate()
-        unicycler_out = unicycler_out.decode()
-        unicycler_version = unicycler_out.split(" ")[1]
-        # get rid of the "v"
-        unicycler_version = unicycler_version[1:]
-
-        unicycler_major_version = int(unicycler_version.split(".")[0])
-        unicycler_minor_version = int(unicycler_version.split(".")[1])
-        unicycler_minorest_version = int(unicycler_version.split(".")[2])
+        (
+            unicycler_major_version,
+            unicycler_minor_version,
+            unicycler_minorest_version,
+        ) = parse_unicycler_version(unicycler_out.decode())
     except Exception:
         message = "Unicycler not found. Please re-install Unicycler, see instructions at https://github.com/gbouras13/plassembler."
         logger.error(message)

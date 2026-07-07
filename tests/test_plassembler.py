@@ -31,6 +31,7 @@ from src.plassembler.utils.depth import (
 # import functions
 from src.plassembler.utils.input_commands import (
     check_dependencies,
+    parse_unicycler_version,
     validate_fasta,
     validate_fastas_assembled_mode,
     validate_fastq,
@@ -179,7 +180,27 @@ class TestInputCommands(unittest.TestCase):
             pacbio_model = "not_a_model"
             validate_pacbio_model(pacbio_model)
 
-    # bad pacbio model
+    # unicycler version parsing
+    def test_parse_unicycler_version_clean(self):
+        self.assertEqual(parse_unicycler_version("Unicycler v0.5.1\n"), (0, 5, 1))
+
+    def test_parse_unicycler_version_term_noise(self):
+        # regression: when TERM is unset, unicycler emits `tput: No value for
+        # $TERM ...` on stderr, which gets merged into the captured output. The
+        # parser must still recover the version and not treat unicycler as missing.
+        noisy = (
+            "tput: No value for $TERM and no -T specified\n"
+            "tput: No value for $TERM and no -T specified\n"
+            "Unicycler v0.5.1\n"
+        )
+        self.assertEqual(parse_unicycler_version(noisy), (0, 5, 1))
+
+    def test_parse_unicycler_version_missing_raises(self):
+        with self.assertRaises(ValueError):
+            parse_unicycler_version("bash: unicycler: command not found\n")
+
+    # checks all external dependencies are installed
+    @pytest.mark.slow
     def test_deps(self):
         expected_return = True
         check_dependencies()
@@ -263,6 +284,7 @@ class test_depth(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             get_contig_circularity(fasta)
 
+    @pytest.mark.slow
     def test_get_get_depths_from_bam_unsorted_error(self):
         bam_file: Path = Path(f"{map_dir}/short_read.bam")
         fasta: Path = Path(f"{map_dir}/combined.fasta")

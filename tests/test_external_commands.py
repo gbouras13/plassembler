@@ -7,6 +7,7 @@ Usage: pytest
 
 import os
 import shutil
+import tempfile
 
 # import
 import unittest
@@ -18,7 +19,7 @@ import pytest
 # import functions
 from src.plassembler.utils.assembly import run_flye, run_raven
 from src.plassembler.utils.bam import bam_to_fastq_short, sam_to_bam, split_bams
-from src.plassembler.utils.cleanup import remove_directory, remove_file
+from src.plassembler.utils.cleanup import remove_file
 from src.plassembler.utils.external_tools import ExternalTool
 from src.plassembler.utils.mapping import minimap_long_reads, minimap_short_reads
 from src.plassembler.utils.qc import chopper, fastp
@@ -45,19 +46,26 @@ def tmp_dir(tmpdir_factory):
     return tmpdir_factory.mktemp("tmp")
 
 
+@pytest.mark.slow
 class test_mash(unittest.TestCase):
     """Tests for run_mash.py"""
 
     # sam to bam
     def test_mash_sketch(self):
         expected_return = True
-        fasta: Path = Path(f"{mash_dir}/unicycler_plasmids.fasta")
-        mash_sketch(mash_dir, fasta, logdir)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "mash_dir"
+            shutil.copytree(mash_dir, workdir)
+            fasta = workdir / "unicycler_plasmids.fasta"
+            mash_sketch(workdir, fasta, logdir)
         self.assertEqual(expected_return, True)
 
     def test_run_mash(self):
         expected_return = True
-        run_mash(mash_dir, plassembler_db_dir, logdir)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "mash_dir"
+            shutil.copytree(mash_dir, workdir)
+            run_mash(workdir, plassembler_db_dir, logdir)
         self.assertEqual(expected_return, True)
 
     def test_get_contig_count(self):
@@ -66,6 +74,7 @@ class test_mash(unittest.TestCase):
         self.assertEqual(count, 1)
 
 
+@pytest.mark.slow
 class test_bam(unittest.TestCase):
     """Tests for bam.py"""
 
@@ -73,48 +82,60 @@ class test_bam(unittest.TestCase):
     def test_sam_to_bam(self):
         expected_return = True
         threads = 1
-        samfile: Path = Path(f"{map_dir}/sam_to_bam/test.sam")
-        bamfile: Path = Path(f"{map_dir}/sam_to_bam/test.bam")
-        sam_to_bam(samfile, bamfile, threads, logdir)
-        remove_file(bamfile)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            samfile = workdir / "sam_to_bam/test.sam"
+            bamfile = workdir / "sam_to_bam/test.bam"
+            sam_to_bam(samfile, bamfile, threads, logdir)
         self.assertEqual(expected_return, True)
 
     def test_split(self):
         expected_return = True
-        split_bams(map_dir, threads=1, logdir=logdir)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            split_bams(workdir, threads=1, logdir=logdir)
         self.assertEqual(expected_return, True)
 
     def test_bam_to_fastq_short(self):
         expected_return = True
-        bam_to_fastq_short(map_dir, threads=1, logdir=logdir)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            bam_to_fastq_short(workdir, threads=1, logdir=logdir)
         self.assertEqual(expected_return, True)
 
 
+@pytest.mark.slow
 class test_sam_to_fastq(unittest.TestCase):
     """Tests for sam_to_fastq.py"""
 
     # sam to bam
     def test_extract_long_fastqs_slow_keep_fastqs(self):
         expected_return = True
-        samfile: Path = Path(f"{map_dir}/long_read.sam")
-        # not in the dir to prevent overwriting
-        plasmidfastq: Path = Path(f"{map_dir}/sam_to_bam/plasmid_long.fastq")
-        outdir: Path = Path(f"{map_dir}/sam_to_bam/")
-        extract_long_fastqs_slow_keep_fastqs(outdir, samfile, plasmidfastq)
-        remove_file(plasmidfastq)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            samfile = workdir / "long_read.sam"
+            plasmidfastq = workdir / "sam_to_bam/plasmid_long.fastq"
+            outdir = workdir / "sam_to_bam"
+            extract_long_fastqs_slow_keep_fastqs(outdir, samfile, plasmidfastq)
         self.assertEqual(expected_return, True)
 
     def test_extract_long_fastqs_fast(self):
         expected_return = True
         threads = 4
-        samfile: Path = Path(f"{map_dir}/long_read.sam")
-        # not in the dir to prevent overwriting
-        plasmidfastq: Path = Path(f"{map_dir}/sam_to_bam/plasmid_long.fastq")
-        extract_long_fastqs_fast(samfile, plasmidfastq, threads)
-        remove_file(plasmidfastq)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            samfile = workdir / "long_read.sam"
+            plasmidfastq = workdir / "sam_to_bam/plasmid_long.fastq"
+            extract_long_fastqs_fast(samfile, plasmidfastq, threads)
         self.assertEqual(expected_return, True)
 
 
+@pytest.mark.slow
 class test_mapping(unittest.TestCase):
     """Test for mapping"""
 
@@ -122,30 +143,35 @@ class test_mapping(unittest.TestCase):
     def test_minimap_long_reads(self):
         expected_return = True
         pacbio_model = ""
-        input_long_reads: Path = Path(f"{map_dir}/chopper_long_reads.fastq.gz")
-        fasta: Path = Path(f"{map_dir}/flye_renamed.fasta")
-        samfile: Path = Path(f"{map_dir}/test.sam")
-        threads = 1
-        minimap_long_reads(
-            input_long_reads, fasta, samfile, threads, pacbio_model, logdir
-        )
-        remove_file(samfile)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            input_long_reads = workdir / "chopper_long_reads.fastq.gz"
+            fasta = workdir / "flye_renamed.fasta"
+            samfile = workdir / "test.sam"
+            threads = 1
+            minimap_long_reads(
+                input_long_reads, fasta, samfile, threads, pacbio_model, logdir
+            )
         self.assertEqual(expected_return, True)
 
         # short read map
 
     def test_minimap_short_reads(self):
         expected_return = True
-        r1: Path = Path(f"{map_dir}/trimmed_R1.fastq")
-        r2: Path = Path(f"{map_dir}/trimmed_R2.fastq")
-        fasta: Path = Path(f"{map_dir}/flye_renamed.fasta")
-        samfile: Path = Path(f"{map_dir}/test.sam")
-        threads = 1
-        minimap_short_reads(r1, r2, fasta, samfile, threads, logdir)
-        remove_file(samfile)
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp) / "map_dir"
+            shutil.copytree(map_dir, workdir)
+            r1 = workdir / "trimmed_R1.fastq"
+            r2 = workdir / "trimmed_R2.fastq"
+            fasta = workdir / "flye_renamed.fasta"
+            samfile = workdir / "test.sam"
+            threads = 1
+            minimap_short_reads(r1, r2, fasta, samfile, threads, logdir)
         self.assertEqual(expected_return, True)
 
 
+@pytest.mark.slow
 class test_qc_gzip(unittest.TestCase):
     """Test for qc"""
 
@@ -153,28 +179,24 @@ class test_qc_gzip(unittest.TestCase):
     def test_chopper_gzip(self):
         expected_return = True
         input_long_reads = os.path.join(test_data, "test_long.fastq.gz")
-        chopper(
-            input_long_reads, fake_out_dir, "500", "9", True, "1", logdir
-        )  # True for gunzip
-        remove_file(os.path.join(fake_out_dir, "chopper_long_reads.fastq.gz"))
+        with tempfile.TemporaryDirectory() as tmp:
+            chopper(input_long_reads, tmp, "500", "9", True, "1", logdir)  # gunzip
         self.assertEqual(expected_return, True)
 
     def test_chopper_not_gzip(self):
         expected_return = True
         input_long_reads = os.path.join(test_data, "test_long.fastq")
-        chopper(
-            input_long_reads, fake_out_dir, "500", "9", False, "1", logdir
-        )  # fasle for gunzip
-        remove_file(os.path.join(fake_out_dir, "chopper_long_reads.fastq.gz"))
+        with tempfile.TemporaryDirectory() as tmp:
+            chopper(input_long_reads, tmp, "500", "9", False, "1", logdir)  # no gunzip
         self.assertEqual(expected_return, True)
 
     def test_fastp_gzip(self):
         expected_return = True
         short_one = Path(f"{test_data}/C11_subsetsim_R1.fastq.gz")
         short_two = Path(f"{test_data}/C11_subsetsim_R2.fastq.gz")
-        fastp(short_one, short_two, fake_out_dir, logdir)
-        remove_file(os.path.join(fake_out_dir, "trimmed_R1.fastq"))
-        remove_file(os.path.join(fake_out_dir, "trimmed_R2.fastq"))
+        with tempfile.TemporaryDirectory() as tmp:
+            fastp(short_one, short_two, tmp, logdir)
+        # fastp writes its report to the CWD regardless of output dir
         remove_file("fastp.html")
         remove_file("fastp.json")
         self.assertEqual(expected_return, True)
@@ -183,41 +205,37 @@ class test_qc_gzip(unittest.TestCase):
         expected_return = True
         short_one = Path(f"{test_data}/C11_subsetsim_R1.fastq")
         short_two = Path(f"{test_data}/C11_subsetsim_R2.fastq")
-        fastp(short_one, short_two, fake_out_dir, logdir)
-        remove_file(os.path.join(fake_out_dir, "trimmed_R1.fastq"))
-        remove_file(os.path.join(fake_out_dir, "trimmed_R2.fastq"))
+        with tempfile.TemporaryDirectory() as tmp:
+            fastp(short_one, short_two, tmp, logdir)
         remove_file("fastp.html")
         remove_file("fastp.json")
         self.assertEqual(expected_return, True)
 
 
+@pytest.mark.slow
 class test_assemblers(unittest.TestCase):
     """Test for assembles"""
 
     def test_flye(self):
         expected_return = True
-        # C11 sim reads
-        run_flye(test_data, 8, raw_flag=False, pacbio_model="nothing", logdir=logdir)
-        shutil.rmtree(os.path.join(test_data, "00-assembly"))
-        shutil.rmtree(os.path.join(test_data, "10-consensus"))
-        shutil.rmtree(os.path.join(test_data, "20-repeat"))
-        shutil.rmtree(os.path.join(test_data, "30-contigger"))
-        shutil.rmtree(os.path.join(test_data, "40-polishing"))
-        remove_file(os.path.join(test_data, "assembly.fasta"))
-        remove_file(os.path.join(test_data, "assembly_info.txt"))
-        remove_file(os.path.join(test_data, "assembly_graph.gfa"))
-        remove_file(os.path.join(test_data, "assembly_graph.gv"))
-        remove_file(os.path.join(test_data, "flye.log"))
+        # run_flye reads chopper_long_reads.fastq.gz from its outdir
+        with tempfile.TemporaryDirectory() as tmp:
+            shutil.copy(
+                os.path.join(test_data, "chopper_long_reads.fastq.gz"),
+                os.path.join(tmp, "chopper_long_reads.fastq.gz"),
+            )
+            run_flye(tmp, 8, raw_flag=False, pacbio_model="nothing", logdir=logdir)
         self.assertEqual(expected_return, True)
 
     def test_raven(self):
         expected_return = True
-        # C11 sim reads
-        run_raven(test_data, 1, logdir=logdir)
-        remove_file(os.path.join(test_data, "assembly.fasta"))
-        remove_file(os.path.join(test_data, "assembly_graph.gfa"))
-        remove_file(os.path.join(test_data, "params.json"))
-        remove_file("raven.cereal")
+        with tempfile.TemporaryDirectory() as tmp:
+            shutil.copy(
+                os.path.join(test_data, "chopper_long_reads.fastq.gz"),
+                os.path.join(tmp, "chopper_long_reads.fastq.gz"),
+            )
+            run_raven(tmp, 1, logdir=logdir)
+        remove_file("raven.cereal")  # raven writes this to the CWD
         self.assertEqual(expected_return, True)
 
     def test_unicycler_good(self):
@@ -226,19 +244,19 @@ class test_assemblers(unittest.TestCase):
         short_one = Path(f"{test_data}/short_read_concat_good_R1.fastq")
         short_two = Path(f"{test_data}/short_read_concat_good_R2.fastq")
         longreads = Path(f"{test_data}/plasmid_long_good.fastq")
-        unicycler_output_dir = Path(f"{test_data}/unicycler_output")
         threads = 1
-        run_unicycler(
-            threads,
-            logdir,
-            short_one,
-            short_two,
-            longreads,
-            unicycler_output_dir,
-            unicycler_options=None,
-            spades_options=None,
-        )
-        remove_directory(unicycler_output_dir)
+        with tempfile.TemporaryDirectory() as tmp:
+            unicycler_output_dir = Path(tmp) / "unicycler_output"
+            run_unicycler(
+                threads,
+                logdir,
+                short_one,
+                short_two,
+                longreads,
+                unicycler_output_dir,
+                unicycler_options=None,
+                spades_options=None,
+            )
         self.assertEqual(expected_return, True)
 
     def test_unicycler_bad(self):
@@ -247,19 +265,19 @@ class test_assemblers(unittest.TestCase):
         short_one = Path(f"{test_data}/C11_subsetsim_R1.fastq")
         short_two = Path(f"{test_data}/C11_subsetsim_R2.fastq")
         longreads = Path(f"{test_data}/plasmid_long_good.fastq")
-        unicycler_output_dir = Path(f"{test_data}/unicycler_output_bad")
         threads = 1
-        run_unicycler(
-            threads,
-            logdir,
-            short_one,
-            short_two,
-            longreads,
-            unicycler_output_dir,
-            unicycler_options=None,
-            spades_options=None,
-        )
-        remove_directory(unicycler_output_dir)
+        with tempfile.TemporaryDirectory() as tmp:
+            unicycler_output_dir = Path(tmp) / "unicycler_output_bad"
+            run_unicycler(
+                threads,
+                logdir,
+                short_one,
+                short_two,
+                longreads,
+                unicycler_output_dir,
+                unicycler_options=None,
+                spades_options=None,
+            )
         self.assertEqual(expected_return, True)
 
 

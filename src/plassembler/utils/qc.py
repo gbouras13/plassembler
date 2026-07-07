@@ -24,59 +24,42 @@ def chopper(
     filtered_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
     logger.info("Started running chopper")
     logdir.mkdir(parents=True, exist_ok=True)
-    tool = "chopper"
-    tool_name = Path(tool).name
+    tool_name = Path("chopper").name
     logfile_prefix: Path = logdir / f"{tool_name}"
-    err_log = open(f"{logfile_prefix}.err", "w")
-    f = open(filtered_long_reads, "w")
-    if gzip_flag is True:
+    chopper_cmd = [
+        "chopper",
+        "-q",
+        min_quality,
+        "--threads",
+        threads,
+        "-l",
+        min_length,
+        "--headcrop",
+        "75",
+        "--tailcrop",
+        "75",
+    ]
+    # `with` guarantees the log and output handles are closed even on error;
+    # locals are named *_proc to avoid shadowing the `gzip` module / `chopper`
+    # function name
+    with open(f"{logfile_prefix}.err", "w") as err_log, open(
+        filtered_long_reads, "wb"
+    ) as f:
         try:
-            unzip = sp.Popen(["gunzip", "-c", input_long_reads], stdout=sp.PIPE)
-            chopper = sp.Popen(
-                [
-                    "chopper",
-                    "-q",
-                    min_quality,
-                    "--threads",
-                    threads,
-                    "-l",
-                    min_length,
-                    "--headcrop",
-                    "75",
-                    "--tailcrop",
-                    "75",
-                ],
-                stdin=unzip.stdout,
+            if gzip_flag is True:
+                source_proc = sp.Popen(
+                    ["gunzip", "-c", input_long_reads], stdout=sp.PIPE
+                )
+            else:
+                source_proc = sp.Popen(["cat", input_long_reads], stdout=sp.PIPE)
+            chopper_proc = sp.Popen(
+                chopper_cmd,
+                stdin=source_proc.stdout,
                 stdout=sp.PIPE,
                 stderr=err_log,
             )
-            gzip = sp.Popen(["gzip"], stdin=chopper.stdout, stdout=f)
-            gzip.communicate()[0]
-        except Exception:
-            logger.error("Error with chopper")
-    else:
-        try:
-            cat = sp.Popen(["cat", input_long_reads], stdout=sp.PIPE)
-            chopper = sp.Popen(
-                [
-                    "chopper",
-                    "-q",
-                    min_quality,
-                    "--threads",
-                    threads,
-                    "-l",
-                    min_length,
-                    "--headcrop",
-                    "75",
-                    "--tailcrop",
-                    "75",
-                ],
-                stdin=cat.stdout,
-                stdout=sp.PIPE,
-                stderr=err_log,
-            )
-            gzip = sp.Popen(["gzip"], stdin=chopper.stdout, stdout=f)
-            gzip.communicate()[0]
+            gzip_proc = sp.Popen(["gzip"], stdin=chopper_proc.stdout, stdout=f)
+            gzip_proc.communicate()
         except Exception:
             logger.error("Error with chopper")
     logger.info("Finished running chopper")

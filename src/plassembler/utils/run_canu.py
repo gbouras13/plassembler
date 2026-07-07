@@ -9,6 +9,29 @@ from loguru import logger
 from plassembler.utils.external_tools import ExternalTool
 
 
+def canu_read_type_and_error_rate(pacbio_model, default_error_rate):
+    """Map a validated ``--pacbio_model`` value to canu's read-type flag, the
+    corrected error rate, and whether canu read correction should be skipped.
+
+    ``pacbio_model`` is the output of ``validate_pacbio_model`` (so one of
+    ``"--pacbio-raw"``, ``"--pacbio-corr"``, ``"--pacbio-hifi"``) or
+    ``"nothing"``.
+
+    PacBio HiFi reads are already high-accuracy: canu's read type is
+    ``-pacbio-hifi`` and its correction step is skipped (running ``canu -correct``
+    on HiFi reads errors with "Cannot correct already corrected reads" - issue
+    #84). Previously the check compared against ``"pacbio-hifi"`` (without the
+    ``--`` prefix), so HiFi reads were wrongly assembled as regular ``-pacbio``.
+
+    :return: ``(canu_read_type, corrected_error_rate, skip_correction)``
+    """
+    if pacbio_model == "--pacbio-hifi":
+        return "pacbio-hifi", 0.005, True
+    if pacbio_model != "nothing":
+        return "pacbio", 0.045, False
+    return "nanopore", default_error_rate, False
+
+
 def run_canu_correct(
     threads: Path,
     logdir: Path,

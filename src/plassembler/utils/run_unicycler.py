@@ -6,6 +6,22 @@ from Bio import SeqIO
 from plassembler.utils.external_tools import ExternalTool
 
 
+def build_extra_unicycler_options(unicycler_options, spades_options):
+    """Build the extra-options suffix for a unicycler command.
+
+    Each of ``unicycler_options`` / ``spades_options`` may be ``None``
+    independently. Regression (issue #83): when only ``spades_options`` was set,
+    a ``None`` ``unicycler_options`` was interpolated into the command as the
+    literal string ``"None"``, which Unicycler rejected.
+    """
+    parts = []
+    if unicycler_options is not None:
+        parts.append(str(unicycler_options))
+    if spades_options is not None:
+        parts.append(f'--spades_options "{spades_options}"')
+    return " ".join(parts)
+
+
 def run_unicycler(
     threads: int,
     logdir: Path,
@@ -28,34 +44,18 @@ def run_unicycler(
     :return:
     """
 
-    if unicycler_options is None and spades_options is None:
-        unicycler = ExternalTool(
-            tool="unicycler",
-            input="",
-            output="",
-            params=f" -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir}",
-            logdir=logdir,
-            outfile="",
-        )
-    else:
-        if spades_options is None:
-            unicycler = ExternalTool(
-                tool="unicycler",
-                input="",
-                output="",
-                params=f" -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options}",
-                logdir=logdir,
-                outfile="",
-            )
-        else:
-            unicycler = ExternalTool(
-                tool="unicycler",
-                input="",
-                output="",
-                params=f' -1 {short_one} -2 {short_two} -l {longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options} --spades_options "{spades_options}" ',
-                logdir=logdir,
-                outfile="",
-            )
+    extra = build_extra_unicycler_options(unicycler_options, spades_options)
+    unicycler = ExternalTool(
+        tool="unicycler",
+        input="",
+        output="",
+        params=(
+            f" -1 {short_one} -2 {short_two} -l {longreads} -t {threads} "
+            f"-o {unicycler_output_dir} {extra}"
+        ),
+        logdir=logdir,
+        outfile="",
+    )
 
     ExternalTool.run_tool(unicycler, to_stdout=False)
 
@@ -80,34 +80,18 @@ def run_unicycler_long(
     :return:
     """
 
-    if unicycler_options is None and spades_options is None:
-        unicycler_long = ExternalTool(
-            tool="unicycler",
-            input="",
-            output="",
-            params=f" -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir}",
-            logdir=logdir,
-            outfile="",
-        )
-    else:
-        if spades_options is None:
-            unicycler_long = ExternalTool(
-                tool="unicycler",
-                input="",
-                output="",
-                params=f" -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options}",
-                logdir=logdir,
-                outfile="",
-            )
-        else:
-            unicycler_long = ExternalTool(
-                tool="unicycler",
-                input="",
-                output="",
-                params=f' -s {corrected_longreads} -l {entropy_filtered_longreads} -t {threads} -o {unicycler_output_dir} {unicycler_options} --spades_options "{spades_options}"',
-                logdir=logdir,
-                outfile="",
-            )
+    extra = build_extra_unicycler_options(unicycler_options, spades_options)
+    unicycler_long = ExternalTool(
+        tool="unicycler",
+        input="",
+        output="",
+        params=(
+            f" -s {corrected_longreads} -l {entropy_filtered_longreads} "
+            f"-t {threads} -o {unicycler_output_dir} {extra}"
+        ),
+        logdir=logdir,
+        outfile="",
+    )
 
     ExternalTool.run_tool(unicycler_long, to_stdout=False)
 

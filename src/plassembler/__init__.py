@@ -38,6 +38,7 @@ from plassembler.utils.no_assembly import (
 from plassembler.utils.plass_class import Assembly, Plass
 from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp, gzip_file
 from plassembler.utils.run_canu import (  # make_blastdb,; process_blast_output,; run_blast,
+    canu_read_type_and_error_rate,
     filter_entropy,
     filter_entropy_fastqs,
     run_canu,
@@ -1575,19 +1576,11 @@ def long(
         plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
         extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
-        # to set error rate
-        canu_nano_or_pacbio = "nanopore"
-
-        if pacbio_model != "nothing":
-            if pacbio_model == "pacbio-hifi":
-                canu_nano_or_pacbio = "pacbio-hifi"
-                corrected_error_rate = 0.005
-            else:
-                canu_nano_or_pacbio = "pacbio"
-                corrected_error_rate = 0.045
-        else:
-            canu_nano_or_pacbio = "nanopore"
-            # corrected error rate default will be 0.12
+        # map the validated --pacbio_model to canu's read-type flag, error rate,
+        # and whether read correction should be skipped (HiFi reads)
+        canu_nano_or_pacbio, corrected_error_rate, skip_canu_correct = (
+            canu_read_type_and_error_rate(pacbio_model, corrected_error_rate)
+        )
 
         if canu_flag is True:
             assembler = "canu"
@@ -1641,28 +1634,38 @@ def long(
             )
             filter_entropy_fastqs(plasmidfastqs, entropy_filtered_fastq)
 
-            logger.info("Correcting reads with canu prior to running Unicycler.")
-
-            try:
-                run_canu_correct(
-                    threads,
-                    logdir,
-                    entropy_filtered_fastq,
-                    canu_output_dir,
-                    canu_nano_or_pacbio,
-                    total_flye_plasmid_length,
-                    corrected_error_rate,
-                    coverage,
+            if skip_canu_correct:
+                # PacBio HiFi reads are already high-accuracy; canu -correct
+                # rejects them ("Cannot correct already corrected reads"), so
+                # skip correction and assemble the entropy-filtered reads (#84).
+                logger.info(
+                    "PacBio HiFi reads detected - skipping canu read correction."
                 )
-                # convert the corrected .fasta.gz from Canu to fastq
-                canu_reads: Path = (
-                    Path(canu_output_dir) / "canu.correctedReads.fasta.gz"
-                )
-                corrected_fastqs: Path = Path(outdir) / "corrected_plasmid_long.fastq"
-                corrected_fasta_to_fastq(canu_reads, corrected_fastqs)
-            except Exception:
-                logger.warning("Advancing with uncorrected reads")
                 corrected_fastqs = entropy_filtered_fastq
+            else:
+                logger.info("Correcting reads with canu prior to running Unicycler.")
+                try:
+                    run_canu_correct(
+                        threads,
+                        logdir,
+                        entropy_filtered_fastq,
+                        canu_output_dir,
+                        canu_nano_or_pacbio,
+                        total_flye_plasmid_length,
+                        corrected_error_rate,
+                        coverage,
+                    )
+                    # convert the corrected .fasta.gz from Canu to fastq
+                    canu_reads: Path = (
+                        Path(canu_output_dir) / "canu.correctedReads.fasta.gz"
+                    )
+                    corrected_fastqs: Path = (
+                        Path(outdir) / "corrected_plasmid_long.fastq"
+                    )
+                    corrected_fasta_to_fastq(canu_reads, corrected_fastqs)
+                except Exception:
+                    logger.warning("Advancing with uncorrected reads")
+                    corrected_fastqs = entropy_filtered_fastq
 
             # remove canu directory
             remove_directory(canu_output_dir)

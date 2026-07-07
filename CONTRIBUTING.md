@@ -57,18 +57,19 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `phrokka` for local development.
+Ready to contribute? Here's how to set up `plassembler` for local development.
 
-1. Fork the `phrokka` repo on GitHub.
+1. Fork the `plassembler` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/phrokka.git
+    $ git clone git@github.com:your_name_here/plassembler.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. `plassembler` uses Pixi (https://pixi.sh) for development. Install the
+   environment - this pulls `plassembler` (editable) and all of its external
+   dependencies (Flye, Unicycler, samtools, mash, ...)::
 
-    $ mkvirtualenv phrokka
-    $ cd phrokka/
-    $ python setup.py develop
+    $ cd plassembler/
+    $ pixi install
 
 4. Create a branch for local development::
 
@@ -76,14 +77,13 @@ Ready to contribute? Here's how to set up `phrokka` for local development.
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the
-   tests, including testing other Python versions with tox::
+5. When you're done making changes, check that the formatting/lint and the
+   tests pass::
 
-    $ flake8 phrokka tests
-    $ python setup.py test or pytest
-    $ tox
+    $ pixi run check-fmt
+    $ pixi run test
 
-   To get flake8 and tox, just pip install them into your virtualenv.
+   `pixi run fmt` will auto-format the code with ruff.
 
 6. Commit your changes and push your branch to GitHub::
 

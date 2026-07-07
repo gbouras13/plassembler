@@ -47,6 +47,19 @@ cd plassembler
 pip install -e .
 ```
 
+### Development (with Pixi)
+
+For development, plassembler uses [Pixi](https://pixi.sh). `pixi install` creates an environment containing plassembler (editable) along with all of its external dependencies (Flye, Unicycler, SPAdes, mash, samtools, minimap2, fastp, chopper, Raven, canu, dnaapler):
+
+```
+git clone https://github.com/gbouras13/plassembler.git
+cd plassembler
+pixi install
+pixi run plassembler --help
+```
+
+`pixi run <cmd>` runs a command inside the project environment (e.g. `pixi run test` runs the test suite), and `pixi shell` activates it.
+
 ## Unicycler v0.5.0 Installation Issues
 
 `plassembler` works best with Unicycler v0.5.0. With Unicycler v0.4.8, `plassembler` should still run without any issue and provide a satisfactory assembly, but you will be warned of this when you run `plassembler`. `plassembler` will not work with any older version of Unicycler.

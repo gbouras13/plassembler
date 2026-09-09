@@ -125,6 +125,51 @@ class test_assembly_class(unittest.TestCase):
         assembly.combine_input_fastas(chrom_fasta, plasmid_fasta)
         self.assertEqual(expected_return, True)
 
+    def test_combine_input_fastas_empty_chromosome(self):
+        """An empty chromosome.fasta must stop the run, not be combined silently.
+
+        list(SeqIO.parse(...))[0] used to raise IndexError here. Streaming the
+        records has no equivalent, so the check is explicit - otherwise every
+        depth and copy number would be computed against a combined.fasta with
+        no chromosome in it.
+        """
+        assembly = Assembly()
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp)
+            assembly.outdir = workdir
+            chrom_fasta = workdir / "chromosome.fasta"
+            chrom_fasta.write_text("")
+            plasmid_fasta = workdir / "plasmid.fasta"
+            plasmid_fasta.write_text(">1 circular=true\nACGT\n")
+            with self.assertRaises(SystemExit):
+                assembly.combine_input_fastas(chrom_fasta, plasmid_fasta)
+
+    def test_combine_input_fastas_headers(self):
+        """Pins the renaming, including the first plasmid losing its description.
+
+        Clearing only plasmid 1's description is a long-standing quirk, and
+        get_contig_circularity() reads circularity out of that description. It
+        is asserted here so that fixing it has to be a deliberate change.
+        """
+        assembly = Assembly()
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp)
+            assembly.outdir = workdir
+            chrom_fasta = workdir / "chromosome.fasta"
+            chrom_fasta.write_text(">contig_1 len=5000000\nACGTACGTAC\n")
+            plasmid_fasta = workdir / "plasmid.fasta"
+            plasmid_fasta.write_text(
+                ">1 circular=true\nGGGGGGGGGG\n>2 circular=true\nCCCCCCCCCC\n"
+            )
+            assembly.combine_input_fastas(chrom_fasta, plasmid_fasta)
+            headers = [
+                line.strip()
+                for line in (workdir / "combined.fasta").read_text().splitlines()
+                if line.startswith(">")
+            ]
+        self.assertEqual(headers, [">chromosome", ">1", ">2 circular=true"])
+        self.assertEqual(assembly.chromosome_name, "contig_1")
+
     @pytest.mark.slow
     def test_check_get_depth(self):
         expected = True

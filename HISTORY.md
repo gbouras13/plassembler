@@ -1,5 +1,13 @@
 # History
 
+1.8.5 (2026-09-07)
+------------------
+
+* Concatenates reads and contigs by block copy rather than round-tripping every record through BioPython. `concatenate_single_fastq` parsed both inputs into a list of `SeqRecord`s and wrote them out again, which costs roughly 5-10x the file size in RAM; on 250 MiB of short reads that was 27s and 1.8 GB of peak RSS, and is now 0.7s and 46 MB. Only the non-chromosomal short reads pass through here, so the saving is a transient GB or two rather than the whole run - but it landed immediately before Unicycler, which needs the memory itself. `Plass.get_depth_long` no longer builds its own list of records either. Thanks @[sanjaynagi-eit](https://github.com/sanjaynagi-eit) ([#90](https://github.com/gbouras13/plassembler/pull/90))
+* A wrong-format input is now caught by checking the first byte against the format's record marker (`@` or `>`) instead of by parsing every record, keeping that check at O(1) instead of O(file). One consequence: a truncated *uncompressed* FASTQ is no longer rejected, where full parsing used to raise. Truncated `.gz` input still fails, because the decompressor raises before the copy finishes
+* Concatenation now writes to a `.tmp` sibling and renames it into place. A wrong-format second input, a truncated gzip or a full disk can no longer leave a half-written FASTQ where the run expects a complete one, and a failed re-run leaves any previous output intact
+* An empty `chromosome.fasta` reaching `Assembly.combine_input_fastas` is now a fatal error with a message explaining it. `list(SeqIO.parse(...))[0]` used to raise `IndexError` there; streaming the records has no equivalent, and without an explicit check every depth and copy number would have been computed against a `combined.fasta` containing no chromosome
+
 1.8.4 (2026-08-18)
 ------------------
 

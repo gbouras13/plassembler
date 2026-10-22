@@ -1,5 +1,11 @@
 # History
 
+1.8.6 (unreleased)
+------------------
+
+* Makes `canu` failures fatal when `canu` itself could not run. Previously any `canu` failure during read correction was reported as "This probably means there is low depth, don't be too concerned" and `plassembler` carried on with uncorrected reads - including when one of `canu`'s own jobs could not run at all. In the Biocontainers image, `canu`'s generated job scripts call `expr -- ...`, which the image's BusyBox `expr` rejects, so k-mer counting failed every time; continuing with uncorrected reads left Unicycler assembling 110 spurious contigs that the depth filter then had to discard. Thanks @[SieurRicort](https://github.com/SieurRicort) for the detailed report and diagnosis ([#92](https://github.com/gbouras13/plassembler/issues/92))
+* `plassembler` now reads `canu`'s log to tell its stops apart. A job that failed (`... jobs failed, tried 2 times, giving up.`) or an internal `canu` crash stops the run, reports the failing stage alongside `canu`'s own output, and keeps the `canu` directory, which holds each job's log. Low read coverage - the expected outcome for a sample with no plasmids - still carries on as before, now with a message saying so. Any other stop also carries on, but shows `canu`'s reason rather than reassurance. The same applies to `canu` assembly with `--canu_flag`
+
 1.8.5 (2026-09-07)
 ------------------
 

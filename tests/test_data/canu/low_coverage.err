@@ -1,0 +1,16 @@
+--
+-- ERROR:  Read coverage (3.7) lower than allowed.
+-- ERROR:    minInputCoverage  = 10
+-- ERROR:
+-- ERROR:  This could be caused by an incorrect genomeSize.
+-- ERROR:
+-- ERROR:  You can force Canu to continue by decreasing parameter
+-- ERROR:  minInputCoverage.  Be warned that the quality of corrected
+-- ERROR:  reads and/or contiguity of contigs will be poor.
+--
+
+ABORT:
+ABORT: canu master +34 changes (r10522 86d7d3b8816a91372d68eceefb9a59ecfbea3eaa)
+ABORT: Don't panic, but a mostly harmless error occurred and Canu stopped.
+ABORT: Try restarting.  If that doesn't work, ask for help.
+ABORT:

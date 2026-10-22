@@ -1,6 +1,6 @@
 # History
 
-1.8.6 (unreleased)
+1.8.6 (2026-10-22)
 ------------------
 
 * Makes `canu` failures fatal when `canu` itself could not run. Previously any `canu` failure during read correction was reported as "This probably means there is low depth, don't be too concerned" and `plassembler` carried on with uncorrected reads - including when one of `canu`'s own jobs could not run at all. In the Biocontainers image, `canu`'s generated job scripts call `expr -- ...`, which the image's BusyBox `expr` rejects, so k-mer counting failed every time; continuing with uncorrected reads left Unicycler assembling 110 spurious contigs that the depth filter then had to discard. Thanks @[SieurRicort](https://github.com/SieurRicort) for the detailed report and diagnosis ([#92](https://github.com/gbouras13/plassembler/issues/92))

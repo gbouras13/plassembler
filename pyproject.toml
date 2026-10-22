@@ -79,8 +79,7 @@ chopper = ">=0.11.0"
 mash = ">=2.2"
 raven-assembler = ">=1.8"
 samtools = ">=0.15.0"
-canu = ">=2.2"
-dnaapler = ">=0.4.0"
+lrcorrect = ">=0.1.0"
 
 [tool.pixi.pypi-dependencies]
 plassembler = { path = ".", editable = true }

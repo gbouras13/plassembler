@@ -324,14 +324,25 @@ class test_end_to_end(unittest.TestCase):
         exec_command(cmd)
         remove_directory(outdir)
 
-    # def test_plassembler_long_canu(self):
-    #     """test plassembler long canu"""
-    #     longreads: Path = f"{end_to_end}/input_fastq.gz"
-    #     chromosome = 50000
-    #     outdir: Path = f"{end_to_end}/test_out"
-    #     cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f  --canu_flag"
-    #     exec_command(cmd)
-    #     remove_directory(outdir)
+    def test_plassembler_long_canu_flag_removed(self):
+        """--canu_flag was removed with canu: it must stop with a message saying so"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f  --canu_flag"
+        with self.assertRaises(RuntimeError) as raised:
+            exec_command(cmd)
+        assert "--canu_flag was removed" in str(raised.exception)
+        remove_directory(outdir)
+
+    def test_plassembler_long_corrected_error_rate_ignored(self):
+        """--corrected_error_rate was a canu option: it is accepted, with a warning, and ignored"""
+        longreads: Path = f"{end_to_end}/input_fastq.gz"
+        chromosome = 50000
+        outdir: Path = f"{end_to_end}/test_out"
+        cmd = f"plassembler long -l {longreads} -c {chromosome} -d {plassembler_db_dir} -o {outdir}  -t 8 -f --corrected_error_rate 0.1"
+        exec_command(cmd)
+        remove_directory(outdir)
 
     def test_plassembler_long_no_chrom(self):
         with self.assertRaises(RuntimeError):

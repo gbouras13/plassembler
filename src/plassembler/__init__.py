@@ -13,11 +13,16 @@ from plassembler.utils.assembly import run_flye, run_raven
 from plassembler.utils.bam import bam_to_fastq_short, sam_to_bam, split_bams
 from plassembler.utils.cleanup import (
     move_and_copy_files,
-    remove_directory,
     remove_file,
     remove_intermediate_files,
 )
 from plassembler.utils.concat import concatenate_short_fastqs
+from plassembler.utils.correct_reads import (
+    correction_read_type,
+    correction_target_bases,
+    filter_entropy_fastqs,
+    run_lrcorrect,
+)
 from plassembler.utils.db import check_db_installation
 from plassembler.utils.input_commands import (
     check_dependencies,
@@ -37,21 +42,8 @@ from plassembler.utils.no_assembly import (
 # import classes
 from plassembler.utils.plass_class import Assembly, Plass
 from plassembler.utils.qc import chopper, copy_sr_fastq_file, fastp, gzip_file
-from plassembler.utils.run_canu import (  # make_blastdb,; process_blast_output,; run_blast,
-    canu_read_type_and_error_rate,
-    filter_entropy,
-    filter_entropy_fastqs,
-    run_canu,
-    run_canu_correct,
-    trim_contigs,
-)
-from plassembler.utils.run_dnaapler import run_dnaapler
 from plassembler.utils.run_mash import mash_sketch, run_mash
-from plassembler.utils.run_unicycler import (
-    corrected_fasta_to_fastq,
-    run_unicycler,
-    run_unicycler_long,
-)
+from plassembler.utils.run_unicycler import run_unicycler, run_unicycler_long
 from plassembler.utils.sam_to_fastq import (
     extract_long_fastqs_fast,
     extract_long_fastqs_slow_keep_fastqs,
@@ -590,7 +582,6 @@ def run(
                 False,  # long only
                 use_raven,
                 skip_assembly,
-                False,  # canu_flag
             )
             remove_intermediate_files(
                 outdir,
@@ -716,7 +707,6 @@ def run(
                     False,  # long only
                     use_raven,
                     skip_assembly,
-                    False,  # canu_flag
                 )
                 remove_intermediate_files(
                     outdir,
@@ -746,7 +736,6 @@ def run(
                     False,  # long only
                     use_raven,
                     skip_assembly,
-                    False,  # canu_flag
                 )
                 remove_intermediate_files(
                     outdir,
@@ -786,7 +775,6 @@ def run(
                 False,  # long only
                 use_raven,
                 skip_assembly,
-                False,  # canu_flag
             )
             remove_intermediate_files(
                 outdir,
@@ -928,7 +916,6 @@ def run(
                     False,  # long only
                     use_raven,
                     skip_assembly,
-                    False,  # canu_flag
                 )
                 remove_intermediate_files(
                     outdir,
@@ -956,7 +943,6 @@ def run(
                     False,  # long only
                     use_raven,
                     skip_assembly,
-                    False,  # canu_flag
                 )
                 remove_intermediate_files(
                     outdir,
@@ -1147,7 +1133,6 @@ def assembled(
         False,  # long only
         False,  # use raven
         False,  # skip_assembly is false
-        False,  # canu_flag
     )
     remove_intermediate_files(
         outdir,
@@ -1289,16 +1274,18 @@ def long_options(func):
             help="If you want to keep the chromosome assembly.",
             is_flag=True,
         ),
+        # canu was removed in v1.9.0. Both options are kept, hidden, so that
+        # existing commands get a clear message instead of "no such option"
         click.option(
             "--canu_flag",
-            help="Runs canu instead of Unicycler (aka replicates v1.2.0). As of v1.3.0, Unicycler is the assembler for long reads. Canu is only recommended if you have low quality reads (e.g. ONT R9).",
             is_flag=True,
+            hidden=True,
         ),
         click.option(
             "--corrected_error_rate",
-            help="Corrected error rate parameter for canu -correct. For advanced users only.",
             type=float,
-            default=0.12,
+            default=None,
+            hidden=True,
         ),
         click.option(
             "--depth_filter",
@@ -1386,13 +1373,21 @@ def long(
     logger.info(f"--flye_directory is {flye_directory}")
     logger.info(f"--flye_assembly is {flye_assembly}")
     logger.info(f"--flye_info is {flye_info}")
-    logger.info(f"--corrected_error_rate is {corrected_error_rate}")
     logger.info(f"--no_chromosome is {no_chromosome}")
     logger.info(f"--depth_filter is {depth_filter}")
     logger.info(f"--unicycler_options is {unicycler_options}")
     logger.info(f"--spades_options is {spades_options}")
     logger.info(f"--skip_mash is {skip_mash}")
     logdir = Path(f"{outdir}/logs")
+
+    if canu_flag:
+        logger.error(
+            "--canu_flag was removed in plassembler v1.9.0, along with canu. plassembler long always assembles with Unicycler, after correcting reads with lrcorrect. Please run again without --canu_flag."
+        )
+    if corrected_error_rate is not None:
+        logger.warning(
+            "--corrected_error_rate was a canu option and is ignored: canu is no longer used as of plassembler v1.9.0."
+        )
 
     # check deps
     logger.info("Checking dependencies")
@@ -1423,18 +1418,6 @@ def long(
     # pacbio model check that the string is valid if legit
     if pacbio_model != "nothing":
         pacbio_model = validate_pacbio_model(pacbio_model)
-
-    # check error rate
-
-    try:
-        float(corrected_error_rate) > 0
-        corrected_error_rate = float(corrected_error_rate)
-        if corrected_error_rate < 0 or corrected_error_rate > 1:
-            logger.error(
-                f"{corrected_error_rate} is less than 0 or more than 1. canu -correct will fail. Please give a value between 0 and 1."
-            )
-    except ValueError as e:
-        logger.error(f"Error: {corrected_error_rate} is not a float. {e}")
 
     if skip_qc is False:
         # filtering long readfastq
@@ -1533,7 +1516,6 @@ def long(
             True,  # long only
             False,  # raven false
             skip_assembly,  # skip assembly
-            False,  # canu_flag
         )
         remove_intermediate_files(
             outdir,
@@ -1548,19 +1530,12 @@ def long(
         # no_plasmids_flag = False as obviously "plasmids"
         plass.no_plasmids_flag = False
 
-        # get length of flye plasmid assembly for canu
+        # get length of flye plasmid assembly, which sets how many reads to correct
         total_flye_plasmid_length = 0
         for record in SeqIO.parse(os.path.join(outdir, "assembly.fasta"), "fasta"):
-            if len(record.seq) < int(chromosome):  # get plasmid lengths for canu param
+            if len(record.seq) < int(chromosome):
                 total_flye_plasmid_length += len(record.seq)
-
-        # add 10kbp in case small plasmids
-        # set coverage to high if nothing recovered
-        if total_flye_plasmid_length == 0:
-            total_flye_plasmid_length = 10000
-            coverage = 250
-        else:
-            coverage = 50
+        target_bases = correction_target_bases(total_flye_plasmid_length)
 
         logger.info("Mapping long reads.")
         input_long_reads: Path = Path(outdir) / "chopper_long_reads.fastq.gz"
@@ -1576,129 +1551,69 @@ def long(
         plasmidfastqs: Path = Path(outdir) / "plasmid_long.fastq"
         extract_long_fastqs_fast(samfile, plasmidfastqs, threads)
 
-        # map the validated --pacbio_model to canu's read-type flag, error rate,
-        # and whether read correction should be skipped (HiFi reads)
-        canu_nano_or_pacbio, corrected_error_rate, skip_canu_correct = (
-            canu_read_type_and_error_rate(pacbio_model, corrected_error_rate)
-        )
+        # map the validated --pacbio_model to lrcorrect's preset, and whether
+        # read correction should be skipped (HiFi reads)
+        correction_preset, skip_correction = correction_read_type(pacbio_model)
 
-        if canu_flag is True:
-            assembler = "canu"
-            logger.info("Running canu to recover plasmids.")
+        # run unicycler after lrcorrect and removing low entropy repeat reads
+        assembler = "unicycler"
 
-            canu_output_dir: Path = Path(outdir) / "canu"
+        logger.info("Removing junk low entropy repeat reads.")
 
-            run_canu(
-                threads,
-                logdir,
-                plasmidfastqs,
-                canu_output_dir,
-                canu_nano_or_pacbio,
-                total_flye_plasmid_length,
-                corrected_error_rate,
-                coverage,
-            )
+        # filter entropy of fastq (to remove rubbish repeats) so they don't survive the correction step
+        entropy_filtered_fastq = Path(outdir) / "plasmid_long_entropy_filtered.fastq"
+        filter_entropy_fastqs(plasmidfastqs, entropy_filtered_fastq)
 
-            canu_fasta: Path = Path(canu_output_dir) / "canu.contigs.fasta"
-
-            # run and parse blast
-
-            # filter for low entropy repeats in canu output (just assembly crap)
-            filtered_contig_fasta = filter_entropy(canu_fasta, outdir)
-
-            # trim coordinates based on the contig header
-            trimmed_canu_fasta = trim_contigs(filtered_contig_fasta, outdir)
-
-            ##################
-            # dnaapler
-            # returns plasmids for sketching
-            ##################
-
-            assembled_fasta = run_dnaapler(threads, trimmed_canu_fasta, logdir, outdir)
-            # defaults to yes for the next step after
-            unicycler_success = True
-
-        # this is default == run unicycler after canu -correct and removing low entropy repeat reads
+        if skip_correction:
+            # PacBio HiFi reads are already high-accuracy, so skip correction
+            # and assemble the entropy-filtered reads (#84).
+            logger.info("PacBio HiFi reads detected - skipping read correction.")
+            corrected_fastqs = entropy_filtered_fastq
         else:
-            assembler = "unicycler"
-
-            # correct reads with canu
-
-            canu_output_dir: Path = Path(outdir) / "canu"
-
-            logger.info("Removing junk low entropy repeat reads.")
-
-            # filter entropy of fastq (to remove rubbish repeats) so they don't survive the correction step
-            entropy_filtered_fastq = (
-                Path(outdir) / "plasmid_long_entropy_filtered.fastq"
-            )
-            filter_entropy_fastqs(plasmidfastqs, entropy_filtered_fastq)
-
-            if skip_canu_correct:
-                # PacBio HiFi reads are already high-accuracy; canu -correct
-                # rejects them ("Cannot correct already corrected reads"), so
-                # skip correction and assemble the entropy-filtered reads (#84).
-                logger.info(
-                    "PacBio HiFi reads detected - skipping canu read correction."
-                )
-                corrected_fastqs = entropy_filtered_fastq
-            else:
-                logger.info("Correcting reads with canu prior to running Unicycler.")
-                try:
-                    run_canu_correct(
-                        threads,
-                        logdir,
-                        entropy_filtered_fastq,
-                        canu_output_dir,
-                        canu_nano_or_pacbio,
-                        total_flye_plasmid_length,
-                        corrected_error_rate,
-                        coverage,
-                    )
-                    # convert the corrected .fasta.gz from Canu to fastq
-                    canu_reads: Path = (
-                        Path(canu_output_dir) / "canu.correctedReads.fasta.gz"
-                    )
-                    corrected_fastqs: Path = (
-                        Path(outdir) / "corrected_plasmid_long.fastq"
-                    )
-                    corrected_fasta_to_fastq(canu_reads, corrected_fastqs)
-                except Exception:
-                    logger.warning("Advancing with uncorrected reads")
-                    corrected_fastqs = entropy_filtered_fastq
-
-            # remove canu directory
-            remove_directory(canu_output_dir)
-
-            unicycler_dir: Path = Path(outdir) / "unicycler_output"
-            run_unicycler_long(
+            logger.info("Correcting reads with lrcorrect prior to running Unicycler.")
+            corrected_fastqs: Path = Path(outdir) / "corrected_plasmid_long.fastq"
+            corrected = run_lrcorrect(
                 threads,
                 logdir,
-                corrected_fastqs,
                 entropy_filtered_fastq,
-                unicycler_dir,
-                unicycler_options,
-                spades_options,
+                corrected_fastqs,
+                correction_preset,
+                target_bases,
             )
-            remove_file(corrected_fastqs)
-            assembled_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
+            if corrected is False:
+                logger.warning("Advancing with uncorrected reads")
+                remove_file(corrected_fastqs)
+                corrected_fastqs = entropy_filtered_fastq
 
-            # check if unicycler succeded according to the output (it won't if no plasmids)
-            unicycler_success = os.path.isfile(assembled_fasta)
-            if (
-                os.path.isfile(assembled_fasta) is True
-                and os.stat(assembled_fasta).st_size == 0
-            ):
-                unicycler_success = False
+        unicycler_dir: Path = Path(outdir) / "unicycler_output"
+        run_unicycler_long(
+            threads,
+            logdir,
+            corrected_fastqs,
+            entropy_filtered_fastq,
+            unicycler_dir,
+            unicycler_options,
+            spades_options,
+        )
+        remove_file(corrected_fastqs)
+        assembled_fasta = os.path.join(outdir, "unicycler_output", "assembly.fasta")
+
+        # check if unicycler succeded according to the output (it won't if no plasmids)
+        unicycler_success = os.path.isfile(assembled_fasta)
+        if (
+            os.path.isfile(assembled_fasta) is True
+            and os.stat(assembled_fasta).st_size == 0
+        ):
+            unicycler_success = False
 
         # check output has a plasmid
         # get contig count
         contig_count = 0
 
-        # first check if unicycler or canu output a FASTA (if no reads, it won't)
+        # first check if unicycler output a FASTA (if no reads, it won't)
         if os.path.exists(assembled_fasta) is False or unicycler_success is False:
             contig_count = 0
-        else:  # assuming there is a canu fasta
+        else:  # assuming there is a unicycler fasta
             for record in SeqIO.parse(assembled_fasta, "fasta"):
                 contig_count += 1
 
@@ -1747,7 +1662,6 @@ def long(
         True,  # long only
         False,  # no raven
         skip_assembly,
-        canu_flag,
     )
 
     remove_intermediate_files(

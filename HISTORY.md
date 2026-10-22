@@ -1,5 +1,15 @@
 # History
 
+1.9.0 (unreleased)
+------------------
+
+* `plassembler long` corrects reads with [lrcorrect](https://github.com/gbouras13/lrcorrect) instead of `canu -correct`, and canu is no longer a dependency. canu needed perl and java, took ~2 minutes even on a few Mbp of reads, needed a genome size, and broke in the Biocontainers image ([#92](https://github.com/gbouras13/plassembler/issues/92)): its job scripts call `expr --`, which BusyBox rejects, and its perl needs `PERL5LIB`, which `singularity exec` does not set. lrcorrect is a single Rust binary with minimap2 built in. It finds all-vs-all overlaps, aligns each read's best partners to it and calls a majority-vote consensus, over two rounds. Its output does not depend on the thread count
+* On simulated plasmid read sets, lrcorrect's reads were more accurate than canu's, in under half the time and memory. They are also more complete: canu only kept the longest ~40x, not the 50x plassembler asked for. On the ~92% identity (R9-like) set, Unicycler crashed on canu's reads, while lrcorrect's gave all three plasmids as circular contigs. See [the long read docs](https://plassembler.readthedocs.io/en/latest/long/) for the comparison
+* Corrected reads are subsampled at random to 50x of the length of Flye's non-chromosomal contigs, or to 2.5 Mbp when Flye found none - the same targets plassembler gave canu
+* Too little data to correct anything (lrcorrect exits 0 with no reads) is reported, and the run carries on with uncorrected reads as before. lrcorrect failing to run is now fatal and shows lrcorrect's own error message, instead of being treated as a sample with no plasmids
+* `--canu_flag` (deprecated since v1.3.0) has been removed and now stops with a message saying so. `--corrected_error_rate` was a canu option: it is still accepted, with a warning, and ignored
+* dnaapler was only used by `--canu_flag`, so it is no longer a dependency either
+
 1.8.5 (2026-09-07)
 ------------------
 

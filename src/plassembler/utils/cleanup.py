@@ -48,22 +48,13 @@ def remove_intermediate_files(out_dir, keep_chromosome, assembled_mode, long_onl
     remove_file(os.path.join(out_dir, "multimap_plasmid_chromosome_long.fastq"))
 
     # long
-    remove_file(os.path.join(out_dir, "plasmids_canu.fasta"))
     remove_file(os.path.join(out_dir, "plasmid_long.fastq"))
 
     # chromosome
     if keep_chromosome is False:
         remove_file(os.path.join(out_dir, "chromosome.fasta"))
 
-    # canu
-    # leave the canu directory for long
-    # remove_directory(os.path.join(out_dir, "canu"))
     remove_file(os.path.join(out_dir, "long_combined.fasta"))
-    remove_file(os.path.join(out_dir, "canu_filtered_contigs.fasta"))
-    remove_file(os.path.join(out_dir, "canu_filtered_trimmed_contigs.fasta"))
-
-    # remove dnaapler for long
-    remove_directory(os.path.join(out_dir, "dnaapler"))
 
 
 def move_and_copy_files(
@@ -75,7 +66,6 @@ def move_and_copy_files(
     long_only,
     use_raven,
     skip_assembly,
-    canu_flag,
 ):
     """moves and copies files
     :param out_dir:  Output Directory
@@ -86,7 +76,6 @@ def move_and_copy_files(
     :param long_only: whether or not unicycler worked
     :param use_raven: whether or not unicycler worked
     :param skip_assembly: --flye_directory specified
-    :param canu_flag: --canu_flag is True
     :return:
     """
 
@@ -113,12 +102,11 @@ def move_and_copy_files(
             shutil.move(os.path.join(out_dir, "assembly_graph.gfa"), raven_dir)
 
     if unicycler_success_flag is True:
-        if canu_flag is False:
-            # move unicycler graph output to main directory
-            shutil.copy2(
-                os.path.join(out_dir, "unicycler_output", "assembly.gfa"),
-                os.path.join(out_dir, prefix + "_plasmids.gfa"),
-            )
+        # move unicycler graph output to main directory
+        shutil.copy2(
+            os.path.join(out_dir, "unicycler_output", "assembly.gfa"),
+            os.path.join(out_dir, prefix + "_plasmids.gfa"),
+        )
     else:
         # to touch empty versions of the output files if no plasmids
         touch_output_fail_files(out_dir, prefix)

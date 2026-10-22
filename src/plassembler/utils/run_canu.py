@@ -1,4 +1,7 @@
 import math
+import re
+import subprocess
+import sys
 from itertools import product
 from pathlib import Path
 
@@ -7,6 +10,25 @@ from Bio.SeqRecord import SeqRecord
 from loguru import logger
 
 from plassembler.utils.external_tools import ExternalTool
+
+# canu ends every failed run with the same "ABORT: Don't panic" banner - a
+# sample with too few reads gets it too - so the banner says nothing about what
+# went wrong. These are the lines that do, and they read the same in 2.2 and 2.3.
+
+# A compute job that never produced its output, which canu words the same way
+# at every stage ("Kmer counting (meryl-count) jobs failed, tried 2 times, giving
+# up."). Jobs only start once the reads have passed canu's coverage checks, so
+# this is canu's environment failing - a job killed for memory, a missing binary,
+# or a shell tool its job scripts cannot use, such as BusyBox's expr (#92).
+CANU_JOB_FAILURE = re.compile(
+    r"^-- (.*failed, tried \d+ times, giving up\.)$", re.MULTILINE
+)
+# canu's banner for an error it calls abnormal ("Please panic, this is abnormal")
+CANU_CRASH = re.compile(r"^CRASH:", re.MULTILINE)
+# canu's stop for thin reads, either on loading them (minInputCoverage) or
+# between stages (stopOnLowCoverage). Once the chromosome is removed there are
+# few reads left in a sample with no plasmids, so this is an expected outcome.
+CANU_LOW_COVERAGE = re.compile(r"Read coverage \(.*\) lower than allowed")
 
 
 def canu_read_type_and_error_rate(pacbio_model, default_error_rate):
@@ -32,6 +54,89 @@ def canu_read_type_and_error_rate(pacbio_model, default_error_rate):
     return "nanopore", default_error_rate, False
 
 
+def _canu_stderr_tail(log_text, max_lines=25):
+    """Last few lines of canu's stderr, ready to embed in a message.
+
+    canu writes everything it reports to stderr, and the lines before its ABORT
+    banner say which stage failed and name each job's own log. ExternalTool's
+    "Command line:" header is dropped: it is flushed when the log closes, so it
+    lands after canu's output.
+
+    :param log_text: contents of the canu .err logfile
+    :param max_lines: how many trailing lines to keep
+    :return: the trailing lines, or "" if there are none
+    """
+    lines = [
+        line
+        for line in log_text.strip().splitlines()
+        if not line.startswith("Command line:")
+    ]
+    return "\n".join(lines[-max_lines:])
+
+
+def _report_canu_failure(canu, canu_output_dir, step, returncode):
+    """Reports why canu exited non-zero, and stops the run if canu is broken.
+
+    Only the failures canu itself marks as a job failing or as a crash stop the
+    run. Everything else - including the coverage stop a sample with no plasmids
+    is expected to hit - carries on as before: canu has close to 200 ways of
+    stopping, and one this misses must not turn a plasmid-free sample into a
+    failed run.
+
+    :param canu: the ExternalTool that ran canu
+    :param canu_output_dir: canu's -d directory, which holds each job's own log
+    :param step: what canu was asked to do, e.g. "correct reads"
+    :param returncode: canu's exit status
+    """
+    try:
+        log_text = Path(canu.err_log).read_text(errors="replace")
+    except OSError:
+        log_text = ""
+    stderr_tail = _canu_stderr_tail(log_text)
+    job_failure = CANU_JOB_FAILURE.search(log_text)
+
+    if job_failure or CANU_CRASH.search(log_text):
+        reason = (
+            job_failure.group(1) if job_failure else "canu reported an internal error"
+        )
+        # everything goes into a single logger.error: under the CLI that sink
+        # exits the process, so a second call would never be reached
+        message = (
+            f"Error with canu: it could not {step}. {reason}\n"
+            "This is canu failing to run, not a sign of too few reads - for "
+            "example a job killed for running out of memory, or a tool its job "
+            f"scripts cannot use. canu's working directory has been kept at "
+            f"{canu_output_dir}, and the log of each job named below is inside "
+            f"it. Please check {canu.err_log}"
+        )
+        if stderr_tail:
+            message = f"{message}\ncanu stderr:\n{stderr_tail}"
+        logger.error(message)
+        # the CLI exits inside logger.error above; this covers run_canu being
+        # driven as a library, where no ERROR sink is installed
+        sys.exit(1)
+
+    if CANU_LOW_COVERAGE.search(log_text):
+        logger.warning(
+            f"canu stopped before it could {step}, as read coverage was too low."
+        )
+        logger.warning(
+            "This usually means few reads are left once the chromosome is "
+            "removed, most often because the sample has no plasmids."
+        )
+    else:
+        logger.warning(
+            f"canu exited with return code {returncode} before it could {step}, "
+            "for a reason plassembler does not recognise."
+        )
+        if stderr_tail:
+            logger.warning(f"canu stderr:\n{stderr_tail}")
+    logger.warning(
+        f"Please check stdout log file: {canu.out_log} and stderr log file: "
+        f"{canu.err_log}"
+    )
+
+
 def run_canu_correct(
     threads: Path,
     logdir: Path,
@@ -51,21 +156,18 @@ def run_canu_correct(
     """
     # for the assembly param need to divide by a million
     total_flye_plasmid_length = round(total_flye_plasmid_length / 1000000, 5)
+    canu = ExternalTool(
+        tool="canu -correct",
+        input="",
+        output="",
+        params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} useGrid=false -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
+        logdir=logdir,
+        outfile="",
+    )
     try:
-        canu = ExternalTool(
-            tool="canu -correct",
-            input="",
-            output="",
-            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} useGrid=false -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
-            logdir=logdir,
-            outfile="",
-        )
-
-        ExternalTool.run_tool(canu, to_stdout=False)
-    except Exception:
-        logger.info(
-            f"canu correct failed. This likely means that you have non-chromosomal reads to assemble anything. It is likely that you have no plasmids in this sample, but check the canu output in {logdir}."
-        )
+        canu.run()
+    except subprocess.CalledProcessError as error:
+        _report_canu_failure(canu, canu_output_dir, "correct reads", error.returncode)
 
 
 def run_canu(
@@ -87,21 +189,18 @@ def run_canu(
     """
     # for the assembly param need to divide by a million
     total_flye_plasmid_length = round(total_flye_plasmid_length / 1000000, 5)
+    canu = ExternalTool(
+        tool="canu",
+        input="",
+        output="",
+        params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} useGrid=false -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
+        logdir=logdir,
+        outfile="",
+    )
     try:
-        canu = ExternalTool(
-            tool="canu",
-            input="",
-            output="",
-            params=f" -p canu -d {canu_output_dir} genomeSize={total_flye_plasmid_length}m maxInputCoverage={coverage} stopOnLowCoverage=1 maxThreads={threads} useGrid=false -{canu_nano_or_pacbio} correctedErrorRate={corrected_error_rate} {longreads}",
-            logdir=logdir,
-            outfile="",
-        )
-
-        ExternalTool.run_tool(canu, to_stdout=False)
-    except Exception:
-        logger.info(
-            f"canu failed. This likely means that you have non-chromosomal reads to assemble anything. It is likely that you have no plasmids in this sample, but check the canu output in {logdir}."
-        )
+        canu.run()
+    except subprocess.CalledProcessError as error:
+        _report_canu_failure(canu, canu_output_dir, "assemble", error.returncode)
 
 
 """

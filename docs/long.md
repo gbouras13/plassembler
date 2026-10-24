@@ -29,16 +29,43 @@ Comparison on the same non-chromosomal read sets: 8 threads on one Phoenix (Adel
 | Read set | Corrector | Read identity | Reads kept | Time (s) | Peak RAM (GB) | Unicycler result (errors per plasmid) |
 |---|---|---|---|---|---|---|
 | ab95 | canu | 99.94% | 263/480 | 126 | 3.6 | 1 circular (0) |
-| ab95 | lrcorrect | 100.00% | 478/480 | 55 | 1.1 | 1 circular (0) |
+| ab95 | lrcorrect | 100.00% | 478/480 | 52 | 1.1 | 1 circular (0) |
 | tp95 | canu | 99.91% | 104/172 | 50 | 1.7 | 2 circular (0, 0) |
-| tp95 | lrcorrect | 100.00% | 168/172 | 18 | 0.7 | 2 circular (0, 0) |
+| tp95 | lrcorrect | 100.00% | 168/172 | 11 | 0.7 | 2 circular (0, 0) |
 | R9-like | canu | 99.69% | 367/934 | 242 | 3.6 | Unicycler crashed |
-| R9-like | lrcorrect | 99.97% | 646/934 | 87 | 1.5 | 3 circular (41, 5, 8) |
+| R9-like | lrcorrect | 99.97% | 646/934 | 77 | 1.5 | 3 circular (41, 5, 9) |
 | R10-like | canu | 99.9995% | 391/967 | 182 | 3.6 | 3 circular (0, 0, 0) |
-| R10-like | lrcorrect | 100.00% | 656/967 | 77 | 1.7 | 3 circular (0, 0, 0) |
+| R10-like | lrcorrect | 100.00% | 656/967 | 86 | 1.5 | 3 circular (0, 0, 0) |
 | R10-like | none | 98.72% | 967/967 | - | - | 3 circular (1, 0, 0), Unicycler 1.6x slower |
 | CLR | canu | 98.55% | 412/943 | 123 | 3.6 | 3 circular (154, 11, 24) |
-| CLR | lrcorrect | 99.82% | 632/943 | 102 | 1.8 | 3 circular (79, 7, 20) |
+| CLR | lrcorrect | 99.83% | 629/943 | 131 | 1.4 | 3 circular (58, 5, 19) |
+
+On real reads, with curated reference genomes, the comparison is closer. The read sets are:
+
+* the six isolates from [Wick et al. 2021](https://doi.org/10.1099/mgen.0.000631), each sequenced with both an R9.4.1 rapid and a ligation library (12 read sets);
+* *K. pneumoniae* MGH78578 on R9.4.1 SUP, R10.4 SUP and R10.4.1 ([Sanderson et al.](https://doi.org/10.1099/mgen.0.000910));
+* *K. variicola* INF345 from a 2025 ONT benchmarking run (PRJEB93892), whose raw reads are ~94.5% accurate.
+
+Each set was subsampled to ~100x and run through `plassembler long` up to read correction. Counts are complete circular plasmids:
+
+| Read set | Plasmids | canu | lrcorrect | No correction | canu time (s) | lrcorrect time (s) |
+|---|---|---|---|---|---|---|
+| *A. baumannii* J9, R9.4.1 rapid / ligation | 2 / 2 | 2 / 2 | 2 / 2 | 1 / 0 | 110 / 81 | 70 / 12 |
+| *C. koseri* MINF_9D, R9.4.1 rapid / ligation | 2 / 2 | 2 / 2 | 2 / 2 | 2 / 1 | 86 / 35 | 28 / 4 |
+| *E. kobei* MSB1_1B, R9.4.1 rapid / ligation | 6 / 6 | 3 / 3 | 5 / 3 | 3 / 0 | 496 / 334 | 116 / 56 |
+| *Haemophilus* M1C132_1, R9.4.1 rapid / ligation | 5 / 5 | 2 / 2 | 2 / 2 | 3 / 1 | 75 / 29 | 42 / 4 |
+| *K. oxytoca* MSB1_2C, R9.4.1 rapid / ligation | 4 / 4 | 1 / 2 | 1 / 3 | 1 / 1 | 375 / 62 | 146 / 16 |
+| *K. variicola* INF345, R9.4.1 rapid / ligation | 5 / 5 | 3 / 4 | 3 / 2 | 1 / 2 | 474 / 385 | 461 / 264 |
+| *K. variicola* INF345, 2025 run | 5 | 2 | 2 | 2 | 364 | 274 |
+| *K. pneumoniae* MGH78578, R9.4.1 SUP | 5 | 5 | 3 | 2 | 404 | 419 |
+| *K. pneumoniae* MGH78578, R10.4 SUP | 5 | 2 | 3 | 3 | 302 | 295 |
+| *K. pneumoniae* MGH78578, R10.4.1 | 5 | 3 | 4 | 0 (Unicycler crashed) | 392 | 437 |
+| **Total** | **68** | **40** | **41** | **23** | | |
+
+* lrcorrect's reads were more accurate than canu's on 15 of the 16 real read sets and tied on the other, and it used 0.6-3.6 GB of RAM against canu's 1.7-4.2 GB.
+* lrcorrect was faster on 13 of the 16 sets, usually 2-8x. On the read sets dominated by a high-copy small plasmid it took about as long as canu.
+* Many small plasmids are missed whichever corrector is used. In these cases the corrected reads are there, but Unicycler does not resolve the plasmid, for example two small MGH78578 plasmids that share an 820 bp region.
+* The reads in all of these sets are 94-98% accurate. None is modern R10.4.1 (Q20+) data, where the simulations suggest correction mostly saves Unicycler time.
 
 * canu only keeps the longest ~40x of reads (its `corOutCoverage`), not the 50x `plassembler` asked for. lrcorrect keeps the whole random 50x subsample.
 * Without correction, Unicycler failed or gave a fragment on the ~95%, ~92% and CLR sets. Modern R10.4.1 reads (~Q20) assemble without correction, but more slowly.

@@ -63,8 +63,9 @@ Each set was subsampled to ~100x and run through `plassembler long` up to read c
 | **Total** | **68** | **40** | **41** | **23** | | |
 
 * lrcorrect's reads were more accurate than canu's on 15 of the 16 real read sets and tied on the other, and it used 0.6-3.6 GB of RAM against canu's 1.7-4.2 GB.
-* lrcorrect was faster on 13 of the 16 sets, usually 2-8x. On the read sets dominated by a high-copy small plasmid it took about as long as canu.
+* lrcorrect was faster on 14 of the 16 sets, by 2.6-8.5x on 8 of them. On the read sets dominated by a high-copy small plasmid it took about as long as canu.
 * Many small plasmids are missed whichever corrector is used. In these cases the corrected reads are there, but Unicycler does not resolve the plasmid, for example two small MGH78578 plasmids that share an 820 bp region.
+* The full benchmark, with per-read-set tables, is in [Long read correction benchmarking](benchmarking_correction.md).
 * The reads in all of these sets are 94-98% accurate. None is modern R10.4.1 (Q20+) data, where the simulations suggest correction mostly saves Unicycler time.
 
 * canu only keeps the longest ~40x of reads (its `corOutCoverage`), not the 50x `plassembler` asked for. lrcorrect keeps the whole random 50x subsample.

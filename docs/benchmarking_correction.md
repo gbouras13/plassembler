@@ -1,6 +1,6 @@
 # Long read correction benchmarking (v1.9.0)
 
-From v1.9.0, `plassembler long` corrects its non-chromosomal reads with [lrcorrect](https://github.com/gbouras13/lrcorrect) instead of `canu -correct`. This page records the benchmarking behind that change. All inputs, outputs and scripts are on Zenodo: DOI_TO_ADD.
+From v1.9.0, `plassembler long` corrects its non-chromosomal reads with [lrcorrect](https://github.com/gbouras13/lrcorrect) instead of `canu -correct`. This page records the benchmarking behind that change. All inputs, outputs and scripts are on Zenodo: [doi:10.5281/zenodo.23656913](https://doi.org/10.5281/zenodo.23656913).
 
 ## Summary
 
@@ -148,7 +148,7 @@ Four runs of each corrector on the same input, with 8 threads:
 
 ## Data and scripts
 
-The Zenodo record (DOI_TO_ADD) holds:
+The [Zenodo record](https://doi.org/10.5281/zenodo.23656913) holds:
 
 * the scripts;
 * the exact input reads each corrector received, with each set's truth reference;

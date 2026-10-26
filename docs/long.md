@@ -1,6 +1,6 @@
 # Long v1.3.0 Updates (24 October 2023)
 
- Note: as of v1.9.0, reads are corrected with [lrcorrect](https://github.com/gbouras13/lrcorrect) instead of `canu -correct`, and the old canu-based method (`--canu_flag`) has been removed. See [Read correction](#read-correction-v190) below.
+ Note: as of v1.9.0, reads are corrected with [lrcorrect](https://github.com/gbouras13/lrcorrect) instead of `canu -correct`, and the old canu-based method (`--canu_flag`) and `--corrected_error_rate` have been removed. See [Read correction](#read-correction-v190) below.
 
 While I was mostly happy with with the `plassembler long` update in v 1.2.0, while testing it a lot of real life data benchmarking [hybracter](https://github.com/gbouras13/hybracter), I found some strange instances where it would give way too many contigs as output - seemingly, it would sometimes assemble the same plasmid multiple times with slight variations (probably due to various factors or too deep read sets). In any case, I wanted a better automated solution. 
 

@@ -6,8 +6,10 @@ import sys
 from pathlib import Path
 
 import pytest
+from click.testing import CliRunner
 from loguru import logger
 
+from src.plassembler import main_cli
 from src.plassembler.utils.correct_reads import (
     correction_target_bases,
     run_lrcorrect,
@@ -177,3 +179,13 @@ def test_real_lrcorrect_empty_input(tmp_path, captured_logs):
     empty.write_text("")
     out = tmp_path / "corrected.fastq"
     assert run_lrcorrect(1, tmp_path / "logs", empty, out, "ont", 2500000) is False
+
+
+@pytest.mark.parametrize("option", [["--canu_flag"], ["--corrected_error_rate", "0.1"]])
+def test_canu_options_are_gone(option, tmp_path):
+    """canu was removed in v1.9.0, and its two options with it."""
+    result = CliRunner().invoke(
+        main_cli, ["long", "-l", str(READS), "-o", str(tmp_path / "out"), *option]
+    )
+    assert result.exit_code == 2
+    assert "No such option" in result.output

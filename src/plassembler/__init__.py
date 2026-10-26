@@ -1274,19 +1274,6 @@ def long_options(func):
             help="If you want to keep the chromosome assembly.",
             is_flag=True,
         ),
-        # canu was removed in v1.9.0. Both options are kept, hidden, so that
-        # existing commands get a clear message instead of "no such option"
-        click.option(
-            "--canu_flag",
-            is_flag=True,
-            hidden=True,
-        ),
-        click.option(
-            "--corrected_error_rate",
-            type=float,
-            default=None,
-            hidden=True,
-        ),
         click.option(
             "--depth_filter",
             help="Filters all contigs low than this fraction of the chromosome read depth. Will apply on both long- and short-read sets for plassembler run.",
@@ -1341,8 +1328,6 @@ def long(
     flye_directory,
     flye_assembly,
     flye_info,
-    canu_flag,
-    corrected_error_rate,
     no_chromosome,
     depth_filter,
     unicycler_options,
@@ -1379,15 +1364,6 @@ def long(
     logger.info(f"--spades_options is {spades_options}")
     logger.info(f"--skip_mash is {skip_mash}")
     logdir = Path(f"{outdir}/logs")
-
-    if canu_flag:
-        logger.error(
-            "--canu_flag was removed in plassembler v1.9.0, along with canu. plassembler long always assembles with Unicycler, after correcting reads with lrcorrect. Please run again without --canu_flag."
-        )
-    if corrected_error_rate is not None:
-        logger.warning(
-            "--corrected_error_rate was a canu option and is ignored: canu is no longer used as of plassembler v1.9.0."
-        )
 
     # check deps
     logger.info("Checking dependencies")

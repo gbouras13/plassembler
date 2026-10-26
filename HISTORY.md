@@ -7,7 +7,7 @@
 * On 16 real read sets with curated references (R9.4.1, R10.4 and R10.4.1; 68 plasmids), Unicycler recovered as many complete circular plasmids from lrcorrect's reads as from canu's (41 vs 40). lrcorrect's reads were more accurate on 15 of the 16, it was faster on 14 of the 16 (2.6-8.5x on half of them), and it needed less memory. canu also only kept the longest ~40x of reads, not the 50x plassembler asked for. On a simulated ~92% identity (R9-like) set, Unicycler crashed on canu's reads, while lrcorrect's gave all three plasmids as circular contigs. See [the long read docs](https://plassembler.readthedocs.io/en/latest/long/) for the comparison
 * Corrected reads are subsampled at random to 50x of the length of Flye's non-chromosomal contigs, or to 2.5 Mbp when Flye found none - the same targets plassembler gave canu
 * Too little data to correct anything (lrcorrect exits 0 with no reads) is reported, and the run carries on with uncorrected reads as before. lrcorrect failing to run is now fatal and shows lrcorrect's own error message, instead of being treated as a sample with no plasmids
-* `--canu_flag` (deprecated since v1.3.0) has been removed and now stops with a message saying so. `--corrected_error_rate` was a canu option: it is still accepted, with a warning, and ignored
+* `--canu_flag` (deprecated since v1.3.0) and `--corrected_error_rate` (a canu option) have been removed
 * dnaapler was only used by `--canu_flag`, so it is no longer a dependency either
 
 1.8.5 (2026-09-07)

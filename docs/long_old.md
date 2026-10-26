@@ -1,6 +1,6 @@
 # Long
 
-Note: This method has been superceded by v1.3.0 but I am retaining the below out of interest. If you want the old `plassembler long` method implemented from v1.3.0 onwards for some reason, you can do this with `--canu_flag`.
+Note: This method has been superceded by v1.3.0 but I am retaining the below out of interest. It was available with `--canu_flag` from v1.3.0 until v1.9.0, when canu was removed from plassembler.
 
 After reading this [paper](https://doi.org/10.1099/mgen.0.001024) by Johnson et al, it seemed interesting that while most assemblers failed to recover small <10kbp> plasmids, Canu always did - albeit with multiplication. However, multplicated contigs in [Canu](https://github.com/marbl/canu) indicate the smallest repeating sequence unit in the header, and so can be trimmed easily (see e.g. Ryan Wick's [script](https://github.com/rrwick/Trycycler/blob/main/scripts/canu_trim.py) in Trycycler).
 

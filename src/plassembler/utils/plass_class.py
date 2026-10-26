@@ -854,7 +854,7 @@ class Plass:
 
                     if (
                         "circular" in dna_record.description
-                    ):  # circular contigs from canu
+                    ):  # circular contigs from Unicycler
                         desc = f"len={length} plasmid_copy_number_long={lr_copy_number}x circular=True"
                     else:
                         desc = (

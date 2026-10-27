@@ -249,7 +249,7 @@ pip install -e .
 
 ### Development (with Pixi)
 
-For development, `plassembler` uses [Pixi](https://pixi.sh). `pixi install` creates an environment containing `plassembler` (editable) along with **all** of its external dependencies (Flye, Unicycler, SPAdes, mash, samtools, minimap2, fastp, chopper, Raven, canu, dnaapler):
+For development, `plassembler` uses [Pixi](https://pixi.sh). `pixi install` creates an environment containing `plassembler` (editable) along with **all** of its external dependencies (Flye, Unicycler, SPAdes, mash, samtools, minimap2, fastp, chopper, Raven, lrcorrect):
 
 ```
 git clone https://github.com/gbouras13/plassembler.git
@@ -459,5 +459,3 @@ If you use `plassembler`, please also consider citing where relevant:
 * Ondov, B.D., Treangen, T.J., Melsted, P. et al. Mash: fast genome and metagenome distance estimation using MinHash. Genome Biol 17, 132 (2016). https://doi.org/10.1186/s13059-016-0997-x.
 * De Coster,W. and Rademakers,R. (2023) NanoPack2: population-scale evaluation of long-read sequencing data. Bioinformatics, 39, btad311. https://doi.org/10.1093/bioinformatics/btad311.
 * Vaser,R. and Šikić,M. (2021) Time-and memory-efficient genome assembly with Raven. Nat. Comput. Sci., 1, 332–336. https://doi.org/10.1038/s43588-021-00073-4.
-* Koren S, Walenz BP, Berlin K, Miller JR, Bergman NH, Phillippy AM. (2017) Canu: scalable and accurate long-read assembly via adaptive k-mer weighting and repeat separation. Genome Res. 2017 May;27(5):722-736. doi: https://doi.org/10.1101/gr.215087.116. 
-* Bouras, G., Roach, M. J., Mallawaarachchi V., Grigson., S., Papudeshi., B. (2023) Dnaapler: A tool to reorient circular microbial genomes https://github.com/gbouras13/dnaapler

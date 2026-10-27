@@ -1,7 +1,4 @@
-import gzip
 from pathlib import Path
-
-from Bio import SeqIO
 
 from plassembler.utils.external_tools import ExternalTool
 
@@ -70,7 +67,7 @@ def run_unicycler_long(
     spades_options: str,
 ) -> None:
     """runs Unicycler on long reads with -s -l
-    :param corrected_longreads: long read fastq (subsmapled and corrected with canu)
+    :param corrected_longreads: long read fastq (subsampled and corrected with lrcorrect)
     :param entropy_filtered_longreads: long read fastq pre correction - for scaffolding so not subsampled
     :param unicycler_output_dir: unicycler Output Directory
     :param threads: threads
@@ -94,24 +91,3 @@ def run_unicycler_long(
     )
 
     ExternalTool.run_tool(unicycler_long, to_stdout=False)
-
-
-def corrected_fasta_to_fastq(input_fasta_gz: Path, output_fastq: Path) -> None:
-    """
-    Convert a gzipped FASTA file to FASTQ format with '#' as the quality scores and save it to a FASTQ file.
-
-    Args:
-        input_fasta_gz (Path): Path to the gzipped FASTA input file.
-        output_fastq (Path): Path to the output FASTQ file.
-
-    Returns:
-        None
-    """
-    with gzip.open(input_fasta_gz, "rt") as fasta_file:
-        with open(output_fastq, "w") as fastq_file:
-            for record in SeqIO.parse(fasta_file, "fasta"):
-                header = record.id
-                sequence = str(record.seq)
-                quality = "#" * len(sequence)
-                fastq_record = f"@{header}\n{sequence}\n+\n{quality}\n"
-                fastq_file.write(fastq_record)

@@ -12,7 +12,6 @@ dependencies:
   - mash >=2.2
   - raven-assembler >=1.8
   - samtools >=0.15.0
-  - canu >=2.2
-  - dnaapler >=0.4.0
+  - lrcorrect >=0.1.0
   - pip
   - python >=3.8,<3.14

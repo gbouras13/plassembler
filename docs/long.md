@@ -1,6 +1,6 @@
 # Long v1.3.0 Updates (24 October 2023)
 
- Note: as of v1.3.0, if still you want the old canu-based `plassembler long` method implemented in v1.2.0 for some reason, you can do this with `--canu_flag`.
+ Note: as of v1.9.0, reads are corrected with [lrcorrect](https://github.com/gbouras13/lrcorrect) instead of `canu -correct`, and the old canu-based method (`--canu_flag`) and `--corrected_error_rate` have been removed. See [Read correction](#read-correction-v190) below.
 
 While I was mostly happy with with the `plassembler long` update in v 1.2.0, while testing it a lot of real life data benchmarking [hybracter](https://github.com/gbouras13/hybracter), I found some strange instances where it would give way too many contigs as output - seemingly, it would sometimes assemble the same plasmid multiple times with slight variations (probably due to various factors or too deep read sets). In any case, I wanted a better automated solution. 
 
@@ -11,8 +11,67 @@ As you can see in the results, I am confident that assuming you have good qualit
 `plassembler long` now implements the following steps (after the Flye assembly and getting the plasmid long reads as previous):
 
 * Removes extremely low entropy repetitive reads
-* Runs `canu -correct` to simultaneously error correct the long reads and subsample to 100x estimated depth (so as not to give Unicycler too much read depth - see [this](https://doi.org/10.1093/bioinformatics/btv311) and [this](https://doi.org/10.1371/journal.pone.0060204) and [this](https://academic.oup.com/bioinformatics/article/27/4/479/198367)) - major thanks to Ryan Wick for suggesting suggesting this!
+* Runs `lrcorrect` (before v1.9.0, `canu -correct`) to simultaneously error correct the long reads and subsample them to 50x of the length of Flye's non-chromosomal contigs (so as not to give Unicycler too much read depth - see [this](https://doi.org/10.1093/bioinformatics/btv311) and [this](https://doi.org/10.1371/journal.pone.0060204) and [this](https://academic.oup.com/bioinformatics/article/27/4/479/198367)) - major thanks to Ryan Wick for suggesting suggesting this!
 * Runs Unicycler as follows: `unicycler -s {error_corrected_longreads} -l {all_longreads}`
+
+# Read correction (v1.9.0)
+
+From v1.9.0, `plassembler long` corrects the non-chromosomal reads with [lrcorrect](https://github.com/gbouras13/lrcorrect) rather than `canu -correct`. lrcorrect is a single Rust binary with minimap2 built in. It finds all-vs-all overlaps, aligns each read's best partners to it and calls a majority-vote consensus, over two rounds. It needs no perl, java or genome size. It is deterministic: the output is identical whatever the thread count.
+
+The reads are subsampled at random to 50x of the length of Flye's non-chromosomal contigs, or to 2.5 Mbp when Flye found none (the targets canu was given), then corrected and given to Unicycler with `-s`. If there are too few reads to correct anything, `plassembler` carries on with the uncorrected reads, as before. If lrcorrect fails to run, `plassembler` stops and shows lrcorrect's error.
+
+Comparison on the same non-chromosomal read sets: 8 threads on one Phoenix (Adelaide HPC) node, Unicycler v0.5.1, and identity measured by mapping to the truth with minimap2. All read sets are simulated with [Badread](https://github.com/rrwick/Badread):
+
+* ab95: the 145 kbp *A. baumannii* plasmid in `tests/test_data`, ~95% read identity.
+* tp95: the 44 kbp and 9.3 kbp plasmids in `tests/test_data`, ~95%.
+* R9-like, R10-like and CLR: 145 + 44 + 9.3 kbp plasmids at relative depths 1:3:10, at ~92%, ~98.7% and ~87% identity.
+
+| Read set | Corrector | Read identity | Reads kept | Time (s) | Peak RAM (GB) | Unicycler result (errors per plasmid) |
+|---|---|---|---|---|---|---|
+| ab95 | canu | 99.94% | 263/480 | 126 | 3.6 | 1 circular (0) |
+| ab95 | lrcorrect | 100.00% | 478/480 | 52 | 1.1 | 1 circular (0) |
+| tp95 | canu | 99.91% | 104/172 | 50 | 1.7 | 2 circular (0, 0) |
+| tp95 | lrcorrect | 100.00% | 168/172 | 11 | 0.7 | 2 circular (0, 0) |
+| R9-like | canu | 99.69% | 367/934 | 242 | 3.6 | Unicycler crashed |
+| R9-like | lrcorrect | 99.97% | 646/934 | 77 | 1.5 | 3 circular (41, 5, 9) |
+| R10-like | canu | 99.9995% | 391/967 | 182 | 3.6 | 3 circular (0, 0, 0) |
+| R10-like | lrcorrect | 100.00% | 656/967 | 86 | 1.5 | 3 circular (0, 0, 0) |
+| R10-like | none | 98.72% | 967/967 | - | - | 3 circular (1, 0, 0), Unicycler 1.6x slower |
+| CLR | canu | 98.55% | 412/943 | 123 | 3.6 | 3 circular (154, 11, 24) |
+| CLR | lrcorrect | 99.83% | 629/943 | 131 | 1.4 | 3 circular (58, 5, 19) |
+
+On real reads, with curated reference genomes, the comparison is closer. The read sets are:
+
+* the six isolates from [Wick et al. 2021](https://doi.org/10.1099/mgen.0.000631), each sequenced with both an R9.4.1 rapid and a ligation library (12 read sets);
+* *K. pneumoniae* MGH78578 on R9.4.1 SUP, R10.4 SUP and R10.4.1 ([Sanderson et al.](https://doi.org/10.1099/mgen.0.000910));
+* *K. variicola* INF345 from a 2025 ONT benchmarking run (PRJEB93892), whose raw reads are ~94.5% accurate.
+
+Each set was subsampled to ~100x and run through `plassembler long` up to read correction. Counts are complete circular plasmids:
+
+| Read set | Plasmids | canu | lrcorrect | No correction | canu time (s) | lrcorrect time (s) |
+|---|---|---|---|---|---|---|
+| *A. baumannii* J9, R9.4.1 rapid / ligation | 2 / 2 | 2 / 2 | 2 / 2 | 1 / 0 | 110 / 81 | 70 / 12 |
+| *C. koseri* MINF_9D, R9.4.1 rapid / ligation | 2 / 2 | 2 / 2 | 2 / 2 | 2 / 1 | 86 / 35 | 28 / 4 |
+| *E. kobei* MSB1_1B, R9.4.1 rapid / ligation | 6 / 6 | 3 / 3 | 5 / 3 | 3 / 0 | 496 / 334 | 116 / 56 |
+| *Haemophilus* M1C132_1, R9.4.1 rapid / ligation | 5 / 5 | 2 / 2 | 2 / 2 | 3 / 1 | 75 / 29 | 42 / 4 |
+| *K. oxytoca* MSB1_2C, R9.4.1 rapid / ligation | 4 / 4 | 1 / 2 | 1 / 3 | 1 / 1 | 375 / 62 | 146 / 16 |
+| *K. variicola* INF345, R9.4.1 rapid / ligation | 5 / 5 | 3 / 4 | 3 / 2 | 1 / 2 | 474 / 385 | 461 / 264 |
+| *K. variicola* INF345, 2025 run | 5 | 2 | 2 | 2 | 364 | 274 |
+| *K. pneumoniae* MGH78578, R9.4.1 SUP | 5 | 5 | 3 | 2 | 404 | 419 |
+| *K. pneumoniae* MGH78578, R10.4 SUP | 5 | 2 | 3 | 3 | 302 | 295 |
+| *K. pneumoniae* MGH78578, R10.4.1 | 5 | 3 | 4 | 0 (Unicycler crashed) | 392 | 437 |
+| **Total** | **68** | **40** | **41** | **23** | | |
+
+* lrcorrect's reads were more accurate than canu's on 15 of the 16 real read sets and tied on the other, and it used 0.6-3.6 GB of RAM against canu's 1.7-4.2 GB.
+* lrcorrect was faster on 14 of the 16 sets, by 2.6-8.5x on 8 of them. On the read sets dominated by a high-copy small plasmid it took about as long as canu.
+* Many small plasmids are missed whichever corrector is used. In these cases the corrected reads are there, but Unicycler does not resolve the plasmid, for example two small MGH78578 plasmids that share an 820 bp region.
+* The full benchmark, with per-read-set tables, is in [Long read correction benchmarking](benchmarking_correction.md).
+* The reads in all of these sets are 94-98% accurate. None is modern R10.4.1 (Q20+) data, where the simulations suggest correction mostly saves Unicycler time.
+
+* canu only keeps the longest ~40x of reads (its `corOutCoverage`), not the 50x `plassembler` asked for. lrcorrect keeps the whole random 50x subsample.
+* Without correction, Unicycler failed or gave a fragment on the ~95%, ~92% and CLR sets. Modern R10.4.1 reads (~Q20) assemble without correction, but more slowly.
+* With few reads (one or five reads, a sample with no plasmids, empty input), canu exits with an error. lrcorrect exits cleanly with no reads, which `plassembler` reports as "too few reads to correct". At 8x depth canu refuses to run (below its 10x minimum), and Unicycler fails on the raw reads it falls back to. Correcting with lrcorrect gives a single 143 kbp contig instead.
+* canu's output changed between reruns on the R9-like set (4 runs, 4 different outputs). lrcorrect's did not, and was byte-identical at 1, 4 and 8 threads.
 
 # Results
 
@@ -87,13 +146,6 @@ Options:
                                 will assume SUP or HAC reads and use --nano-
                                 hq.
   --keep_chromosome             If you want to keep the chromosome assembly.
-  --canu_flag                   Runs canu instead of Unicycler (aka replicates
-                                v1.2.0). As of v1.3.0, Unicycler is the
-                                assembler for long reads. Canu is only
-                                recommended if you have low quality reads
-                                (e.g. ONT R9).
-  --corrected_error_rate FLOAT  Corrected error rate parameter for canu
-                                -correct. For advanced users only.
   --flye_directory PATH         Directory containing Flye long read assembly.
                                 Needs to contain assembly_info.txt and
                                 assembly_info.fasta. Allows Plassembler to

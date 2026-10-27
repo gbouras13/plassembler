@@ -113,11 +113,6 @@ class ExternalTool:
                 logger.warning(
                     "Unicycler has failed. This usually means that you have no plasmids. Checking."
                 )
-            elif tool.tool_str == "dnaapler all":  # for dnaapler errors
-                logger.warning(
-                    "Dnaapler failed to reorient any putative plasmids to begin with repA."
-                )
-                logger.warning("Continuing with the un-reoriented contigs.")
             else:
                 logger.warning(
                     f"Error calling {tool.command_as_str} (return code {error.returncode})"

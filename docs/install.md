@@ -49,7 +49,7 @@ pip install -e .
 
 ### Development (with Pixi)
 
-For development, plassembler uses [Pixi](https://pixi.sh). `pixi install` creates an environment containing plassembler (editable) along with all of its external dependencies (Flye, Unicycler, SPAdes, mash, samtools, minimap2, fastp, chopper, Raven, canu, dnaapler):
+For development, plassembler uses [Pixi](https://pixi.sh). `pixi install` creates an environment containing plassembler (editable) along with all of its external dependencies (Flye, Unicycler, SPAdes, mash, samtools, minimap2, fastp, chopper, Raven, lrcorrect):
 
 ```
 git clone https://github.com/gbouras13/plassembler.git

@@ -389,27 +389,16 @@ def check_dependencies():
     except Exception:
         logger.error("mash not found")
 
-    # canu
+    # lrcorrect
     try:
-        process = sp.Popen(["canu", "--version"], stdout=sp.PIPE, stderr=sp.PIPE)
-        canu_out, _ = process.communicate()
-        canu_out = canu_out.decode()
-        canu_out = canu_out.split("\n")[0].split(" ")[1]
-        message = f"canu v{canu_out} found."
+        process = sp.Popen(["lrcorrect", "--version"], stdout=sp.PIPE, stderr=sp.PIPE)
+        lrcorrect_out, _ = process.communicate()
+        lrcorrect_out = lrcorrect_out.decode()
+        lrcorrect_out = lrcorrect_out.split("\n")[0].split(" ")[1]
+        message = f"lrcorrect v{lrcorrect_out} found."
         logger.info(message)
     except Exception:
-        logger.error("canu not found")
-
-    # dnaapler
-    try:
-        process = sp.Popen(["dnaapler", "--version"], stdout=sp.PIPE, stderr=sp.PIPE)
-        dnaapler_out, _ = process.communicate()
-        dnaapler_out = dnaapler_out.decode()
-        dnaapler_out = dnaapler_out.split("\n")[0].split("version ")[1]
-        message = f"dnaapler v{dnaapler_out} found."
-        logger.info(message)
-    except Exception:
-        logger.error("dnaapler not found")
+        logger.error("lrcorrect not found")
 
     # blast
 
